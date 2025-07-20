@@ -1,0 +1,10 @@
+.nav-pills .nav-link.active {
+  background-color: transparent;
+  color: #0d6efd;
+  /*color: #0d6efd; standardblau bei react bootstrap*/
+}
+
+.nav-link {
+  color: silver;
+  font-weight: bold;
+}
