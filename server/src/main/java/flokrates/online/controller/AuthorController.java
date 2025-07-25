@@ -16,32 +16,32 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/author")
-@CrossOrigin(origins = "http://localhost:3000")
 @RequiredArgsConstructor
+@RequestMapping("/api/authors")
+@CrossOrigin(origins = "http://localhost:8081")
 public class AuthorController {
     private static final Logger logger = LoggerFactory.getLogger(AuthorController.class);
     private final AuthorService authorService;
     private final AuthorMapper authorMapper;
 
-    @PostMapping("addAuthor")
+    @PostMapping
     public String addAuthor(@RequestBody Author author) {
         authorService.saveAuthor(author);
         return "New Author " + author.getAuthorId() + " is added";
     }
 
-    @GetMapping("getAllAuthors")
+    @GetMapping
     public List<Author> getAllAuthors() {
         return authorService.getAllAuthors();
     }
 
-    @DeleteMapping("deleteAuthor/{id}")
-    public String deleteAuthor(@PathVariable("id") Integer id) {
+    @DeleteMapping("/{id}")
+    public String deleteAuthor(@PathVariable Integer id) {
         authorService.deleteAuthor(id);
         return "Author " + id + " deleted";
     }
 
-    @GetMapping("getAuthorById/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<AuthorDto> getAuthorByID(@PathVariable Integer id) {
         return authorService.getAuthorById(id)
                 .map(authorMapper::toDto)
@@ -49,7 +49,7 @@ public class AuthorController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/updateAuthor/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<AuthorDto> updateAuthor(@PathVariable Integer id, @RequestBody AuthorDto authorDto) {
         Optional<Author> existingAuthorOpt = authorService.getAuthorById(id);
 
@@ -67,7 +67,7 @@ public class AuthorController {
         return ResponseEntity.ok(updatedDto);
     }
 
-    @PatchMapping("/patchAuthor/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<AuthorDto> patchAuthor(@PathVariable Integer id, @RequestBody Map<String, Object> updates) {
         Optional<Author> existingAuthorOpt = authorService.getAuthorById(id);
 

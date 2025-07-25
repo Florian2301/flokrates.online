@@ -1,11 +1,11 @@
 // Generated using webpack-cli https://github.com/webpack/webpack-cli
 
-const path = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-const isProduction = process.env.NODE_ENV === 'production'
+const isProduction = process.env.NODE_ENV === 'production';
 
-const stylesHandler = 'style-loader'
+const stylesHandler = 'style-loader';
 
 const config = {
   entry: './src/index.tsx',
@@ -13,14 +13,21 @@ const config = {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].[contenthash].js',
     clean: true,
+    publicPath: '/',
   },
   devServer: {
+    historyApiFallback: true,
     open: true,
     host: 'localhost',
+    static: {
+      directory: path.resolve(__dirname, 'dist'),
+    },
+    compress: true,
+    port: 8081,
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'index.html',
+      template: path.resolve(__dirname, 'index.html'),
     }),
 
     // Add your plugins here
@@ -49,12 +56,12 @@ const config = {
   resolve: {
     extensions: ['.tsx', '.ts', '.jsx', '.js', '...'],
   },
-}
+};
 
 module.exports = () => {
   return {
     ...config,
     mode: isProduction ? 'production' : 'development',
     devtool: isProduction ? 'source-map' : 'eval-source-map',
-  }
-}
+  };
+};

@@ -1,13 +1,31 @@
 import './App.css';
 
+import { Route, Routes } from 'react-router-dom';
+
+import { BrowserRouter } from 'react-router-dom';
+import ChatBox from './components/chatbox/ChatBox';
+import ChatList from './components/chatlist/ChatList';
 import MainWindow from './components/MainWindow';
 import React from 'react';
 
+//import ChatInfo from './components/chatinfo/ChatInfo';
+
 function App() {
   return (
-    <div className="App">
-      <MainWindow></MainWindow>
-    </div>
+    <BrowserRouter>
+      <div className="App">
+        <MainWindow>
+          <Routes>
+            <Route path="/" element={<ChatList />} />
+            <Route path="/chatlist" element={<ChatList />} />
+            <Route path="/chatbox/:chatId" element={<ChatBox />} />
+            <Route path="/chatinfo" element={<ChatList />} />
+            <Route path="/dropdown" element={<ChatList />} />{' '}
+            {/* oder was du willst */}
+          </Routes>
+        </MainWindow>
+      </div>
+    </BrowserRouter>
   );
 }
 

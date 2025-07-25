@@ -1,10 +1,13 @@
 package flokrates.online.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.Arrays;
 
 public enum Language {
-    GE("GE", "GERMAN"),
-    EN("EN", "English");
+    DEU("DEU", "Deutsch"),
+    ENG("ENG", "English");
 
     private final String code;
     private final String displayName;
@@ -14,6 +17,7 @@ public enum Language {
         this.displayName = displayName;
     }
 
+    @JsonValue
     public String getCode() {
         return code;
     }
@@ -27,6 +31,7 @@ public enum Language {
         return displayName;
     }
 
+    @JsonCreator
     public static Language fromCode(String code) {
         return Arrays.stream(values())
                 .filter(lang -> lang.code.equalsIgnoreCase(code))

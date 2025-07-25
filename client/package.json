@@ -6,9 +6,11 @@
     "@types/react": "^17.0.85",
     "@types/react-dom": "^17.0.26",
     "express": "^5.1.0",
-    "react": "^17.0.2",
+    "react": "^18.3.1",
     "react-bootstrap": "^2.10.9",
-    "react-dom": "^17.0.2",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.7.0",
+    "uuid": "^11.1.0",
     "web-vitals": "^2.1.4"
   },
   "main": "./dist/src/index.js",
@@ -31,6 +33,7 @@
     ]
   },
   "devDependencies": {
+    "@types/react-router-bootstrap": "^0.26.8",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "@webpack-cli/generators": "^3.0.7",

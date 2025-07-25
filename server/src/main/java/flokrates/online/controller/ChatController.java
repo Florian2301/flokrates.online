@@ -18,33 +18,33 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/chat")
-@CrossOrigin(origins = "http://localhost:3000")
 @RequiredArgsConstructor
+@RequestMapping("/api/chats")
+@CrossOrigin(origins = "http://localhost:8081")
 public class ChatController {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
     private final ChatService chatService;
     private final ChatMapper chatMapper;
 
-    @PostMapping("addChat")
-    public String addChat(@RequestBody Chat chat) {
+    @PostMapping
+    public ResponseEntity<String> addChat(@RequestBody Chat chat) {
         chatService.saveChat(chat);
-        return "New Chat " + chat.getChatId() + " is added";
+        return ResponseEntity.ok("New Chat " + chat.getChatId() + " is added");
     }
 
-    @GetMapping("getAllChats")
+    @GetMapping
     public List<Chat> getAllChats() {
         return chatService.getAllChats();
     }
 
-    @DeleteMapping("deleteChat/{id}")
-    public String deleteChat(@PathVariable("id") Integer id) {
+    @DeleteMapping("/{id}")
+    public String deleteChat(@PathVariable Integer id) {
         chatService.deleteChat(id);
         return "Chat " + id + " deleted";
     }
 
-    @GetMapping("getChatById/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ChatDto> getChatById(@PathVariable Integer id) {
 
         /*
@@ -72,7 +72,7 @@ public class ChatController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/updateChat/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ChatDto> updateChat(@PathVariable Integer id, @RequestBody ChatDto chatDto) {
         Optional<Chat> existingChatOpt = chatService.getChatById(id);
 
@@ -94,7 +94,7 @@ public class ChatController {
         return ResponseEntity.ok(updatedDto);
     }
 
-    @PatchMapping("/patchChat/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<ChatDto> patchChat(@PathVariable Integer id, @RequestBody Map<String, Object> updates) {
         Optional<Chat> existingChatOpt = chatService.getChatById(id);
 

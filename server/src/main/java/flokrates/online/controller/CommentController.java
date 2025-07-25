@@ -16,32 +16,32 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/comment")
-@CrossOrigin(origins = "http://localhost:3000")
 @RequiredArgsConstructor
+@RequestMapping("/api/comments")
+@CrossOrigin(origins = "http://localhost:8081")
 public class CommentController {
     private static final Logger logger = LoggerFactory.getLogger(CommentController.class);
     private final CommentService commentService;
     private final CommentMapper commentMapper;
 
-    @PostMapping("addComment")
+    @PostMapping
     public String addComment(@RequestBody Comment comment) {
         commentService.saveComment(comment);
         return "New Comment " + comment.getCommentId() + " is added";
     }
 
-    @GetMapping("getAllComments")
+    @GetMapping
     public List<Comment> getAllComments() {
         return commentService.getAllComments();
     }
 
-    @DeleteMapping("deleteComment/{id}")
+    @DeleteMapping("/{id}")
     public String deleteComment(@PathVariable("id") Integer id) {
         commentService.deleteComment(id);
         return "Comment " + id + " deleted";
     }
 
-    @GetMapping("getCommentById/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<CommentDto> getCommentById(@PathVariable Integer id) {
         return commentService.getCommentById(id)
                 .map(commentMapper::toDto)
@@ -49,7 +49,7 @@ public class CommentController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/updateComment/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<CommentDto> updateComment(@PathVariable Integer id, @RequestBody CommentDto commentDto) {
         Optional<Comment> existingCommentOpt = commentService.getCommentById(id);
 
@@ -67,7 +67,7 @@ public class CommentController {
         return ResponseEntity.ok(updatedDto);
     }
 
-    @PatchMapping("/patchComment/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<CommentDto> patchComment(@PathVariable Integer id, @RequestBody Map<String, Object> updates) {
         Optional<Comment> existingCommentOpt = commentService.getCommentById(id);
 

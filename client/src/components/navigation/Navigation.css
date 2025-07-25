@@ -8,3 +8,11 @@
   color: silver;
   font-weight: bold;
 }
+
+#nav-dropdown.active {
+  color: #0d6efd;
+}
+
+.nav-dropdown-item:hover {
+  color: #0d6efd;
+}

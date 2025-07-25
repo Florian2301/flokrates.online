@@ -1,7 +1,10 @@
 import './Navigation.css';
 
-import Nav from 'react-bootstrap/Nav';
-import NavDropdown from 'react-bootstrap/NavDropdown';
+import { Nav, NavDropdown } from 'react-bootstrap';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+
+import ChatList from '../chatlist/ChatList';
+import { NavLink } from 'react-router-dom';
 import React from 'react';
 
 const NavBar = () => {
@@ -9,19 +12,21 @@ const NavBar = () => {
     alert(`selected ${eventKey}`);
 
   return (
-    <Nav variant="pills" defaultActiveKey="1" onSelect={handleSelect}>
+    <Nav variant="pills" defaultActiveKey="/chatlist" onSelect={handleSelect}>
       <Nav.Item>
-        <Nav.Link eventKey="1" href="#/home">
+        <Nav.Link as={NavLink} to="/chatlist">
           Chatlist
         </Nav.Link>
       </Nav.Item>
       <Nav.Item>
-        <Nav.Link eventKey="2" title="Item">
+        <Nav.Link as={NavLink} to="/chatbox">
           Chatbox
         </Nav.Link>
       </Nav.Item>
       <Nav.Item>
-        <Nav.Link eventKey="3">Chatinfo</Nav.Link>
+        <Nav.Link as={NavLink} to="/chatinfo">
+          Chatinfo
+        </Nav.Link>
       </Nav.Item>
       <NavDropdown
         title="More..."
@@ -29,10 +34,28 @@ const NavBar = () => {
         menuVariant="dark"
         placement="right"
       >
-        <NavDropdown.Item eventKey="4.1">About</NavDropdown.Item>
-        <NavDropdown.Item eventKey="4.2">Settings</NavDropdown.Item>
+        <NavDropdown.Item
+          className="nav-dropdown-item"
+          as={NavLink}
+          to="/about"
+        >
+          About
+        </NavDropdown.Item>
+        <NavDropdown.Item
+          className="nav-dropdown-item"
+          as={NavLink}
+          to="/settings"
+        >
+          Settings
+        </NavDropdown.Item>
         <NavDropdown.Divider />
-        <NavDropdown.Item eventKey="4.3">Login</NavDropdown.Item>
+        <NavDropdown.Item
+          className="nav-dropdown-item"
+          as={NavLink}
+          to="/login"
+        >
+          Login
+        </NavDropdown.Item>
       </NavDropdown>
     </Nav>
   );

@@ -1,11 +1,14 @@
 package flokrates.online.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.Arrays;
 
 public enum Actor {
-    FLOKRATES("FL", "Flokrates"),
-    PABLO("PA", "Pablo"),
-    LOTHARIUS("LO", "Lotharius");
+    FLO("FLO", "Flokrates"),
+    PAB("PAB", "Pablo"),
+    LOT("LOT", "Lotharius");
 
     private final String code;
     private final String displayName;
@@ -15,6 +18,7 @@ public enum Actor {
         this.displayName = displayName;
     }
 
+    @JsonValue
     public String getCode() {
         return code;
     }
@@ -28,6 +32,7 @@ public enum Actor {
         return displayName;
     }
 
+    @JsonCreator
     public static Actor fromCode(String code) {
         return Arrays.stream(values())
                 .filter(actor -> actor.code.equalsIgnoreCase(code))

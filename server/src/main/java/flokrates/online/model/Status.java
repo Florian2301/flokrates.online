@@ -1,10 +1,15 @@
 package flokrates.online.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.Arrays;
+
 public enum Status {
-    PUBLISHED("PU", "Published"),
-    REWORK("RE", "Rework"),
-    DRAFT("DR", "Draft"),
-    NOTES("NO", "Notes");
+    PUB("PUB", "Published"),
+    REW("REW", "Rework"),
+    DRA("DRA", "Draft"),
+    NOT("NOT", "Notes");
 
     private final String code;
     private final String displayName;
@@ -14,6 +19,7 @@ public enum Status {
         this.displayName = displayName;
     }
 
+    @JsonValue
     public String getCode() {
         return code;
     }
@@ -22,12 +28,18 @@ public enum Status {
         return displayName;
     }
 
+    @JsonCreator
     public static Status fromCode(String code) {
-        for (Status status : values()) {
-            if (status.code.equals(code)) {
-                return status;
-            }
-        }
-        throw new IllegalArgumentException("Unknown code: " + code);
+        return Arrays.stream(values())
+                .filter(status -> status.code.equalsIgnoreCase(code))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown code: " + code));
+    }
+
+    public static Status fromDisplayName(String name) {
+        return Arrays.stream(values())
+                .filter(status -> status.displayName.equalsIgnoreCase(name))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown display name: " + name));
     }
 }

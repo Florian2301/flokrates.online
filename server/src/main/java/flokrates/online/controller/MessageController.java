@@ -4,6 +4,7 @@ import flokrates.online.mapper.MessageMapper;
 import flokrates.online.model.Actor;
 import flokrates.online.model.Message;
 import flokrates.online.model.dto.MessageDto;
+import flokrates.online.repository.MessageRepo;
 import flokrates.online.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -17,33 +18,34 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/message")
-@CrossOrigin(origins = "http://localhost:3000")
 @RequiredArgsConstructor
+@RequestMapping("/api/messages")
+@CrossOrigin(origins = "http://localhost:8081")
 public class MessageController {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
     private final MessageService messageService;
     private final MessageMapper messageMapper;
+    private final MessageRepo messageRepo;
 
-    @PostMapping("addMessage")
+    @PostMapping
     public String addMessage(@RequestBody Message message) {
         messageService.saveMessage(message);
         return "New Message " + message.getMessageId() + " is added";
     }
 
-    @GetMapping("getAllMessages")
+    @GetMapping
     public List<Message> getAllMessages() {
         return messageService.getAllMessages();
     }
 
-    @DeleteMapping("deleteMessage/{id}")
+    @DeleteMapping("/{id}")
     public String deleteMessage(@PathVariable("id") Integer id) {
         messageService.deleteMessage(id);
         return "Message " + id + " deleted";
     }
 
-    @GetMapping("getMessageById/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<MessageDto> getMessageById(@PathVariable Integer id) {
         return messageService.getMessageById(id)
                 .map(messageMapper::toDto)
@@ -51,7 +53,7 @@ public class MessageController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/updateMessage/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<MessageDto> updateMessage(@PathVariable Integer id, @RequestBody MessageDto messageDto) {
         Optional<Message> existingMessageOpt = messageService.getMessageById(id);
 
@@ -71,7 +73,7 @@ public class MessageController {
         return ResponseEntity.ok(updatedDto);
     }
 
-    @PatchMapping("/patchMessage/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<MessageDto> patchMessage(@PathVariable Integer id, @RequestBody Map<String, Object> updates) {
         Optional<Message> existingMessageOpt = messageService.getMessageById(id);
 
@@ -94,4 +96,10 @@ public class MessageController {
         MessageDto updatedDto = messageMapper.toDto(updatedMessage);
         return ResponseEntity.ok(updatedDto);
     }
+
+    @GetMapping("/chat/{chatId}")
+    public List<Message> getMessagesForChat(@PathVariable Integer chatId) {
+        return messageRepo.findByChatId(chatId);
+    }
+
 }

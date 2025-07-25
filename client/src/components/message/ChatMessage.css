@@ -1,0 +1,85 @@
+.message-wrapper {
+  display: flex;
+  margin: 0.5rem 0;
+}
+
+.message-container {
+  border-color: black;
+  border-width: thin;
+  border-style: solid;
+  border-radius: 1rem;
+  color: #2f4858;
+  position: relative;
+  width: fit-content;
+  min-width: 15rem;
+  max-width: 75%;
+  background-color: white;
+  background-image: url('../../img/message_background.jpg');
+}
+
+.message-header {
+  border-color: black;
+  border-width: thin;
+  border-bottom-style: dotted;
+  padding: 0rem 0.6rem 0rem 0.6rem;
+  display: flex;
+  justify-content: space-between;
+  height: 2rem;
+  font-size: 20px;
+}
+
+.message-body {
+  padding: 0rem 0.6rem 0.2rem 0.6rem;
+  word-wrap: break-word;
+  margin-left: 0.5rem;
+  white-space: pre-wrap;
+  font-size: 20px;
+}
+
+.message-number {
+}
+
+.message-menu {
+}
+
+/* Positionierung */
+.align-left {
+  text-align: left;
+}
+
+.align-center {
+  text-align: center;
+}
+
+.align-right {
+  text-align: right;
+}
+
+/* Farben */
+.text-orange {
+  color: orangered;
+  text-align: left;
+}
+
+.text-blue {
+  color: royalblue;
+}
+
+.text-pink {
+  color: deeppink;
+}
+
+.align-left .message-container {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.align-center .message-container {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.align-right .message-container {
+  margin-left: auto;
+  margin-right: 0;
+}

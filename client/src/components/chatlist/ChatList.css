@@ -1,0 +1,51 @@
+.table-chats {
+  color: lightgray;
+}
+
+.table-rows-head {
+  display: grid;
+  grid-template-columns: 10% 65% 25%;
+  border-bottom-color: dodgerblue;
+  border-bottom-width: thin;
+  border-bottom-style: solid;
+}
+
+.table-rows-data {
+  display: grid;
+  grid-template-columns: 10% 65% 25%;
+}
+
+.table-rows-data:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  color: dodgerblue;
+}
+
+.thead {
+  padding: 0.5rem;
+  text-align: left;
+  font-size: 1rem;
+}
+
+#thead-number {
+  text-align: center;
+}
+
+.table-columns {
+  padding: 0.5rem;
+  text-align: left;
+  word-wrap: break-word;
+  font-size: 1rem;
+}
+
+#table-columns-number {
+  text-align: center;
+}
+
+.chatlist-scroll {
+  overflow: auto;
+}
+
+.chatlist-scroll-mobile {
+  overflow: auto;
+}
