@@ -1,6 +1,6 @@
 import './ChatBox.css';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Actor } from '../../types/ActorStyles';
 import { ChatMessage } from '../message/ChatMessage';
@@ -14,7 +14,7 @@ export const ChatBox: React.FC = () => {
   const handleMessagesChanged = (
     messageId: number,
     updatedText: string,
-    newActor: string,
+    newActor: Actor,
     newMessageNumber: number,
     oldMessageNumber: number,
     responseId: number
@@ -112,7 +112,7 @@ export const ChatBox: React.FC = () => {
     messageId: number,
     messageNumber: number,
     respId: number,
-    actor: string,
+    actor: Actor,
     messageText: string
   ) {
     fetch(`${process.env.API_BASE_URL}/api/messages/${messageId}`, {
@@ -129,28 +129,12 @@ export const ChatBox: React.FC = () => {
 
   if (!messages || messages.length === 0) return <div>Lade...</div>;
 
-  useEffect(() => {
-    console.log('Messages geladen:', messages);
-  }, [messages]);
-
   return (
     <div className="chatbox-main">
       {messages
         .slice()
         .sort((a, b) => a.messageNumber - b.messageNumber)
         .map((msg) => {
-          console.log(
-            `Message #${msg.messageNumber} (ID: ${msg.messageId}) geladen:`,
-            msg.actor
-          );
-
-          if (!msg.actor) {
-            console.error(
-              `❌ Message ${msg.messageId} hat keinen actor-Wert!`,
-              msg
-            );
-          }
-
           return (
             <ChatMessage
               key={msg.messageId}
@@ -166,7 +150,7 @@ export const ChatBox: React.FC = () => {
               onMessagesChanged={(
                 messageId: number,
                 updatedText: string,
-                newActor: string,
+                newActor: Actor,
                 newMessageNumber: number,
                 oldMessageNumber: number,
                 responseId: number

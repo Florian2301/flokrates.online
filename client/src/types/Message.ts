@@ -5,6 +5,6 @@ export interface Message {
   messageNumber: number;
   chatId: number;
   respId: number;
-  actor: string;
+  actor: Actor;
   messageText: string;
 }

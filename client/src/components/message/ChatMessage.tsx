@@ -1,10 +1,10 @@
 import './ChatMessage.css';
 
+import { Actor, actorStyles } from '../../types/ActorStyles';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Message } from '../../types/Message';
 import NewMessage from './NewMessage';
-import { actorStyles } from '../../types/ActorStyles';
 import { useChatContext } from '../../context/ChatContext';
 
 type ChatMessageProps = {
@@ -12,7 +12,7 @@ type ChatMessageProps = {
   respId: number;
   chatId: number;
   messageNumber: number;
-  actor: string;
+  actor: Actor;
   messageText: string;
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   isEditing: boolean;
@@ -20,7 +20,7 @@ type ChatMessageProps = {
   onMessagesChanged: (
     messageId: number,
     updatedMsg: string,
-    newActor: string,
+    newActor: Actor,
     newMessageNumber: number,
     oldMessageNumber: number,
     responseId: number
@@ -42,14 +42,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const { messageCount } = useChatContext();
   const API_BASE_URL = process.env.API_BASE_URL;
 
-  const style = actorStyles[actor as keyof typeof actorStyles];
-
-  if (!style) {
-    console.error(`❌ Unbekannter Actor bei Nachricht ${messageId}:`, actor);
-    return null; // Komponente rendert nichts, wenn Actor ungültig ist
-  }
-
-  const { colorClass, alignClass, actorName } = style;
+  const { colorClass, alignClass, actorName } =
+    actorStyles[actor as keyof typeof actorStyles];
 
   const [edit, setEdit] = useState(isEditing);
   const [editedText, setEditedText] = useState(messageText);

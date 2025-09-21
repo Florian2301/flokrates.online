@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react';
 
+import { Actor } from '../types/ActorStyles';
 import { Chat } from '../types/Chats';
 import { Message } from '../types/Message';
 
@@ -62,14 +63,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         );
         const data: Message[] = await res.json();
 
-        console.log('chatcontext data', data);
-
-        const mappedMessages = data.map((msg) => ({
-          ...msg,
-          actor: msg.actor,
-        }));
-
-        setMessages(mappedMessages);
+        setMessages(data);
         setMessageCount(data.length);
 
         localStorage.setItem('messages', JSON.stringify(data));

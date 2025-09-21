@@ -8,14 +8,14 @@ type NewMessageProps = {
   messageId: number;
   initialText: string;
   onCancel: () => void;
-  initialActor: string;
+  initialActor: Actor;
   initialMessageNumber: number;
   onDelete: () => void;
   maxMessageNumber: number;
   onSave: (
     messageId: number,
     newText: string,
-    newActor: string,
+    newActor: Actor,
     newMsgNumber: number,
     oldMsgNumber: number,
     responseId: number

@@ -6,7 +6,7 @@ interface ActorStyles {
   actorName: string;
 }
 
-export const actorStyles: Record<string, ActorStyles> = {
+export const actorStyles: Record<Actor, ActorStyles> = {
   FLO: {
     colorClass: 'text-blue',
     alignClass: 'align-center',
