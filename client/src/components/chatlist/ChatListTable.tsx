@@ -1,9 +1,8 @@
 import './ChatList.css';
 
-import { useEffect, useState } from 'react';
-
 import { Chat } from '../../types/Chats';
 import React from 'react';
+import { useChatContext } from '../../context/ChatContext';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,14 +12,16 @@ type Props = {
 
 export const ChatListTable: React.FC<Props> = ({ chats }) => {
   const navigate = useNavigate();
+  const { setSelectedChat } = useChatContext();
 
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleDateString('de-DE');
   };
 
-  const handleClick = (chatId: number) => {
-    navigate(`/chatbox/${chatId}`);
+  const handleClick = (chat: Chat) => {
+    setSelectedChat(chat);
+    navigate(`/chatbox`);
   };
 
   return (
@@ -43,7 +44,7 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
           <div
             key={uuidv4()}
             className="table-rows-data"
-            onClick={() => handleClick(chat.chatId)}
+            onClick={() => handleClick(chat)}
           >
             <div className="table-columns" id="table-columns-number">
               {chat.chatNumber}

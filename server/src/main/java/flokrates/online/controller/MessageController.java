@@ -84,9 +84,8 @@ public class MessageController {
         updates.forEach((key, value) -> {
             switch (key) {
                 case "messageNumber" -> existingMessage.setMessageNumber((Integer) value);
-                case "chatId" -> existingMessage.setChatId((Integer) value);
                 case "respId" -> existingMessage.setRespId((Integer) value);
-                case "actor" -> existingMessage.setActor((Actor) value);
+                case "actor" -> existingMessage.setActor(Actor.valueOf((String) value ));
                 case "messageText" -> existingMessage.setMessageText((String) value);
             }
         });

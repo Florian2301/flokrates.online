@@ -11,10 +11,19 @@
   color: #2f4858;
   position: relative;
   width: fit-content;
-  min-width: 15rem;
-  max-width: 75%;
+
   background-color: white;
   background-image: url('../../img/message_background.jpg');
+}
+
+.edit {
+  min-width: 75%;
+  max-width: 100%;
+}
+
+.save {
+  min-width: 15rem;
+  max-width: 75%;
 }
 
 .message-header {
@@ -34,6 +43,7 @@
   margin-left: 0.5rem;
   white-space: pre-wrap;
   font-size: 20px;
+  text-align: left;
 }
 
 .message-number {
@@ -42,23 +52,13 @@
 .message-menu {
 }
 
-/* Positionierung */
-.align-left {
-  text-align: left;
-}
-
-.align-center {
-  text-align: center;
-}
-
-.align-right {
-  text-align: right;
+#message-textarea {
+  width: 100%;
 }
 
 /* Farben */
 .text-orange {
   color: orangered;
-  text-align: left;
 }
 
 .text-blue {

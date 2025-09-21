@@ -1,0 +1,79 @@
+.new-message-window {
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 10px;
+  width: 100%;
+  max-width: 600px;
+  z-index: 3000;
+  border-radius: 8px;
+  background-color: #fafafa;
+  cursor: grab;
+}
+
+.new-message-window .header {
+  font-weight: bold;
+  background: #f4f4f4;
+  padding: 5px;
+
+  margin: -10px -10px 10px -10px;
+  border-bottom: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.new-message-window textarea {
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+.new-message-window .actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.newMessage-btn {
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 1.5rem;
+}
+
+#save-btn {
+  margin-left: 2rem;
+}
+
+.newMessage-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.newMessage-select {
+  border-style: double;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 1.5rem;
+}
+
+.newMessage-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  margin: 0;
+  padding: 0;
+  height: auto;
+}
+
+#number-label {
+  margin-right: 2rem;
+  margin-left: 2rem;
+}
+
+#number {
+  font-size: larger;
+}

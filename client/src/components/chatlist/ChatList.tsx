@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Chat } from '../../types/Chats';
 import { ChatListTable } from './ChatListTable';
 
-const API_BASE_URL = process.env.VITE_API_BASE_URL;
+const API_BASE_URL = process.env.API_BASE_URL;
 
 export const ChatList: React.FC = () => {
   const [chats, setChats] = useState<Chat[]>([]);

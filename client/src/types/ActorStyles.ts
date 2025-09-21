@@ -1,25 +1,25 @@
 export type Actor = 'FLO' | 'PAB' | 'LOT';
 
-interface ActorStyle {
+interface ActorStyles {
   colorClass: string;
   alignClass: string;
-  name: string;
+  actorName: string;
 }
 
-export const actorStyles: Record<Actor, ActorStyle> = {
+export const actorStyles: Record<string, ActorStyles> = {
   FLO: {
     colorClass: 'text-blue',
     alignClass: 'align-center',
-    name: 'Flokrates',
+    actorName: 'Flokrates',
   },
   PAB: {
     colorClass: 'text-orange',
     alignClass: 'align-left',
-    name: 'Pablo',
+    actorName: 'Pablo',
   },
   LOT: {
     colorClass: 'text-pink',
     alignClass: 'align-right',
-    name: 'Lotharius',
+    actorName: 'Lotharius',
   },
 };

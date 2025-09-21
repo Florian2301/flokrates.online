@@ -1,0 +1,13 @@
+.chatinfo {
+  display: grid;
+  grid-template-columns: 25% 75%;
+  overflow: auto;
+}
+
+.chatpara {
+  font-size: 1rem;
+  color: lightgray;
+  text-align: left;
+  margin-left: 2rem;
+  margin-top: 1rem;
+}

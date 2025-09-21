@@ -2,47 +2,187 @@ import './ChatBox.css';
 
 import React, { useEffect, useState } from 'react';
 
+import { Actor } from '../../types/ActorStyles';
 import { ChatMessage } from '../message/ChatMessage';
-import { Message as MessageType } from '../../types/Message';
-import { useParams } from 'react-router-dom';
-
-const API_BASE_URL = process.env.VITE_API_BASE_URL;
+import { Message } from '../../types/Message';
+import { useChatContext } from '../../context/ChatContext';
 
 export const ChatBox: React.FC = () => {
-  const { chatId } = useParams<{ chatId: string }>();
-  const [messages, setMessages] = useState<MessageType[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { messages, setMessages } = useChatContext();
+  const [activeEditId, setActiveEditId] = useState<number | null>(null);
+
+  const handleMessagesChanged = (
+    messageId: number,
+    updatedText: string,
+    newActor: string,
+    newMessageNumber: number,
+    oldMessageNumber: number,
+    responseId: number
+  ) => {
+    let updatedMessages = messages.map((msg) => {
+      if (msg.messageId === messageId) {
+        return {
+          ...msg,
+          messageText:
+            msg.messageText !== updatedText ? updatedText : msg.messageText,
+          actor: msg.actor !== newActor ? newActor : msg.actor,
+        };
+      }
+      return msg;
+    });
+
+    if (oldMessageNumber !== newMessageNumber) {
+      sortMessages(
+        messageId,
+        updatedMessages,
+        newMessageNumber,
+        oldMessageNumber
+      );
+    } else {
+      saveSingleMessage(
+        messageId,
+        oldMessageNumber,
+        responseId,
+        newActor,
+        updatedText
+      );
+      setMessages(
+        [...updatedMessages].sort((a, b) => a.messageNumber - b.messageNumber)
+      );
+    }
+  };
+
+  function sortMessages(
+    messageId: number,
+    messages: Message[],
+    newMessageNumber: number,
+    oldMessageNumber: number
+  ) {
+    const updatedMessages = messages
+      .map((msg) => {
+        if (oldMessageNumber > newMessageNumber) {
+          if (
+            msg.messageNumber >= newMessageNumber &&
+            msg.messageNumber < oldMessageNumber
+          ) {
+            return { ...msg, messageNumber: msg.messageNumber + 1 };
+          }
+        }
+
+        if (oldMessageNumber < newMessageNumber) {
+          if (
+            msg.messageNumber <= newMessageNumber &&
+            msg.messageNumber > oldMessageNumber
+          ) {
+            return { ...msg, messageNumber: msg.messageNumber - 1 };
+          }
+        }
+
+        return msg;
+      })
+      .map((msg) =>
+        msg.messageId === messageId
+          ? { ...msg, messageNumber: newMessageNumber }
+          : msg
+      );
+
+    const sorted = [...updatedMessages].sort(
+      (a, b) => a.messageNumber - b.messageNumber
+    );
+    saveAllMessages(sorted);
+    setMessages(sorted);
+  }
+
+  function saveAllMessages(updatedMessages: Message[]) {
+    updatedMessages.forEach((msg) => {
+      fetch(`${process.env.API_BASE_URL}/api/messages/${msg.messageId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messageNumber: msg.messageNumber,
+          respId: msg.respId,
+          actor: msg.actor,
+          messageText: msg.messageText,
+        }),
+      });
+    });
+  }
+
+  function saveSingleMessage(
+    messageId: number,
+    messageNumber: number,
+    respId: number,
+    actor: string,
+    messageText: string
+  ) {
+    fetch(`${process.env.API_BASE_URL}/api/messages/${messageId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messageNumber: messageNumber,
+        respId: respId,
+        actor: actor,
+        messageText: messageText,
+      }),
+    });
+  }
+
+  if (!messages || messages.length === 0) return <div>Lade...</div>;
 
   useEffect(() => {
-    if (!chatId) return;
-
-    fetch(`${API_BASE_URL}/api/messages/chat/${chatId}`)
-      .then((res) => res.json())
-      .then((data: MessageType[]) => {
-        setMessages(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Fehler beim Laden der Messages:', err);
-        setLoading(false);
-      });
-  }, [chatId]);
-
-  if (loading) return <div>Lade...</div>;
+    console.log('Messages geladen:', messages);
+  }, [messages]);
 
   return (
     <div className="chatbox-main">
-      {messages.map((msg) => (
-        <ChatMessage
-          key={msg.messageId}
-          messageId={msg.messageId}
-          respId={msg.respId}
-          chatId={msg.chatId}
-          messageNumber={msg.messageNumber}
-          actor={msg.actor}
-          messageText={msg.messageText}
-        ></ChatMessage>
-      ))}
+      {messages
+        .slice()
+        .sort((a, b) => a.messageNumber - b.messageNumber)
+        .map((msg) => {
+          console.log(
+            `Message #${msg.messageNumber} (ID: ${msg.messageId}) geladen:`,
+            msg.actor
+          );
+
+          if (!msg.actor) {
+            console.error(
+              `❌ Message ${msg.messageId} hat keinen actor-Wert!`,
+              msg
+            );
+          }
+
+          return (
+            <ChatMessage
+              key={msg.messageId}
+              messageId={msg.messageId}
+              respId={msg.respId}
+              chatId={msg.chatId}
+              messageNumber={msg.messageNumber}
+              actor={msg.actor}
+              messageText={msg.messageText}
+              setMessages={setMessages}
+              isEditing={activeEditId === msg.messageId}
+              setActiveEditId={setActiveEditId}
+              onMessagesChanged={(
+                messageId: number,
+                updatedText: string,
+                newActor: string,
+                newMessageNumber: number,
+                oldMessageNumber: number,
+                responseId: number
+              ) =>
+                handleMessagesChanged(
+                  messageId,
+                  updatedText,
+                  newActor,
+                  newMessageNumber,
+                  oldMessageNumber,
+                  responseId
+                )
+              }
+            />
+          );
+        })}
     </div>
   );
 };

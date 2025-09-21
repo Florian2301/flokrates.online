@@ -1,10 +1,10 @@
-export type Actor = 'FLO' | 'PAB' | 'LOT';
+import { Actor } from './ActorStyles';
 
 export interface Message {
   messageId: number;
   messageNumber: number;
   chatId: number;
   respId: number;
-  actor: Actor;
+  actor: string;
   messageText: string;
 }
