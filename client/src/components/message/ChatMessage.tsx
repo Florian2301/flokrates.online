@@ -9,7 +9,7 @@ import { useChatContext } from '../../context/ChatContext';
 
 type ChatMessageProps = {
   messageId: number;
-  respId: number;
+  respId: number | null;
   chatId: number;
   messageNumber: number;
   actor: Actor;
@@ -23,7 +23,7 @@ type ChatMessageProps = {
     newActor: Actor,
     newMessageNumber: number,
     oldMessageNumber: number,
-    responseId: number
+    respId: number | null
   ) => void;
 };
 
@@ -148,6 +148,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           initialActor={actor}
           initialMessageNumber={messageNumber}
           maxMessageNumber={messageCount}
+          respId={respId}
           onSave={(
             messageId,
             newText,

@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface NetworkService {
-    public Network saveNetwork(Network network);
+    Network saveNetwork(Network network);
 
-    public List<Network> getAllNetworks();
+    List<Network> getAllNetworks();
 
-    public void deleteNetwork(Integer id);
+    void deleteNetwork(Integer id);
 
-    public Optional<Network> getNetworkById(Integer id);
+    Optional<Network> getNetworkById(Integer id);
 
     // public ResponseEntity<NetworkDto> updateNetwork(Integer Id, NetworkDto networkDto);
 

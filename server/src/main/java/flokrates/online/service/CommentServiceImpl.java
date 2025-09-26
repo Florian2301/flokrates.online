@@ -2,6 +2,7 @@ package flokrates.online.service;
 
 import flokrates.online.model.Comment;
 import flokrates.online.repository.CommentRepo;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class CommentServiceImpl implements CommentService {
     @Autowired
     private CommentRepo commentRepo;

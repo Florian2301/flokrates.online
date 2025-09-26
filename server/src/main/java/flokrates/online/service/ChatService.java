@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ChatService {
-    public Chat saveChat(Chat chat);
+    Chat saveChat(Chat chat);
 
-    public List<Chat> getAllChats();
+    List<Chat> getAllChats();
 
-    public void deleteChat(Integer id);
+    void deleteChat(Integer id);
 
-    public Optional<Chat> getChatById(Integer id);
+    Optional<Chat> getChatById(Integer id);
 }

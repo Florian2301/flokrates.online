@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AuthorService {
-    public Author saveAuthor(Author author);
+    Author saveAuthor(Author author);
 
-    public List<Author> getAllAuthors();
+    List<Author> getAllAuthors();
 
-    public void deleteAuthor(Integer id);
+    void deleteAuthor(Integer id);
 
-    public Optional<Author> getAuthorById(Integer id);
+    Optional<Author> getAuthorById(Integer id);
 }

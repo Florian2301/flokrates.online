@@ -1,20 +1,20 @@
 // Generated using webpack-cli https://github.com/webpack/webpack-cli
 
-const webpack = require('webpack');
-const dotenv = require('dotenv');
-const env = dotenv.config().parsed;
-
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 
 const isProduction = process.env.NODE_ENV === 'production';
+
+const stylesHandler = 'style-loader';
+
+const dotenv = require('dotenv');
+const env = dotenv.config().parsed || {};
 
 const envKeys = Object.keys(env).reduce((prev, next) => {
   prev[`process.env.${next}`] = JSON.stringify(env[next]);
   return prev;
 }, {});
-
-const stylesHandler = 'style-loader';
 
 const config = {
   entry: './src/index.tsx',
@@ -35,19 +35,15 @@ const config = {
     port: 8081,
   },
   plugins: [
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'index.html'),
-    }),
+    new HtmlWebpackPlugin({ template: './public/index.html' }),
     new webpack.DefinePlugin(envKeys),
-    // Add your plugins here
-    // Learn more about plugins from https://webpack.js.org/configuration/plugins/
   ],
   module: {
     rules: [
       {
         test: /\.(ts|tsx)$/i,
         loader: 'ts-loader',
-        exclude: /node_modules/,
+        exclude: ['/node_modules/'],
       },
       {
         test: /\.css$/i,
@@ -71,6 +67,6 @@ module.exports = () => {
   return {
     ...config,
     mode: isProduction ? 'production' : 'development',
-    devtool: 'eval-source-map',
+    devtool: isProduction ? 'source-map' : 'eval-source-map',
   };
 };

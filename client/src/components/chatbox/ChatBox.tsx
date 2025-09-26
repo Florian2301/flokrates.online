@@ -17,21 +17,20 @@ export const ChatBox: React.FC = () => {
     newActor: Actor,
     newMessageNumber: number,
     oldMessageNumber: number,
-    responseId: number
+    responseId: number | null
   ) => {
-    let updatedMessages = messages.map((msg) => {
-      if (msg.messageId === messageId) {
-        return {
-          ...msg,
-          messageText:
-            msg.messageText !== updatedText ? updatedText : msg.messageText,
-          actor: msg.actor !== newActor ? newActor : msg.actor,
-        };
-      }
-      return msg;
-    });
-
     if (oldMessageNumber !== newMessageNumber) {
+      let updatedMessages = messages.map((msg) => {
+        if (msg.messageId === messageId) {
+          return {
+            ...msg,
+            messageText:
+              msg.messageText !== updatedText ? updatedText : msg.messageText,
+            actor: msg.actor !== newActor ? newActor : msg.actor,
+          };
+        }
+        return msg;
+      });
       sortMessages(
         messageId,
         updatedMessages,
@@ -39,16 +38,20 @@ export const ChatBox: React.FC = () => {
         oldMessageNumber
       );
     } else {
-      saveSingleMessage(
-        messageId,
-        oldMessageNumber,
-        responseId,
-        newActor,
-        updatedText
-      );
-      setMessages(
-        [...updatedMessages].sort((a, b) => a.messageNumber - b.messageNumber)
-      );
+      messages.map((msg) => {
+        if (
+          msg.messageId === messageId &&
+          (msg.messageText != updatedText || msg.actor != newActor)
+        ) {
+          saveSingleMessage(
+            messageId,
+            oldMessageNumber,
+            responseId,
+            newActor,
+            updatedText
+          );
+        }
+      });
     }
   };
 
@@ -111,7 +114,7 @@ export const ChatBox: React.FC = () => {
   function saveSingleMessage(
     messageId: number,
     messageNumber: number,
-    respId: number,
+    respId: number | null,
     actor: Actor,
     messageText: string
   ) {
@@ -139,7 +142,7 @@ export const ChatBox: React.FC = () => {
             <ChatMessage
               key={msg.messageId}
               messageId={msg.messageId}
-              respId={msg.respId}
+              respId={msg.respId ?? null}
               chatId={msg.chatId}
               messageNumber={msg.messageNumber}
               actor={msg.actor}
@@ -153,7 +156,7 @@ export const ChatBox: React.FC = () => {
                 newActor: Actor,
                 newMessageNumber: number,
                 oldMessageNumber: number,
-                responseId: number
+                respId: number | null
               ) =>
                 handleMessagesChanged(
                   messageId,
@@ -161,7 +164,7 @@ export const ChatBox: React.FC = () => {
                   newActor,
                   newMessageNumber,
                   oldMessageNumber,
-                  responseId
+                  respId
                 )
               }
             />

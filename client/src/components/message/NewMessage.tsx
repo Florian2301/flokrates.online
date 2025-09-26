@@ -3,42 +3,43 @@ import './NewMessage.css';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Actor } from '../../types/ActorStyles';
+import { useChatContext } from '../../context/ChatContext';
 
 type NewMessageProps = {
   messageId: number;
   initialText: string;
-  onCancel: () => void;
   initialActor: Actor;
   initialMessageNumber: number;
-  onDelete: () => void;
   maxMessageNumber: number;
+  respId: number | null;
+  onCancel: () => void;
+  onDelete: () => void;
   onSave: (
     messageId: number,
     newText: string,
     newActor: Actor,
     newMsgNumber: number,
     oldMsgNumber: number,
-    responseId: number
+    respId: number | null
   ) => void;
 };
 
 const NewMessage: React.FC<NewMessageProps> = ({
   messageId,
   initialText,
-  onSave,
-  onCancel,
   initialActor,
   initialMessageNumber,
-  onDelete,
   maxMessageNumber,
+  respId,
+  onSave,
+  onCancel,
+  onDelete,
 }) => {
   const [editedText, setEditedText] = useState(initialText);
   const [selectedActor, setSelectedActor] = useState(initialActor);
   const [selectedMessageNumber, setSelectedMessageNumber] =
     useState(initialMessageNumber);
-  const [respMessageNumber, setRespMessageNumber] = useState(
-    initialMessageNumber - 1
-  );
+  const [respMessageId, setRespMessageId] = useState<number | null>(respId);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [dragging, setDragging] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 100 });
@@ -48,6 +49,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
     initX: number;
     initY: number;
   } | null>(null);
+  const { messages, setMessages } = useChatContext();
 
   function startDrag(e: React.MouseEvent<HTMLDivElement>) {
     setDragging(true);
@@ -96,14 +98,6 @@ const NewMessage: React.FC<NewMessageProps> = ({
         textareaRef.current.scrollHeight + 'px';
     }
   }
-
-  useEffect(() => {
-    console.log(
-      'selectedMessageNumber hat sich geändert:',
-      setSelectedMessageNumber(selectedMessageNumber),
-      selectedMessageNumber
-    );
-  }, [selectedMessageNumber]);
 
   return (
     <div
@@ -164,16 +158,14 @@ const NewMessage: React.FC<NewMessageProps> = ({
           Reply to:
           <select
             className="newMessage-select"
-            value={respMessageNumber}
-            onChange={(e) => setRespMessageNumber(Number(e.target.value))}
+            value={respMessageId ?? initialMessageNumber}
+            onChange={(e) => setRespMessageId(Number(e.target.value))}
           >
-            {Array.from({ length: maxMessageNumber }, (_, i) => i + 1).map(
-              (num) => (
-                <option key={num} value={num}>
-                  {num}
-                </option>
-              )
-            )}
+            {messages.map((msg) => (
+              <option key={msg.messageId} value={msg.messageId}>
+                # {msg.messageNumber}
+              </option>
+            ))}
           </select>
         </label>
         <button
@@ -186,7 +178,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
               selectedActor,
               selectedMessageNumber,
               initialMessageNumber,
-              respMessageNumber
+              respMessageId
             )
           }
         >
