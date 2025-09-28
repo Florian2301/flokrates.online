@@ -19,18 +19,33 @@ export const ChatBox: React.FC = () => {
     oldMessageNumber: number,
     responseId: number | null
   ) => {
-    if (oldMessageNumber !== newMessageNumber) {
-      let updatedMessages = messages.map((msg) => {
-        if (msg.messageId === messageId) {
+    let messagesChanged: boolean = false;
+
+    const updatedMessages = messages.map((msg) => {
+      if (msg.messageId === messageId) {
+        const messageChanged =
+          msg.messageText !== updatedText ||
+          msg.actor !== newActor ||
+          msg.respId !== responseId ||
+          msg.messageNumber != newMessageNumber;
+
+        if (messageChanged) {
+          messagesChanged = messageChanged;
           return {
             ...msg,
             messageText:
               msg.messageText !== updatedText ? updatedText : msg.messageText,
             actor: msg.actor !== newActor ? newActor : msg.actor,
+            respId: msg.respId != responseId ? responseId : msg.respId,
           };
         }
-        return msg;
-      });
+      }
+      return msg;
+    });
+
+    if (!messagesChanged) return;
+
+    if (oldMessageNumber != newMessageNumber) {
       sortMessages(
         messageId,
         updatedMessages,
@@ -38,20 +53,14 @@ export const ChatBox: React.FC = () => {
         oldMessageNumber
       );
     } else {
-      messages.map((msg) => {
-        if (
-          msg.messageId === messageId &&
-          (msg.messageText != updatedText || msg.actor != newActor)
-        ) {
-          saveSingleMessage(
-            messageId,
-            oldMessageNumber,
-            responseId,
-            newActor,
-            updatedText
-          );
-        }
-      });
+      setMessages(updatedMessages);
+      saveSingleMessage(
+        messageId,
+        oldMessageNumber,
+        responseId,
+        newActor,
+        updatedText
+      );
     }
   };
 

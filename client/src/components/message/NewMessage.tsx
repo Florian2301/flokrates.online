@@ -138,34 +138,58 @@ const NewMessage: React.FC<NewMessageProps> = ({
           </select>
         </label>
         <label className="newMessage-label" id="number-label">
-          <section id="number"># {initialMessageNumber}</section> -&gt;
+          <section id="number">#{selectedMessageNumber}</section> -&gt;
           <select
             className="newMessage-select"
-            value={selectedMessageNumber}
+            value={'-'}
             onChange={(e) => setSelectedMessageNumber(Number(e.target.value))}
           >
-            {Array.from({ length: maxMessageNumber }, (_, i) => i + 1).map(
-              (num) => (
+            <option value="-" disabled hidden>
+              -
+            </option>
+            {Array.from({ length: maxMessageNumber }, (_, i) => i + 1)
+              .filter((num) => {
+                if (!respMessageId) return true;
+                const respMsg = messages.find(
+                  (m) => m.messageId === respMessageId
+                );
+                if (!respMsg) return true;
+                return num > respMsg.messageNumber;
+              })
+              .map((num) => (
                 <option key={num} value={num}>
                   {num}
                 </option>
-              )
-            )}
+              ))}
           </select>
         </label>
 
         <label className="newMessage-label">
-          Reply to:
+          Re:
+          <span className="current-reply" id="number">
+            {respMessageId
+              ? `#${messages.find((m) => m.messageId === respMessageId)?.messageNumber}`
+              : '0'}
+          </span>
+          -&gt;
           <select
             className="newMessage-select"
-            value={respMessageId ?? initialMessageNumber}
-            onChange={(e) => setRespMessageId(Number(e.target.value))}
+            value={respMessageId ?? '-'}
+            onChange={(e) =>
+              setRespMessageId(
+                e.target.value === '-' ? null : Number(e.target.value)
+              )
+            }
           >
-            {messages.map((msg) => (
-              <option key={msg.messageId} value={msg.messageId}>
-                # {msg.messageNumber}
-              </option>
-            ))}
+            <option value="-">-</option>
+            {[...messages]
+              .filter((msg) => msg.messageNumber < selectedMessageNumber)
+              .sort((a, b) => a.messageNumber - b.messageNumber)
+              .map((msg) => (
+                <option key={msg.messageId} value={msg.messageId}>
+                  {msg.messageNumber}
+                </option>
+              ))}
           </select>
         </label>
         <button

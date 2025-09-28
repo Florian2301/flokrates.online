@@ -61,12 +61,20 @@ const config = {
   resolve: {
     extensions: ['.tsx', '.ts', '.jsx', '.js', '...'],
   },
+  ignoreWarnings: [
+    // ignoriert alle fehlenden source map Warnungen in node_modules
+    (warning) =>
+      warning.module &&
+      warning.module.resource &&
+      warning.module.resource.includes('node_modules') &&
+      warning.message.includes('source map'),
+  ],
 };
 
 module.exports = () => {
   return {
     ...config,
     mode: isProduction ? 'production' : 'development',
-    devtool: isProduction ? 'source-map' : 'eval-source-map',
+    devtool: isProduction ? 'source-map' : 'cheap-module-source-map',
   };
 };
