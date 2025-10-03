@@ -25,6 +25,7 @@ type ChatMessageProps = {
     oldMessageNumber: number,
     respId: number | null
   ) => void;
+  deleteMessage: (messageId: number) => void;
 };
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -38,9 +39,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   isEditing,
   setActiveEditId,
   onMessagesChanged,
+  deleteMessage,
 }) => {
   const { messageCount } = useChatContext();
-  const API_BASE_URL = process.env.API_BASE_URL;
 
   const { colorClass, alignClass, actorName } =
     actorStyles[actor as keyof typeof actorStyles];
@@ -59,27 +60,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
-  }
-
-  function deleteMessage(id: number) {
-    const key = `messages_${chatId}`;
-    const stored = localStorage.getItem(key);
-    let updated: Message[] = [];
-
-    if (stored) {
-      const parsed: Message[] = JSON.parse(stored);
-      updated = parsed.filter((msg) => msg.messageId !== id);
-      updated.sort((a, b) => a.messageNumber - b.messageNumber);
-      updated = updated.map((msg, index) => ({
-        ...msg,
-        messageNumber: index + 1,
-      }));
-      localStorage.setItem(key, JSON.stringify(updated));
-      setMessages(updated);
-    }
-
-    fetch(`${API_BASE_URL}/api/messages/${id}`, { method: 'DELETE' });
-    setFullEdit(false);
   }
 
   function keyEventMessage(

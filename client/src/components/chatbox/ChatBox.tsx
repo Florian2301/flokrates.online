@@ -139,6 +139,23 @@ export const ChatBox: React.FC = () => {
     });
   }
 
+  function deleteMessage(id: number) {
+    const updated = messages
+      .filter((msg) => msg.messageId !== id)
+      .map((msg, index) => ({
+        ...msg,
+        messageNumber: index + 1,
+      }));
+
+    fetch(`${process.env.API_BASE_URL}/api/messages/${id}`, {
+      method: 'DELETE',
+    });
+
+    setMessages(updated);
+    saveAllMessages(updated);
+    localStorage.setItem('messages', JSON.stringify(updated));
+  }
+
   if (!messages || messages.length === 0) return <div>Lade...</div>;
 
   return (
@@ -176,6 +193,7 @@ export const ChatBox: React.FC = () => {
                   respId
                 )
               }
+              deleteMessage={(messageId: number) => deleteMessage(messageId)}
             />
           );
         })}
