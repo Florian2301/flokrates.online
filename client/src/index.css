@@ -81,3 +81,41 @@ a:hover {
     font-size: 1.4rem;
   }
 }
+
+.emoji-picker-popup {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+  pointer-events: auto;
+  font-size: 12px !important;
+}
+
+.emoji-picker-popup > * {
+  width: 200px !important;
+  height: 240px !important;
+  transform: scale(0.7) !important;
+  transform-origin: top left !important;
+  font-size: 12px !important;
+  box-sizing: border-box !important;
+}
+
+.emoji-section {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+.emoji-section button {
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 6px;
+  margin: 0;
+  height: 1.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+}

@@ -5,6 +5,8 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { Message } from '../../types/Message';
 import NewMessage from './NewMessage';
+import Picker from '@emoji-mart/react';
+import data from '@emoji-mart/data';
 import { useChatContext } from '../../context/ChatContext';
 
 type ChatMessageProps = {
@@ -50,6 +52,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const [editedText, setEditedText] = useState(messageText);
   const [fullEdit, setFullEdit] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   useEffect(() => {
     if (edit) adjustHeight();
@@ -69,6 +72,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       setEdit(false);
       setActiveEditId(null);
     }
+  }
+
+  function handleEmojiSelect(emoji: any) {
+    setEditedText((prev) => prev + emoji.native);
+    setShowEmojiPicker(false);
+    setFullEdit(false);
   }
 
   return (
@@ -97,6 +106,33 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           >
             {edit ? 'Save' : 'Edit'}
           </span>
+
+          {edit && (
+            <div className="emoji-section">
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker((prev) => !prev)}
+              >
+                😊
+              </button>
+              {showEmojiPicker && (
+                <div
+                  className="emoji-picker-popup"
+                  id="empoji-picker-pop-chatmessage"
+                >
+                  <Picker
+                    date={data}
+                    onEmojiSelect={(emoji: any) => handleEmojiSelect(emoji)}
+                    previewPosition="none"
+                    skinTonePosition="none"
+                    theme="light"
+                    sheetSize={32}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
           <span
             className="message-button-edit"
             onClick={() => setFullEdit(true)}

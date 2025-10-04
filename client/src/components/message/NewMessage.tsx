@@ -3,6 +3,8 @@ import './NewMessage.css';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Actor } from '../../types/ActorStyles';
+import Picker from '@emoji-mart/react';
+import data from '@emoji-mart/data';
 import { useChatContext } from '../../context/ChatContext';
 
 type NewMessageProps = {
@@ -41,6 +43,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
     useState(initialMessageNumber);
   const [respMessageId, setRespMessageId] = useState<number | null>(respId);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 100 });
   const dragRef = useRef<{
@@ -99,6 +102,11 @@ const NewMessage: React.FC<NewMessageProps> = ({
     }
   }
 
+  function handleEmojiSelect(emoji: any) {
+    setEditedText((prev) => prev + emoji.native);
+    setShowEmojiPicker(false);
+  }
+
   return (
     <div
       className="new-message-window"
@@ -137,6 +145,26 @@ const NewMessage: React.FC<NewMessageProps> = ({
             <option value="LOT">Lotharius</option>
           </select>
         </label>
+        <div className="emoji-section">
+          <button
+            type="button"
+            onClick={() => setShowEmojiPicker((prev) => !prev)}
+          >
+            😊
+          </button>
+          {showEmojiPicker && (
+            <div className="emoji-picker-popup">
+              <Picker
+                date={data}
+                onEmojiSelect={(emoji: any) => handleEmojiSelect(emoji)}
+                previewPosition="none"
+                skinTonePosition="none"
+                theme="light"
+                sheetSize={32}
+              />
+            </div>
+          )}
+        </div>
         <label className="newMessage-label" id="number-label">
           <section id="number">#{selectedMessageNumber}</section> -&gt;
           <select
