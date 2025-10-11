@@ -7,14 +7,14 @@ import { setMessages } from './messagesSlice';
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
 
 type ChatsState = {
-  items: Chat[];
+  chats: Chat[];
   selectedChat: Chat | null;
   loading: boolean;
   error: string | null;
 };
 
 const initialState: ChatsState = {
-  items: [],
+  chats: [],
   selectedChat: localStorage.getItem('selectedChat')
     ? JSON.parse(localStorage.getItem('selectedChat')!)
     : null,
@@ -121,26 +121,6 @@ export const patchChat = createAsyncThunk<
   }
 });
 
-// put chat
-export const putChat = createAsyncThunk<Chat, Chat, { rejectValue: string }>(
-  'chats/putChat',
-  async (chat, { rejectWithValue }) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/chats/${chat.chatId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(chat),
-      });
-      if (!res.ok) throw new Error('Fehler beim Aktualisieren (PUT)');
-      const updatedChat: Chat = await res.json();
-      return updatedChat;
-    } catch (err) {
-      console.error(err);
-      return rejectWithValue('Fehler beim Aktualisieren (PUT)');
-    }
-  }
-);
-
 export const chatsSlice = createSlice({
   name: 'chats',
   initialState,
@@ -162,7 +142,7 @@ export const chatsSlice = createSlice({
       })
       .addCase(fetchChats.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        state.chats = action.payload;
       })
       .addCase(fetchChats.rejected, (state, action) => {
         state.loading = false;
@@ -180,25 +160,17 @@ export const chatsSlice = createSlice({
         state.error = action.payload || 'Fehler beim Laden der Nachrichten';
       })
       .addCase(createChat.fulfilled, (state, action) => {
-        state.items.push(action.payload);
+        state.chats.push(action.payload);
       })
       .addCase(deleteChatThunk.fulfilled, (state, action) => {
-        state.items = state.items.filter((c) => c.chatId !== action.payload);
+        state.chats = state.chats.filter((c) => c.chatId !== action.payload);
       })
       .addCase(patchChat.fulfilled, (state, action) => {
-        const idx = state.items.findIndex(
+        const idx = state.chats.findIndex(
           (c) => c.chatId === action.payload.chatId
         );
         if (idx !== -1) {
-          state.items[idx] = { ...state.items[idx], ...action.payload };
-        }
-      })
-      .addCase(putChat.fulfilled, (state, action) => {
-        const idx = state.items.findIndex(
-          (c) => c.chatId === action.payload.chatId
-        );
-        if (idx !== -1) {
-          state.items[idx] = action.payload;
+          state.chats[idx] = { ...state.chats[idx], ...action.payload };
         }
       });
   },

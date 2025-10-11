@@ -2,32 +2,59 @@ import './NewMessage.css';
 
 import { AppDispatch, RootState } from '../../store/store';
 import React, { useEffect, useRef, useState } from 'react';
-import { changeMessage, deleteMessageThunk } from '../../store/messagesSlice';
+import {
+  changeMessage,
+  createMessage,
+  deleteMessageThunk,
+} from '../../store/messagesSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Actor } from '../../types/ActorStyles';
+import { Message } from '../../types/Message';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
 
 type NewMessageProps = {
+  newMessage?: Message;
   messageId: number;
+  isNew?: boolean;
   onCancel: () => void;
 };
 
-const NewMessage: React.FC<NewMessageProps> = ({ messageId, onCancel }) => {
+const NewMessage: React.FC<NewMessageProps> = ({
+  messageId,
+  isNew,
+  onCancel,
+}) => {
   const dispatch = useDispatch<AppDispatch>();
+  const selectedChat = useSelector(
+    (state: RootState) => state.chats.selectedChat
+  );
   const messages = useSelector(
-    (state: RootState) => state.messages.selectedmessages
+    (state: RootState) => state.messages.chatmessages
   );
-  const message = messages.find((m) => m.messageId === messageId)!;
+  const tempMessage: Message = {
+    messageId: messageId,
+    messageText: '',
+    actor: 'FLO',
+    messageNumber: messages.length + 1,
+    respId: null,
+    chatId: selectedChat!.chatId,
+  };
+  const message = isNew
+    ? tempMessage
+    : (messages.find((m) => m.messageId === messageId) ?? tempMessage);
   const maxMessageNumber = messages.length;
-  const [editedText, setEditedText] = useState(message.messageText);
-  const [selectedActor, setSelectedActor] = useState(message.actor);
-  const [selectedMessageNumber, setSelectedMessageNumber] = useState(
-    message.messageNumber
-  );
+  const initialText = isNew ? '' : message.messageText;
+  const initialActor = isNew ? 'FLO' : message.actor;
+  const initialNumber = isNew ? messages.length + 1 : message.messageNumber;
+  const initialRespId = isNew ? null : message.respId;
+  const [editedText, setEditedText] = useState(initialText);
+  const [selectedActor, setSelectedActor] = useState(initialActor);
+  const [selectedMessageNumber, setSelectedMessageNumber] =
+    useState(initialNumber);
   const [respMessageId, setRespMessageId] = useState<number | null>(
-    message.respId
+    initialRespId
   );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -89,21 +116,34 @@ const NewMessage: React.FC<NewMessageProps> = ({ messageId, onCancel }) => {
   }
 
   function handleEmojiSelect(emoji: any) {
-    setEditedText((prev) => prev + emoji.native);
+    setEditedText((prev: any) => prev + emoji.native);
     setShowEmojiPicker(false);
   }
 
   const handleSave = () => {
-    dispatch(
-      changeMessage({
-        messageId,
-        updatedText: editedText,
-        newActor: selectedActor,
-        newMessageNumber: selectedMessageNumber,
-        oldMessageNumber: message.messageNumber,
-        responseId: respMessageId,
-      })
-    );
+    if (isNew) {
+      dispatch(
+        createMessage({
+          messageText: editedText,
+          actor: selectedActor,
+          respId: respMessageId,
+          messageNumber: selectedMessageNumber,
+          chatId: message.chatId,
+        })
+      );
+    } else {
+      dispatch(
+        changeMessage({
+          messageId,
+          updatedText: editedText,
+          newActor: selectedActor,
+          newMessageNumber: selectedMessageNumber,
+          oldMessageNumber: message.messageNumber,
+          responseId: respMessageId,
+        })
+      );
+    }
+
     onCancel();
   };
 

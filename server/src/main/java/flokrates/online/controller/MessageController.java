@@ -29,9 +29,13 @@ public class MessageController {
     private final MessageRepo messageRepo;
 
     @PostMapping
-    public String addMessage(@RequestBody Message message) {
-        messageService.saveMessage(message);
-        return "New Message " + message.getMessageId() + " is added";
+    public ResponseEntity<MessageDto> addMessage(@RequestBody Message message) {
+        if (message.getDateCreated() == null) {
+            message.setDateCreated(LocalDateTime.now());
+        }
+        Message saved = messageService.saveMessage(message);
+        MessageDto dto = messageMapper.toDto(saved);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping

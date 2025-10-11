@@ -13,7 +13,7 @@ const ChatInfo: React.FC = () => {
     (state: RootState) => state.chats.selectedChat
   );
   const messages = useSelector(
-    (state: RootState) => state.messages.selectedmessages
+    (state: RootState) => state.messages.chatmessages
   );
 
   useEffect(() => {

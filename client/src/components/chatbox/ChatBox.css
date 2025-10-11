@@ -3,3 +3,24 @@
   flex-direction: column;
   overflow: auto;
 }
+
+.chatbox-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.new-message-button {
+  background-color: dodgerblue;
+  color: white;
+  font-size: 20px;
+  padding: 5px 13px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.new-message-button:hover {
+  background-color: transparent;
+}

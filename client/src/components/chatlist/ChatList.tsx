@@ -11,7 +11,7 @@ const API_BASE_URL = process.env.API_BASE_URL;
 export const ChatList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const {
-    items: chats,
+    chats: chats,
     loading,
     error,
   } = useSelector((state: RootState) => state.chats);

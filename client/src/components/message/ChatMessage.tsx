@@ -1,13 +1,13 @@
 import './ChatMessage.css';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { patchMessage, updateMessage } from '../../store/messagesSlice';
 
 import { AppDispatch } from '../../store/store';
 import { Message } from '../../types/Message';
 import NewMessage from './NewMessage';
 import Picker from '@emoji-mart/react';
 import { actorStyles } from '../../types/ActorStyles';
-import { changeMessage } from '../../store/messagesSlice';
 import data from '@emoji-mart/data';
 import { useDispatch } from 'react-redux';
 
@@ -64,13 +64,11 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
   function handleSaveEdit() {
     dispatch(
-      changeMessage({
+      patchMessage({
         messageId,
-        updatedText: editedText,
-        newActor: actor,
-        newMessageNumber: messageNumber,
-        oldMessageNumber: messageNumber,
-        responseId: respId,
+        updates: {
+          messageText: editedText,
+        },
       })
     );
     setEdit(false);
@@ -187,7 +185,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
       {fullEdit && (
         <NewMessage
-          messageId={message.messageId}
+          messageId={messageId}
+          isNew={false}
           onCancel={() => setFullEdit(false)}
         />
       )}

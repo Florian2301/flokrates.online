@@ -5,13 +5,13 @@ import { Message } from '../types/Message';
 import { RootState } from './store';
 
 type MessagesState = {
-  selectedmessages: Message[];
+  chatmessages: Message[];
   loading: boolean;
   error?: string | null;
 };
 
 const initialState: MessagesState = {
-  selectedmessages: [],
+  chatmessages: [],
   loading: false,
   error: null,
 };
@@ -23,33 +23,6 @@ export const fetchMessages = createAsyncThunk<Message[]>(
     const res = await fetch(`${process.env.API_BASE_URL}/api/messages`);
     const data = await res.json();
     return data as Message[];
-  }
-);
-
-// get one message
-export const saveSingleMessage = createAsyncThunk(
-  'messages/saveSingle',
-  async (payload: {
-    messageId: number;
-    messageNumber: number;
-    respId: number | null;
-    actor: Actor;
-    messageText: string;
-  }) => {
-    await fetch(
-      `${process.env.API_BASE_URL}/api/messages/${payload.messageId}`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messageNumber: payload.messageNumber,
-          respId: payload.respId,
-          actor: payload.actor,
-          messageText: payload.messageText,
-        }),
-      }
-    );
-    return payload;
   }
 );
 
@@ -103,31 +76,6 @@ export const patchMessage = createAsyncThunk<
   }
 );
 
-// put message
-export const putMessage = createAsyncThunk<
-  Message,
-  Message,
-  { rejectValue: string }
->('messages/putMessage', async (message, { rejectWithValue }) => {
-  try {
-    const res = await fetch(
-      `${process.env.API_BASE_URL}/api/messages/${message.messageId}`,
-      {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(message),
-      }
-    );
-
-    if (!res.ok) throw new Error('Fehler beim Aktualisieren (PUT)');
-    const updated = await res.json();
-    return updated as Message;
-  } catch (err) {
-    console.error(err);
-    return rejectWithValue('Fehler beim Aktualisieren (PUT)');
-  }
-});
-
 // delete message
 export const deleteMessageThunk = createAsyncThunk(
   'messages/delete',
@@ -148,12 +96,7 @@ export const saveAllMessages = createAsyncThunk(
         fetch(`${process.env.API_BASE_URL}/api/messages/${msg.messageId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messageNumber: msg.messageNumber,
-            respId: msg.respId,
-            actor: msg.actor,
-            messageText: msg.messageText,
-          }),
+          body: JSON.stringify(msg),
         })
       )
     );
@@ -187,7 +130,7 @@ export const changeMessage = createAsyncThunk<
     { dispatch, getState }
   ) => {
     const state = getState();
-    const messages = state.messages.selectedmessages;
+    const messages: Message[] = state.messages.chatmessages;
 
     let messagesChanged = false;
 
@@ -259,12 +202,14 @@ export const changeMessage = createAsyncThunk<
     } else {
       dispatch(setMessages(updatedMessages));
       await dispatch(
-        saveSingleMessage({
+        patchMessage({
           messageId,
-          messageNumber: oldMessageNumber,
-          respId: responseId,
-          actor: newActor,
-          messageText: updatedText,
+          updates: {
+            messageNumber: oldMessageNumber,
+            respId: responseId,
+            actor: newActor,
+            messageText: updatedText,
+          },
         })
       );
     }
@@ -276,31 +221,28 @@ const messagesSlice = createSlice({
   initialState,
   reducers: {
     setMessages(state, action: PayloadAction<Message[]>) {
-      state.selectedmessages = action.payload;
+      state.chatmessages = action.payload;
     },
     addMessage(state, action: PayloadAction<Message>) {
-      state.selectedmessages.push(action.payload);
+      state.chatmessages.push(action.payload);
     },
     updateMessage(
       state,
       action: PayloadAction<{ messageId: number; changes: Partial<Message> }>
     ) {
-      const idx = state.selectedmessages.findIndex(
+      const idx = state.chatmessages.findIndex(
         (m) => m.messageId === action.payload.messageId
       );
       if (idx !== -1)
-        state.selectedmessages[idx] = {
-          ...state.selectedmessages[idx],
+        state.chatmessages[idx] = {
+          ...state.chatmessages[idx],
           ...action.payload.changes,
         };
     },
     removeMessage(state, action: PayloadAction<number>) {
-      state.selectedmessages = state.selectedmessages.filter(
+      state.chatmessages = state.chatmessages.filter(
         (m) => m.messageId !== action.payload
       );
-    },
-    reorderMessages(state, action: PayloadAction<Message[]>) {
-      state.selectedmessages = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -311,61 +253,38 @@ const messagesSlice = createSlice({
       })
       .addCase(fetchMessages.fulfilled, (state, action) => {
         state.loading = false;
-        state.selectedmessages = action.payload;
+        state.chatmessages = action.payload;
       })
       .addCase(fetchMessages.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message ?? 'Fehler beim Laden';
       })
-      .addCase(saveSingleMessage.fulfilled, (state, action) => {
-        const { messageId, ...changes } = action.payload;
-        const idx = state.selectedmessages.findIndex(
-          (m) => m.messageId === messageId
-        );
-        if (idx !== -1)
-          state.selectedmessages[idx] = {
-            ...state.selectedmessages[idx],
-            ...changes,
-          };
-      })
       .addCase(createMessage.fulfilled, (state, action) => {
-        state.selectedmessages.push(action.payload);
+        state.chatmessages.push(action.payload);
       })
       .addCase(deleteMessageThunk.fulfilled, (s, a) => {
-        s.selectedmessages = s.selectedmessages.filter(
+        s.chatmessages = s.chatmessages.filter(
           (m) => m.messageId !== a.payload
         );
       })
       .addCase(saveAllMessages.fulfilled, (s, a) => {
-        s.selectedmessages = a.payload;
+        s.chatmessages = a.payload;
       })
       .addCase(patchMessage.fulfilled, (state, action) => {
-        const idx = state.selectedmessages.findIndex(
+        const updated = action.payload;
+        const idx = state.chatmessages.findIndex(
           (m) => m.messageId === action.payload.messageId
         );
         if (idx !== -1) {
-          state.selectedmessages[idx] = {
-            ...state.selectedmessages[idx],
+          state.chatmessages[idx] = {
+            ...state.chatmessages[idx],
             ...action.payload,
           };
-        }
-      })
-      .addCase(putMessage.fulfilled, (state, action) => {
-        const idx = state.selectedmessages.findIndex(
-          (m) => m.messageId === action.payload.messageId
-        );
-        if (idx !== -1) {
-          state.selectedmessages[idx] = action.payload;
         }
       });
   },
 });
 
-export const {
-  setMessages,
-  addMessage,
-  updateMessage,
-  removeMessage,
-  reorderMessages,
-} = messagesSlice.actions;
+export const { setMessages, addMessage, updateMessage, removeMessage } =
+  messagesSlice.actions;
 export default messagesSlice.reducer;
