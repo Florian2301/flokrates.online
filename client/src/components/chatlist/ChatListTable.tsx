@@ -1,10 +1,12 @@
 import './ChatList.css';
 
+import { fetchMessagesForChat, setSelectedChat } from '../../store/chatsSclice';
+
+import { AppDispatch } from '../../store/store';
 import { Chat } from '../../types/Chats';
 import React from 'react';
-import { useChatContext } from '../../context/ChatContext';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
 
 type Props = {
   chats: Chat[];
@@ -12,7 +14,7 @@ type Props = {
 
 export const ChatListTable: React.FC<Props> = ({ chats }) => {
   const navigate = useNavigate();
-  const { setSelectedChat } = useChatContext();
+  const dispatch = useDispatch<AppDispatch>();
 
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
@@ -20,7 +22,8 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
   };
 
   const handleClick = (chat: Chat) => {
-    setSelectedChat(chat);
+    dispatch(setSelectedChat(chat));
+    dispatch(fetchMessagesForChat(chat.chatId));
     navigate(`/chatbox`);
   };
 
@@ -42,7 +45,7 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
       >
         {chats.map((chat: Chat) => (
           <div
-            key={uuidv4()}
+            key={chat.chatId}
             className="table-rows-data"
             onClick={() => handleClick(chat)}
           >

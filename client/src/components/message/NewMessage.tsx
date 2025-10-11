@@ -1,47 +1,37 @@
 import './NewMessage.css';
 
+import { AppDispatch, RootState } from '../../store/store';
 import React, { useEffect, useRef, useState } from 'react';
+import {
+  changeMessage,
+  deleteMessageThunk,
+  saveAllMessages,
+} from '../../store/messagesSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { Actor } from '../../types/ActorStyles';
+import { Message } from '../../types/Message';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
-import { useChatContext } from '../../context/ChatContext';
 
 type NewMessageProps = {
   messageId: number;
-  initialText: string;
-  initialActor: Actor;
-  initialMessageNumber: number;
-  maxMessageNumber: number;
-  respId: number | null;
   onCancel: () => void;
-  onDelete: () => void;
-  onSave: (
-    messageId: number,
-    newText: string,
-    newActor: Actor,
-    newMsgNumber: number,
-    oldMsgNumber: number,
-    respId: number | null
-  ) => void;
 };
 
-const NewMessage: React.FC<NewMessageProps> = ({
-  messageId,
-  initialText,
-  initialActor,
-  initialMessageNumber,
-  maxMessageNumber,
-  respId,
-  onSave,
-  onCancel,
-  onDelete,
-}) => {
-  const [editedText, setEditedText] = useState(initialText);
-  const [selectedActor, setSelectedActor] = useState(initialActor);
-  const [selectedMessageNumber, setSelectedMessageNumber] =
-    useState(initialMessageNumber);
-  const [respMessageId, setRespMessageId] = useState<number | null>(respId);
+const NewMessage: React.FC<NewMessageProps> = ({ messageId, onCancel }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const messages = useSelector((state: RootState) => state.messages.items);
+  const message = messages.find((m) => m.messageId === messageId)!;
+  const maxMessageNumber = messages.length;
+  const [editedText, setEditedText] = useState(message.messageText);
+  const [selectedActor, setSelectedActor] = useState(message.actor);
+  const [selectedMessageNumber, setSelectedMessageNumber] = useState(
+    message.messageNumber
+  );
+  const [respMessageId, setRespMessageId] = useState<number | null>(
+    message.respId
+  );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -52,7 +42,6 @@ const NewMessage: React.FC<NewMessageProps> = ({
     initX: number;
     initY: number;
   } | null>(null);
-  const { messages, setMessages } = useChatContext();
 
   function startDrag(e: React.MouseEvent<HTMLDivElement>) {
     setDragging(true);
@@ -106,6 +95,25 @@ const NewMessage: React.FC<NewMessageProps> = ({
     setEditedText((prev) => prev + emoji.native);
     setShowEmojiPicker(false);
   }
+
+  const handleSave = () => {
+    dispatch(
+      changeMessage({
+        messageId,
+        updatedText: editedText,
+        newActor: selectedActor,
+        newMessageNumber: selectedMessageNumber,
+        oldMessageNumber: message.messageNumber,
+        responseId: respMessageId,
+      })
+    );
+    onCancel();
+  };
+
+  const handleDelete = () => {
+    dispatch(deleteMessageThunk(message.messageId));
+    onCancel();
+  };
 
   return (
     <div
@@ -220,27 +228,12 @@ const NewMessage: React.FC<NewMessageProps> = ({
               ))}
           </select>
         </label>
-        <button
-          className="newMessage-btn"
-          id="save-btn"
-          onClick={() =>
-            onSave(
-              messageId,
-              editedText,
-              selectedActor,
-              selectedMessageNumber,
-              initialMessageNumber,
-              respMessageId
-            )
-          }
-        >
+        <button className="newMessage-btn" id="save-btn" onClick={handleSave}>
           Save
         </button>
-        {onDelete && (
-          <button className="newMessage-btn" onClick={onDelete}>
-            Delete
-          </button>
-        )}
+        <button className="newMessage-btn" onClick={handleDelete}>
+          Delete
+        </button>
         <button className="newMessage-btn" onClick={onCancel}>
           Cancel
         </button>

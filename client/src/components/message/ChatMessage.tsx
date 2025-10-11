@@ -1,49 +1,30 @@
 import './ChatMessage.css';
 
 import { Actor, actorStyles } from '../../types/ActorStyles';
+import { AppDispatch, RootState } from '../../store/store';
 import React, { useEffect, useRef, useState } from 'react';
+import { deleteMessageThunk, updateMessage } from '../../store/messagesSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { Message } from '../../types/Message';
 import NewMessage from './NewMessage';
 import Picker from '@emoji-mart/react';
+import { changeMessage } from '../../store/messagesSlice';
 import data from '@emoji-mart/data';
-import { useChatContext } from '../../context/ChatContext';
 
 type ChatMessageProps = {
-  messageId: number;
-  respId: number | null;
-  chatId: number;
-  messageNumber: number;
-  actor: Actor;
-  messageText: string;
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+  message: Message;
   isEditing: boolean;
   setActiveEditId: React.Dispatch<React.SetStateAction<number | null>>;
-  onMessagesChanged: (
-    messageId: number,
-    updatedMsg: string,
-    newActor: Actor,
-    newMessageNumber: number,
-    oldMessageNumber: number,
-    respId: number | null
-  ) => void;
-  deleteMessage: (messageId: number) => void;
 };
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({
-  messageId,
-  respId,
-  chatId,
-  messageNumber,
-  actor,
-  messageText,
-  setMessages,
+  message,
   isEditing,
   setActiveEditId,
-  onMessagesChanged,
-  deleteMessage,
 }) => {
-  const { messageCount } = useChatContext();
+  const dispatch = useDispatch<AppDispatch>();
+  const { messageId, messageText, actor, messageNumber, respId } = message;
 
   const { colorClass, alignClass, actorName } =
     actorStyles[actor as keyof typeof actorStyles];
@@ -80,6 +61,21 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     setFullEdit(false);
   }
 
+  function handleSaveEdit() {
+    dispatch(
+      changeMessage({
+        messageId,
+        updatedText: editedText,
+        newActor: actor,
+        newMessageNumber: messageNumber,
+        oldMessageNumber: messageNumber,
+        responseId: respId,
+      })
+    );
+    setEdit(false);
+    setActiveEditId(null);
+  }
+
   return (
     <div className={`message-wrapper ${alignClass}`}>
       <div className={`message-container ${edit ? 'edit' : 'save'}`}>
@@ -89,14 +85,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             className="message-button-edit"
             onClick={() => {
               if (edit) {
-                onMessagesChanged(
-                  messageId,
-                  editedText,
-                  actor,
-                  messageNumber,
-                  messageNumber,
-                  respId
-                );
+                handleSaveEdit();
                 setEdit(false);
               } else {
                 setActiveEditId(messageId);
@@ -122,7 +111,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                 >
                   <Picker
                     date={data}
-                    onEmojiSelect={(emoji: any) => handleEmojiSelect(emoji)}
+                    onEmojiSelect={handleEmojiSelect}
                     previewPosition="none"
                     skinTonePosition="none"
                     theme="light"
@@ -159,35 +148,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
       {fullEdit && (
         <NewMessage
-          messageId={messageId}
-          initialText={messageText}
-          initialActor={actor}
-          initialMessageNumber={messageNumber}
-          maxMessageNumber={messageCount}
-          respId={respId}
-          onSave={(
-            messageId,
-            newText,
-            newActor,
-            newMessageNumber,
-            oldMessageNumber,
-            respId
-          ) => {
-            onMessagesChanged(
-              messageId,
-              newText,
-              newActor,
-              newMessageNumber,
-              oldMessageNumber,
-              respId
-            );
-            setFullEdit(false);
-          }}
+          messageId={message.messageId}
           onCancel={() => setFullEdit(false)}
-          onDelete={() => {
-            deleteMessage(messageId);
-            setFullEdit(false);
-          }}
         />
       )}
     </div>

@@ -1,17 +1,44 @@
 import './ChatBox.css';
 
-import React, { useState } from 'react';
+import { AppDispatch, RootState } from '../../store/store';
+import React, { useEffect, useState } from 'react';
+import {
+  deleteMessageThunk,
+  fetchMessages,
+  saveAllMessages,
+  saveSingleMessage,
+  setMessages,
+  updateMessage,
+} from '../../store/messagesSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { Actor } from '../../types/ActorStyles';
 import { ChatMessage } from '../message/ChatMessage';
 import { Message } from '../../types/Message';
-import { useChatContext } from '../../context/ChatContext';
+import { fetchMessagesForChat } from '../../store/chatsSclice';
 
 export const ChatBox: React.FC = () => {
-  const { messages, setMessages } = useChatContext();
+  //const { messages, setMessages } = useChatContext();
+  const dispatch = useDispatch<AppDispatch>();
+  const messages = useSelector((s: RootState) => s.messages.items);
   const [activeEditId, setActiveEditId] = useState<number | null>(null);
+  const selectedChat = useSelector((s: RootState) => s.chats.selectedChat);
 
-  const handleMessagesChanged = (
+  useEffect(() => {
+    if (selectedChat) {
+      dispatch(fetchMessagesForChat(selectedChat.chatId));
+    }
+  }, [selectedChat, dispatch]);
+
+  if (!selectedChat) {
+    return <div>Bitte wähle zuerst einen Chat aus.</div>;
+  }
+
+  if (!messages || messages.length === 0) {
+    return <div>Lade Nachrichten...</div>;
+  }
+
+  /*const handleMessagesChanged = (
     messageId: number,
     updatedText: string,
     newActor: Actor,
@@ -53,13 +80,15 @@ export const ChatBox: React.FC = () => {
         oldMessageNumber
       );
     } else {
-      setMessages(updatedMessages);
-      saveSingleMessage(
-        messageId,
-        oldMessageNumber,
-        responseId,
-        newActor,
-        updatedText
+      dispatch(setMessages(updatedMessages));
+      dispatch(
+        saveSingleMessage({
+          messageId,
+          messageNumber: oldMessageNumber,
+          respId: responseId,
+          actor: newActor,
+          messageText: updatedText,
+        })
       );
     }
   };
@@ -101,42 +130,8 @@ export const ChatBox: React.FC = () => {
     const sorted = [...updatedMessages].sort(
       (a, b) => a.messageNumber - b.messageNumber
     );
-    saveAllMessages(sorted);
-    setMessages(sorted);
-  }
-
-  function saveAllMessages(updatedMessages: Message[]) {
-    updatedMessages.forEach((msg) => {
-      fetch(`${process.env.API_BASE_URL}/api/messages/${msg.messageId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messageNumber: msg.messageNumber,
-          respId: msg.respId,
-          actor: msg.actor,
-          messageText: msg.messageText,
-        }),
-      });
-    });
-  }
-
-  function saveSingleMessage(
-    messageId: number,
-    messageNumber: number,
-    respId: number | null,
-    actor: Actor,
-    messageText: string
-  ) {
-    fetch(`${process.env.API_BASE_URL}/api/messages/${messageId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messageNumber: messageNumber,
-        respId: respId,
-        actor: actor,
-        messageText: messageText,
-      }),
-    });
+    dispatch(saveAllMessages(sorted));
+    dispatch(setMessages(sorted));
   }
 
   function deleteMessage(id: number) {
@@ -147,16 +142,10 @@ export const ChatBox: React.FC = () => {
         messageNumber: index + 1,
       }));
 
-    fetch(`${process.env.API_BASE_URL}/api/messages/${id}`, {
-      method: 'DELETE',
-    });
-
-    setMessages(updated);
-    saveAllMessages(updated);
-    localStorage.setItem('messages', JSON.stringify(updated));
-  }
-
-  if (!messages || messages.length === 0) return <div>Lade...</div>;
+    dispatch(deleteMessageThunk(id));
+    dispatch(saveAllMessages(updated));
+    dispatch(setMessages(updated));
+  }*/
 
   return (
     <div className="chatbox-main">
@@ -167,33 +156,9 @@ export const ChatBox: React.FC = () => {
           return (
             <ChatMessage
               key={msg.messageId}
-              messageId={msg.messageId}
-              respId={msg.respId ?? null}
-              chatId={msg.chatId}
-              messageNumber={msg.messageNumber}
-              actor={msg.actor}
-              messageText={msg.messageText}
-              setMessages={setMessages}
+              message={msg}
               isEditing={activeEditId === msg.messageId}
               setActiveEditId={setActiveEditId}
-              onMessagesChanged={(
-                messageId: number,
-                updatedText: string,
-                newActor: Actor,
-                newMessageNumber: number,
-                oldMessageNumber: number,
-                respId: number | null
-              ) =>
-                handleMessagesChanged(
-                  messageId,
-                  updatedText,
-                  newActor,
-                  newMessageNumber,
-                  oldMessageNumber,
-                  respId
-                )
-              }
-              deleteMessage={(messageId: number) => deleteMessage(messageId)}
             />
           );
         })}
