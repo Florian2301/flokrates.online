@@ -5,18 +5,18 @@ import { Message } from '../types/Message';
 import { RootState } from './store';
 
 type MessagesState = {
-  items: Message[];
+  selectedmessages: Message[];
   loading: boolean;
   error?: string | null;
 };
 
 const initialState: MessagesState = {
-  items: [],
+  selectedmessages: [],
   loading: false,
   error: null,
 };
 
-// Async thunks für API-calls
+// get all messages
 export const fetchMessages = createAsyncThunk<Message[]>(
   'messages/fetch',
   async () => {
@@ -26,6 +26,7 @@ export const fetchMessages = createAsyncThunk<Message[]>(
   }
 );
 
+// get one message
 export const saveSingleMessage = createAsyncThunk(
   'messages/saveSingle',
   async (payload: {
@@ -48,11 +49,11 @@ export const saveSingleMessage = createAsyncThunk(
         }),
       }
     );
-    return payload; // optional für fulfilled handler
+    return payload;
   }
 );
 
-// 🔹 Neue Nachricht erstellen (POST)
+// create message
 export const createMessage = createAsyncThunk<
   Message,
   Omit<Message, 'messageId'>,
@@ -74,7 +75,7 @@ export const createMessage = createAsyncThunk<
   }
 });
 
-// 🔹 Teilaktualisierung einer Nachricht (PATCH)
+// patch message
 export const patchMessage = createAsyncThunk<
   Message,
   { messageId: number; updates: Partial<Message> },
@@ -102,7 +103,7 @@ export const patchMessage = createAsyncThunk<
   }
 );
 
-// 🔹 Vollständige Aktualisierung einer Nachricht (PUT)
+// put message
 export const putMessage = createAsyncThunk<
   Message,
   Message,
@@ -127,6 +128,7 @@ export const putMessage = createAsyncThunk<
   }
 });
 
+// delete message
 export const deleteMessageThunk = createAsyncThunk(
   'messages/delete',
   async (messageId: number) => {
@@ -137,10 +139,10 @@ export const deleteMessageThunk = createAsyncThunk(
   }
 );
 
+// save all messages
 export const saveAllMessages = createAsyncThunk(
   'messages/saveAll',
   async (msgs: Message[]) => {
-    // Du kannst hier parallelisieren, batched call oder eine special endpoint nutzen
     await Promise.all(
       msgs.map((msg) =>
         fetch(`${process.env.API_BASE_URL}/api/messages/${msg.messageId}`, {
@@ -159,6 +161,7 @@ export const saveAllMessages = createAsyncThunk(
   }
 );
 
+// check if messages has changed and sort if messagenumber has changed
 export const changeMessage = createAsyncThunk<
   void,
   {
@@ -184,11 +187,12 @@ export const changeMessage = createAsyncThunk<
     { dispatch, getState }
   ) => {
     const state = getState();
-    const messages = state.messages.items;
+    const messages = state.messages.selectedmessages;
 
     let messagesChanged = false;
 
     const updatedMessages = messages.map((msg) => {
+      // check if property has changed
       if (msg.messageId === messageId) {
         const messageChanged =
           msg.messageText !== updatedText ||
@@ -196,6 +200,7 @@ export const changeMessage = createAsyncThunk<
           msg.respId !== responseId ||
           msg.messageNumber !== newMessageNumber;
 
+        // if it has changed update all properties except messagenumber
         if (messageChanged) {
           messagesChanged = true;
           return {
@@ -212,10 +217,16 @@ export const changeMessage = createAsyncThunk<
 
     if (!messagesChanged) return;
 
-    // Wenn sich die Nummer geändert hat, sortieren
+    // if messagenumber has changed
     if (oldMessageNumber !== newMessageNumber) {
       const sorted = updatedMessages
         .map((msg) => {
+          // if oldnumber is bigger than newnumber check if number of iterated message is bigger or even newnumber
+          // and number is smaller than oldnumber
+          // e.g. change from number 7 to 3, iterate through messages and find the messages that go from 3 to max
+          // 7, numbers below 3 or higher than 7 should not be sorted new, it is not necessary
+          // but the numbers in between 3 to 7 should be sorted new and get new numbers
+          // if 7 will be 3, than original 3 should become 4 and so on until message number 6 will become 7
           if (oldMessageNumber > newMessageNumber) {
             if (
               msg.messageNumber >= newMessageNumber &&
@@ -240,6 +251,7 @@ export const changeMessage = createAsyncThunk<
             ? { ...msg, messageNumber: newMessageNumber }
             : msg
         )
+        // in database they are not sorted by messagenumber, so they have to be sorted before providing
         .sort((a, b) => a.messageNumber - b.messageNumber);
 
       dispatch(setMessages(sorted));
@@ -264,26 +276,31 @@ const messagesSlice = createSlice({
   initialState,
   reducers: {
     setMessages(state, action: PayloadAction<Message[]>) {
-      state.items = action.payload;
+      state.selectedmessages = action.payload;
     },
     addMessage(state, action: PayloadAction<Message>) {
-      state.items.push(action.payload);
+      state.selectedmessages.push(action.payload);
     },
     updateMessage(
       state,
       action: PayloadAction<{ messageId: number; changes: Partial<Message> }>
     ) {
-      const idx = state.items.findIndex(
+      const idx = state.selectedmessages.findIndex(
         (m) => m.messageId === action.payload.messageId
       );
       if (idx !== -1)
-        state.items[idx] = { ...state.items[idx], ...action.payload.changes };
+        state.selectedmessages[idx] = {
+          ...state.selectedmessages[idx],
+          ...action.payload.changes,
+        };
     },
     removeMessage(state, action: PayloadAction<number>) {
-      state.items = state.items.filter((m) => m.messageId !== action.payload);
+      state.selectedmessages = state.selectedmessages.filter(
+        (m) => m.messageId !== action.payload
+      );
     },
     reorderMessages(state, action: PayloadAction<Message[]>) {
-      state.items = action.payload;
+      state.selectedmessages = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -294,7 +311,7 @@ const messagesSlice = createSlice({
       })
       .addCase(fetchMessages.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        state.selectedmessages = action.payload;
       })
       .addCase(fetchMessages.rejected, (state, action) => {
         state.loading = false;
@@ -302,32 +319,43 @@ const messagesSlice = createSlice({
       })
       .addCase(saveSingleMessage.fulfilled, (state, action) => {
         const { messageId, ...changes } = action.payload;
-        const idx = state.items.findIndex((m) => m.messageId === messageId);
-        if (idx !== -1) state.items[idx] = { ...state.items[idx], ...changes };
+        const idx = state.selectedmessages.findIndex(
+          (m) => m.messageId === messageId
+        );
+        if (idx !== -1)
+          state.selectedmessages[idx] = {
+            ...state.selectedmessages[idx],
+            ...changes,
+          };
       })
       .addCase(createMessage.fulfilled, (state, action) => {
-        state.items.push(action.payload);
+        state.selectedmessages.push(action.payload);
       })
       .addCase(deleteMessageThunk.fulfilled, (s, a) => {
-        s.items = s.items.filter((m) => m.messageId !== a.payload);
+        s.selectedmessages = s.selectedmessages.filter(
+          (m) => m.messageId !== a.payload
+        );
       })
       .addCase(saveAllMessages.fulfilled, (s, a) => {
-        s.items = a.payload;
+        s.selectedmessages = a.payload;
       })
       .addCase(patchMessage.fulfilled, (state, action) => {
-        const idx = state.items.findIndex(
+        const idx = state.selectedmessages.findIndex(
           (m) => m.messageId === action.payload.messageId
         );
         if (idx !== -1) {
-          state.items[idx] = { ...state.items[idx], ...action.payload };
+          state.selectedmessages[idx] = {
+            ...state.selectedmessages[idx],
+            ...action.payload,
+          };
         }
       })
       .addCase(putMessage.fulfilled, (state, action) => {
-        const idx = state.items.findIndex(
+        const idx = state.selectedmessages.findIndex(
           (m) => m.messageId === action.payload.messageId
         );
         if (idx !== -1) {
-          state.items[idx] = action.payload;
+          state.selectedmessages[idx] = action.payload;
         }
       });
   },

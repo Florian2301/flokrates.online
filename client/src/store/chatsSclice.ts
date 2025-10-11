@@ -22,7 +22,7 @@ const initialState: ChatsState = {
   error: null,
 };
 
-// 🔹 Async Thunk: Nachrichten für einen bestimmten Chat laden
+// get messages for selected chat
 export const fetchMessagesForChat = createAsyncThunk<
   Message[],
   number,
@@ -34,10 +34,7 @@ export const fetchMessagesForChat = createAsyncThunk<
       const res = await fetch(`${API_BASE_URL}/api/messages/chat/${chatId}`);
       if (!res.ok) throw new Error('Fehler beim Laden der Nachrichten');
       const data: Message[] = await res.json();
-
-      // 🔹 Nachrichten im messagesSlice speichern
       dispatch(setMessages(data));
-
       return data;
     } catch (err) {
       console.error(err);
@@ -46,7 +43,7 @@ export const fetchMessagesForChat = createAsyncThunk<
   }
 );
 
-// 🔹 Chats laden (z. B. für ChatList)
+// get all chats
 export const fetchChats = createAsyncThunk<
   Chat[],
   void,
@@ -63,10 +60,10 @@ export const fetchChats = createAsyncThunk<
   }
 });
 
-// 🔹 Neuen Chat anlegen (POST)
+// create chat
 export const createChat = createAsyncThunk<
-  Chat, // Rückgabetyp (vom Server)
-  Omit<Chat, 'chatId'>, // Parameter: Chat ohne ID
+  Chat,
+  Omit<Chat, 'chatId'>,
   { rejectValue: string }
 >('chats/createChat', async (newChat, { rejectWithValue }) => {
   try {
@@ -85,10 +82,10 @@ export const createChat = createAsyncThunk<
   }
 });
 
-// 🔹 Chat löschen (DELETE)
+// delete chat
 export const deleteChatThunk = createAsyncThunk<
-  number, // Rückgabe = ID des gelöschten Chats
-  number, // Übergabe = Chat-ID
+  number, // Feedback from Server (could also be boolean)
+  number, // chatId as parameter (dispatch(deleteChatThink(3)))
   { rejectValue: string }
 >('chats/deleteChat', async (chatId, { rejectWithValue }) => {
   try {
@@ -103,7 +100,7 @@ export const deleteChatThunk = createAsyncThunk<
   }
 });
 
-// 🔹 Chat teilweise aktualisieren (PATCH)
+// patch chat
 export const patchChat = createAsyncThunk<
   Chat,
   { chatId: number; updates: Partial<Chat> },
@@ -124,7 +121,7 @@ export const patchChat = createAsyncThunk<
   }
 });
 
-// 🔹 Chat komplett ersetzen (PUT)
+// put chat
 export const putChat = createAsyncThunk<Chat, Chat, { rejectValue: string }>(
   'chats/putChat',
   async (chat, { rejectWithValue }) => {
@@ -171,8 +168,6 @@ export const chatsSlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'Unbekannter Fehler';
       })
-
-      // 🔹 Fetch messages for chat (keine direkte Änderung, außer Ladenstatus)
       .addCase(fetchMessagesForChat.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -184,7 +179,6 @@ export const chatsSlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'Fehler beim Laden der Nachrichten';
       })
-      // Create, delte and update
       .addCase(createChat.fulfilled, (state, action) => {
         state.items.push(action.payload);
       })

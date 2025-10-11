@@ -1,16 +1,15 @@
 import './ChatMessage.css';
 
-import { Actor, actorStyles } from '../../types/ActorStyles';
-import { AppDispatch, RootState } from '../../store/store';
 import React, { useEffect, useRef, useState } from 'react';
-import { deleteMessageThunk, updateMessage } from '../../store/messagesSlice';
-import { useDispatch, useSelector } from 'react-redux';
 
+import { AppDispatch } from '../../store/store';
 import { Message } from '../../types/Message';
 import NewMessage from './NewMessage';
 import Picker from '@emoji-mart/react';
+import { actorStyles } from '../../types/ActorStyles';
 import { changeMessage } from '../../store/messagesSlice';
 import data from '@emoji-mart/data';
+import { useDispatch } from 'react-redux';
 
 type ChatMessageProps = {
   message: Message;

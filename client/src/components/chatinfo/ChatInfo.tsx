@@ -1,30 +1,31 @@
 import './ChatInfo.css';
 
+import { AppDispatch, RootState } from '../../store/store';
 import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { Chat } from '../../types/Chats';
+import { fetchMessagesForChat } from '../../store/chatsSclice';
 import { languageMap } from '../../constants/language';
-import { useChatContext } from '../../context/ChatContext';
 
 const ChatInfo: React.FC = () => {
-  const { selectedChat, setSelectedChat, messageCount } = useChatContext();
+  const dispatch = useDispatch<AppDispatch>();
+  const selectedChat = useSelector(
+    (state: RootState) => state.chats.selectedChat
+  );
+  const messages = useSelector(
+    (state: RootState) => state.messages.selectedmessages
+  );
+
+  useEffect(() => {
+    if (selectedChat) {
+      dispatch(fetchMessagesForChat(selectedChat.chatId));
+    }
+  }, [selectedChat, dispatch]);
 
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleDateString('de-DE');
   };
-
-  useEffect(() => {
-    const storedChat = localStorage.getItem('selectedChat');
-    if (storedChat) {
-      try {
-        const parsedChat: Chat = JSON.parse(storedChat);
-        setSelectedChat(parsedChat);
-      } catch (e) {
-        console.error('Fehler beim Parsen des gespeicherten Chats:', e);
-      }
-    }
-  }, []);
 
   if (!selectedChat) return <div>Lade Chat...</div>;
 
@@ -48,7 +49,7 @@ const ChatInfo: React.FC = () => {
       </div>
       <div className="chatinfo">
         <p className="chatpara">Messages:</p>
-        <p className="chatpara">{messageCount}</p>
+        <p className="chatpara">{messages.length}</p>
       </div>
       <div className="chatinfo">
         <p className="chatpara">Language:</p>

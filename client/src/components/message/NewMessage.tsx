@@ -2,15 +2,10 @@ import './NewMessage.css';
 
 import { AppDispatch, RootState } from '../../store/store';
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  changeMessage,
-  deleteMessageThunk,
-  saveAllMessages,
-} from '../../store/messagesSlice';
+import { changeMessage, deleteMessageThunk } from '../../store/messagesSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Actor } from '../../types/ActorStyles';
-import { Message } from '../../types/Message';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
 
@@ -21,7 +16,9 @@ type NewMessageProps = {
 
 const NewMessage: React.FC<NewMessageProps> = ({ messageId, onCancel }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const messages = useSelector((state: RootState) => state.messages.items);
+  const messages = useSelector(
+    (state: RootState) => state.messages.selectedmessages
+  );
   const message = messages.find((m) => m.messageId === messageId)!;
   const maxMessageNumber = messages.length;
   const [editedText, setEditedText] = useState(message.messageText);
