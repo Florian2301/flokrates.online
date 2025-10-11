@@ -112,6 +112,26 @@ const NewMessage: React.FC<NewMessageProps> = ({ messageId, onCancel }) => {
     onCancel();
   };
 
+  useEffect(() => {
+    function handleSaveEvent(e: Event) {
+      const customEvent = e as CustomEvent<{ id: number }>;
+      if (customEvent.detail.id === message.messageId) {
+        handleSave();
+      }
+    }
+
+    window.addEventListener('save-message', handleSaveEvent);
+    return () => {
+      window.removeEventListener('save-message', handleSaveEvent);
+    };
+  }, [
+    message.messageId,
+    editedText,
+    selectedActor,
+    selectedMessageNumber,
+    respMessageId,
+  ]);
+
   return (
     <div
       className="new-message-window"

@@ -38,6 +38,7 @@ export const ChatBox: React.FC = () => {
               key={msg.messageId}
               message={msg}
               isEditing={activeEditId === msg.messageId}
+              activeEditId={activeEditId}
               setActiveEditId={setActiveEditId}
             />
           );

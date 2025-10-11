@@ -14,12 +14,14 @@ import { useDispatch } from 'react-redux';
 type ChatMessageProps = {
   message: Message;
   isEditing: boolean;
+  activeEditId: number | null;
   setActiveEditId: React.Dispatch<React.SetStateAction<number | null>>;
 };
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({
   message,
   isEditing,
+  activeEditId,
   setActiveEditId,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -75,6 +77,21 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     setActiveEditId(null);
   }
 
+  useEffect(() => {
+    function handleSaveEvent(e: CustomEvent<{ id: number }>) {
+      if (e.detail.id === messageId && edit) {
+        handleSaveEdit();
+      }
+    }
+    window.addEventListener('save-message', handleSaveEvent as EventListener);
+    return () => {
+      window.removeEventListener(
+        'save-message',
+        handleSaveEvent as EventListener
+      );
+    };
+  }, [edit, editedText]);
+
   return (
     <div className={`message-wrapper ${alignClass}`}>
       <div className={`message-container ${edit ? 'edit' : 'save'}`}>
@@ -87,6 +104,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                 handleSaveEdit();
                 setEdit(false);
               } else {
+                if (activeEditId && activeEditId !== messageId) {
+                  const event = new CustomEvent('save-message', {
+                    detail: { id: activeEditId },
+                  });
+                  window.dispatchEvent(event);
+                }
                 setActiveEditId(messageId);
                 setEdit(true);
               }
@@ -123,7 +146,24 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
           <span
             className="message-button-edit"
-            onClick={() => setFullEdit(true)}
+            onClick={() => {
+              if (fullEdit) {
+                const event = new CustomEvent('save-message', {
+                  detail: { id: messageId },
+                });
+                window.dispatchEvent(event);
+                setFullEdit(false);
+              } else {
+                if (activeEditId && activeEditId !== messageId) {
+                  const event = new CustomEvent('save-message', {
+                    detail: { id: activeEditId },
+                  });
+                  window.dispatchEvent(event);
+                }
+                setActiveEditId(messageId);
+                setFullEdit(true);
+              }
+            }}
           >
             Full
           </span>
