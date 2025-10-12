@@ -50,6 +50,7 @@
 
 .newMessage-btn:hover {
   background-color: #f0f0f0;
+  border-color: dodgerblue;
 }
 
 .newMessage-select {
@@ -57,6 +58,10 @@
   border-radius: 4px;
   cursor: pointer;
   height: 1.5rem;
+}
+
+.newMessage-select:hover {
+  border-color: dodgerblue;
 }
 
 .newMessage-label {

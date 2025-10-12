@@ -50,9 +50,16 @@ export const createChat = createAsyncThunk<
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newChat),
     });
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Fehler beim Erstellen des Chats:', res.status, errorText);
+      throw new Error('Fehler beim Erstellen des Chats');
+    }
 
-    if (!res.ok) throw new Error('Fehler beim Erstellen des Chats');
-    const data: Chat = await res.json();
+    const data: Chat =
+      res.status !== 204
+        ? await res.json()
+        : { ...newChat, chatId: Date.now() };
     return data;
   } catch (err) {
     console.error(err);
@@ -133,15 +140,20 @@ export const deleteChatThunk = createAsyncThunk<
       });
       if (!res.ok) throw new Error('Fehler beim Löschen des Chats');
 
-      const updatedChats = chats
-        .filter((c) => c.chatId !== chatId)
-        .map((c) =>
-          c.chatNumber > chatToDelete.chatNumber
-            ? { ...c, chatNumber: c.chatNumber - 1 }
-            : c
-        )
-        .sort((a, b) => a.chatNumber - b.chatNumber);
-
+      let updatedChats = chats.filter((c) => c.chatId !== chatId);
+      if (chatToDelete.chatNumber !== null) {
+        updatedChats = updatedChats
+          .map((c) =>
+            c.chatNumber !== null && c.chatNumber > chatToDelete.chatNumber!
+              ? { ...c, chatNumber: c.chatNumber - 1 }
+              : c
+          )
+          .sort((a, b) => {
+            if (a.chatNumber === null) return 1;
+            if (b.chatNumber === null) return -1;
+            return a.chatNumber - b.chatNumber;
+          });
+      }
       dispatch(setChats(updatedChats));
 
       await dispatch(saveAllChats(updatedChats));

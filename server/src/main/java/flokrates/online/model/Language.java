@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 
 public enum Language {
-    DEU("DEU", "Deutsch"),
-    ENG("ENG", "English");
+    DE("DE", "Deutsch"),
+    EN("EN", "English");
 
     private final String code;
     private final String displayName;

@@ -54,7 +54,7 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
             </div>
             <div className="table-columns">{chat.title}</div>
             <div className="table-columns">
-              {formatDate(chat.datePublished)}
+              {formatDate(chat.datePublished ? chat.datePublished : '')}
             </div>
           </div>
         ))}

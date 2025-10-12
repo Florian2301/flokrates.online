@@ -26,6 +26,15 @@
   max-width: 75%;
 }
 
+.message-button-edit {
+  margin-right: 10px;
+}
+
+.message-button-edit:hover {
+  color: black;
+  cursor: pointer;
+}
+
 .message-header {
   border-color: black;
   border-width: thin;
@@ -34,8 +43,16 @@
   display: flex;
   justify-content: space-between;
   height: 2rem;
-  font-size: 20px;
+  font-size: 16px;
   align-items: center;
+}
+
+.message-header-block {
+  font-size: 16px;
+}
+
+#message-span {
+  margin-right: 10px;
 }
 
 .message-body {
@@ -43,14 +60,8 @@
   word-wrap: break-word;
   margin-left: 0.5rem;
   white-space: pre-wrap;
-  font-size: 20px;
+  font-size: 16px;
   text-align: left;
-}
-
-.message-number {
-}
-
-.message-menu {
 }
 
 #message-textarea {

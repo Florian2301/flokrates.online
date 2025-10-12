@@ -94,78 +94,82 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     <div className={`message-wrapper ${alignClass}`}>
       <div className={`message-container ${edit ? 'edit' : 'save'}`}>
         <div className="message-header">
-          <span className={colorClass}>{actorName}</span>
-          <span
-            className="message-button-edit"
-            onClick={() => {
-              if (edit) {
-                handleSaveEdit();
-                setEdit(false);
-              } else {
-                if (activeEditId && activeEditId !== messageId) {
-                  const event = new CustomEvent('save-message', {
-                    detail: { id: activeEditId },
-                  });
-                  window.dispatchEvent(event);
-                }
-                setActiveEditId(messageId);
-                setEdit(true);
-              }
-            }}
-          >
-            {edit ? 'Save' : 'Edit'}
-          </span>
-
-          {edit && (
-            <div className="emoji-section">
-              <button
-                type="button"
-                onClick={() => setShowEmojiPicker((prev) => !prev)}
-              >
-                😊
-              </button>
-              {showEmojiPicker && (
-                <div
-                  className="emoji-picker-popup"
-                  id="empoji-picker-pop-chatmessage"
+          <div className="message-header-block">
+            <span id="message-span"># {messageNumber}</span>
+            <span className={colorClass}>{actorName}</span>
+          </div>
+          <div className="message-header-block">
+            {edit && (
+              <div className="emoji-section">
+                <button
+                  type="button"
+                  onClick={() => setShowEmojiPicker((prev) => !prev)}
                 >
-                  <Picker
-                    date={data}
-                    onEmojiSelect={handleEmojiSelect}
-                    previewPosition="none"
-                    skinTonePosition="none"
-                    theme="light"
-                    sheetSize={32}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          <span
-            className="message-button-edit"
-            onClick={() => {
-              if (fullEdit) {
-                const event = new CustomEvent('save-message', {
-                  detail: { id: messageId },
-                });
-                window.dispatchEvent(event);
-                setFullEdit(false);
-              } else {
-                if (activeEditId && activeEditId !== messageId) {
+                  😊
+                </button>
+                {showEmojiPicker && (
+                  <div
+                    className="emoji-picker-popup"
+                    id="empoji-picker-pop-chatmessage"
+                  >
+                    <Picker
+                      date={data}
+                      onEmojiSelect={handleEmojiSelect}
+                      previewPosition="none"
+                      skinTonePosition="none"
+                      theme="light"
+                      sheetSize={32}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="message-header-block">
+            <span
+              className="message-button-edit"
+              onClick={() => {
+                if (edit) {
+                  handleSaveEdit();
+                  setEdit(false);
+                } else {
+                  if (activeEditId && activeEditId !== messageId) {
+                    const event = new CustomEvent('save-message', {
+                      detail: { id: activeEditId },
+                    });
+                    window.dispatchEvent(event);
+                  }
+                  setActiveEditId(messageId);
+                  setEdit(true);
+                }
+              }}
+            >
+              {edit ? 'Save' : 'Edit'}
+            </span>
+            <span
+              className="message-button-edit"
+              onClick={() => {
+                if (fullEdit) {
                   const event = new CustomEvent('save-message', {
-                    detail: { id: activeEditId },
+                    detail: { id: messageId },
                   });
                   window.dispatchEvent(event);
+                  setFullEdit(false);
+                } else {
+                  if (activeEditId && activeEditId !== messageId) {
+                    const event = new CustomEvent('save-message', {
+                      detail: { id: activeEditId },
+                    });
+                    window.dispatchEvent(event);
+                  }
+                  setActiveEditId(messageId);
+                  setFullEdit(true);
                 }
-                setActiveEditId(messageId);
-                setFullEdit(true);
-              }
-            }}
-          >
-            Full
-          </span>
-          <span className="message-number"># {messageNumber}</span>
+              }}
+            >
+              Fulledit
+            </span>
+          </div>
         </div>
         <div className="message-body">
           {edit ? (

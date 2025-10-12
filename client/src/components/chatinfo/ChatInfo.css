@@ -2,6 +2,7 @@
   display: grid;
   grid-template-columns: 25% 75%;
   overflow: auto;
+  align-items: center;
 }
 
 .chatpara {
@@ -9,5 +10,71 @@
   color: lightgray;
   text-align: left;
   margin-left: 2rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 4px 0;
+  line-height: 1.4rem;
+}
+
+.chatinfo-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
   margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.chatinfo-buttons {
+  font-size: 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  height: 1.8rem;
+  background-color: lightgray;
+  padding: 0 0.8rem;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.chatinfo-buttons:hover {
+  border-color: dodgerblue;
+  background-color: #d3d3d3;
+}
+
+.chatinfo-input {
+  width: 80%;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fafafa;
+  color: #333;
+  outline: none;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  margin-left: 2rem;
+}
+
+/* Fokuszustand */
+.chatinfo-input:focus {
+  border-color: dodgerblue;
+  background-color: #fff;
+}
+
+.chatinfo-input::placeholder {
+  color: #aaa;
+}
+
+/* Select-Feld wie Input anpassen */
+.chatinfo-input select {
+  font-size: 0.9rem;
+}
+
+.chatinfo-divider {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  border: none;
+  height: 1px;
+  background-color: #444;
 }

@@ -1,16 +1,23 @@
-export type Language = 'DEU' | 'ENG';
+export type Language = 'DE' | 'EN';
 export type Status = 'PUB' | 'REW' | 'DRA' | 'NOT';
 
 export interface Chat {
   chatId: number;
-  chatNumber: number;
+  chatNumber: number | null;
   title: string;
-  tags: string;
-  description: string;
+  tags: string | null;
+  description: string | null;
   language: Language;
   status: Status;
   authorId: number;
-  datePublished: string;
+  datePublished: string | null;
   dateCreated: string;
-  dateModified: string;
+  dateModified: string | null;
 }
+
+export const statusMap: Record<Status, string> = {
+  PUB: 'Published',
+  REW: 'Rework',
+  DRA: 'Draft',
+  NOT: 'Notes',
+};

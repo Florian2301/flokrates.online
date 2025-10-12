@@ -1,7 +1,7 @@
-export type LanguageCode = 'ENG' | 'DEU';
+export type LanguageCode = 'EN' | 'DE';
 
 // B: Sprachmap zur Anzeige
 export const languageMap: Record<LanguageCode, string> = {
-  ENG: 'Englisch',
-  DEU: 'Deutsch',
+  EN: 'Englisch',
+  DE: 'Deutsch',
 };
