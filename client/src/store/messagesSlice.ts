@@ -77,15 +77,36 @@ export const patchMessage = createAsyncThunk<
 );
 
 // delete message
-export const deleteMessageThunk = createAsyncThunk(
-  'messages/delete',
-  async (messageId: number) => {
-    await fetch(`${process.env.API_BASE_URL}/api/messages/${messageId}`, {
-      method: 'DELETE',
-    });
+export const deleteMessageThunk = createAsyncThunk<
+  number,
+  number,
+  { state: RootState }
+>('messages/delete', async (messageId, { getState, dispatch }) => {
+  const state = getState();
+  const messages = state.messages.chatmessages;
+  const messageToDelete = messages.find((m) => m.messageId === messageId);
+  if (!messageToDelete) {
     return messageId;
   }
-);
+
+  await fetch(`${process.env.API_BASE_URL}/api/messages/${messageId}`, {
+    method: 'DELETE',
+  });
+
+  const updatedMessages = messages
+    .filter((m) => m.messageId !== messageId)
+    .map((m) =>
+      m.messageNumber > messageToDelete.messageNumber
+        ? { ...m, messageNumber: m.messageNumber - 1 }
+        : m
+    )
+    .sort((a, b) => a.messageNumber - b.messageNumber);
+
+  dispatch(setMessages(updatedMessages));
+  await dispatch(saveAllMessages(updatedMessages));
+
+  return messageId;
+});
 
 // save all messages
 export const saveAllMessages = createAsyncThunk(
