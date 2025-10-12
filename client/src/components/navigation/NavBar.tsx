@@ -1,11 +1,8 @@
 import './Navigation.css';
 
 import { Nav, NavDropdown } from 'react-bootstrap';
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
-import ChatList from '../chatlist/ChatList';
 import { NavLink } from 'react-router-dom';
-import React from 'react';
 
 const NavBar = () => {
   const handleSelect = (eventKey: string | null) =>

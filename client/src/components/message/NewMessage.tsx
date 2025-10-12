@@ -66,8 +66,9 @@ const NewMessage: React.FC<NewMessageProps> = ({
     initX: number;
     initY: number;
   } | null>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
 
-  function startDrag(e: React.MouseEvent<HTMLDivElement>) {
+  const startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
     setDragging(true);
     dragRef.current = {
       startX: e.clientX,
@@ -78,9 +79,9 @@ const NewMessage: React.FC<NewMessageProps> = ({
 
     window.addEventListener('mousemove', onDrag as any);
     window.addEventListener('mouseup', stopDrag as any);
-  }
+  };
 
-  function onDrag(e: React.MouseEvent<HTMLDivElement>) {
+  const onDrag = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!dragging || !dragRef.current) return;
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
@@ -88,37 +89,33 @@ const NewMessage: React.FC<NewMessageProps> = ({
       x: dragRef.current.initX + dx,
       y: dragRef.current.initY + dy,
     });
-  }
+  };
 
-  function stopDrag() {
+  const stopDrag = () => {
     setDragging(false);
     dragRef.current = null;
     window.removeEventListener('mousemove', onDrag as any);
     window.removeEventListener('mouseup', stopDrag as any);
-  }
+  };
 
-  function keyEventMessage(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+  const keyEventMessage = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.code === 'Escape') {
       onCancel();
     }
-  }
+  };
 
-  useEffect(() => {
-    adjustHeight();
-  }, [editedText]);
-
-  function adjustHeight() {
+  const adjustHeight = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height =
         textareaRef.current.scrollHeight + 'px';
     }
-  }
+  };
 
-  function handleEmojiSelect(emoji: any) {
+  const handleEmojiSelect = (emoji: any) => {
     setEditedText((prev: any) => prev + emoji.native);
     setShowEmojiPicker(false);
-  }
+  };
 
   const handleSave = () => {
     if (isNew) {
@@ -153,6 +150,10 @@ const NewMessage: React.FC<NewMessageProps> = ({
   };
 
   useEffect(() => {
+    adjustHeight();
+  }, [editedText]);
+
+  useEffect(() => {
     function handleSaveEvent(e: Event) {
       const customEvent = e as CustomEvent<{ id: number }>;
       if (customEvent.detail.id === message.messageId) {
@@ -171,6 +172,33 @@ const NewMessage: React.FC<NewMessageProps> = ({
     selectedMessageNumber,
     respMessageId,
   ]);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(e.target as Node)
+      ) {
+        setShowEmojiPicker(false);
+      }
+    }
+
+    if (showEmojiPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showEmojiPicker]);
 
   return (
     <div
@@ -218,7 +246,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
             😊
           </button>
           {showEmojiPicker && (
-            <div className="emoji-picker-popup">
+            <div className="emoji-picker-popup" ref={emojiPickerRef}>
               <Picker
                 date={data}
                 onEmojiSelect={(emoji: any) => handleEmojiSelect(emoji)}

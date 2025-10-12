@@ -4,10 +4,8 @@ import { AppDispatch, RootState } from '../../store/store';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Actor } from '../../types/ActorStyles';
 import { ChatMessage } from '../message/ChatMessage';
 import NewMessage from '../message/NewMessage';
-import { createMessage } from '../../store/messagesSlice';
 import { fetchMessagesForChat } from '../../store/chatsSclice';
 
 export const ChatBox: React.FC = () => {
@@ -38,30 +36,9 @@ export const ChatBox: React.FC = () => {
       setActiveEditId(null);
     }
 
-    const tempId = Date.now(); // temporäre ID für NewMessage
+    const tempId = Date.now(); // temp ID for NewMessage
     setNewMessageId(tempId);
     setActiveEditId(tempId);
-
-    /*const newMsg = {
-      messageText: '',
-      actor: 'FLO' as Actor,
-      messageNumber: messages.length + 1,
-      respId: null,
-      chatId: selectedChat.chatId,
-    };
-    try {
-      const result = await dispatch(createMessage(newMsg));
-
-      if (createMessage.fulfilled.match(result)) {
-        const createdMessageId = result.payload.messageId;
-        setNewMessageId(createdMessageId);
-        setActiveEditId(createdMessageId);
-      } else {
-        console.error('Fehler beim Erstellen der Nachricht:', result.payload);
-      }
-    } catch (err) {
-      console.error(err);
-    }*/
   };
 
   if (!selectedChat) {

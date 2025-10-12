@@ -1,12 +1,9 @@
 import { AppDispatch, RootState } from '../../store/store';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Chat } from '../../types/Chats';
 import { ChatListTable } from './ChatListTable';
 import { fetchChats } from '../../store/chatsSclice';
-
-const API_BASE_URL = process.env.API_BASE_URL;
 
 export const ChatList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();

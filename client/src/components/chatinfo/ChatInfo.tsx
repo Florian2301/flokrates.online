@@ -16,16 +16,16 @@ const ChatInfo: React.FC = () => {
     (state: RootState) => state.messages.chatmessages
   );
 
+  const formatDate = (isoString: string) => {
+    const date = new Date(isoString);
+    return date.toLocaleDateString('de-DE');
+  };
+
   useEffect(() => {
     if (selectedChat) {
       dispatch(fetchMessagesForChat(selectedChat.chatId));
     }
   }, [selectedChat, dispatch]);
-
-  const formatDate = (isoString: string) => {
-    const date = new Date(isoString);
-    return date.toLocaleDateString('de-DE');
-  };
 
   if (!selectedChat) return <div>Lade Chat...</div>;
 

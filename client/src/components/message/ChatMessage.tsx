@@ -36,33 +36,29 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  useEffect(() => {
-    if (edit) adjustHeight();
-  }, [edit, editedText]);
-
-  function adjustHeight() {
+  const adjustHeight = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
-  }
+  };
 
-  function keyEventMessage(
+  const keyEventMessage = (
     event: React.KeyboardEvent<HTMLTextAreaElement | HTMLSelectElement>
-  ) {
+  ) => {
     if (event.code === 'Escape') {
       setEdit(false);
       setActiveEditId(null);
     }
-  }
+  };
 
-  function handleEmojiSelect(emoji: any) {
+  const handleEmojiSelect = (emoji: any) => {
     setEditedText((prev) => prev + emoji.native);
     setShowEmojiPicker(false);
     setFullEdit(false);
-  }
+  };
 
-  function handleSaveEdit() {
+  const handleSaveEdit = () => {
     dispatch(
       patchMessage({
         messageId,
@@ -73,7 +69,11 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     );
     setEdit(false);
     setActiveEditId(null);
-  }
+  };
+
+  useEffect(() => {
+    if (edit) adjustHeight();
+  }, [edit, editedText]);
 
   useEffect(() => {
     function handleSaveEvent(e: CustomEvent<{ id: number }>) {
