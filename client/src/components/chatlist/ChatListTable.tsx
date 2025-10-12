@@ -1,10 +1,10 @@
 import './ChatList.css';
 
-import { fetchMessagesForChat, setSelectedChat } from '../../store/chatsSclice';
-
 import { AppDispatch } from '../../store/store';
 import { Chat } from '../../types/Chats';
 import React from 'react';
+import { fetchMessagesForChat } from '../../store/messagesSlice';
+import { setSelectedChat } from '../../store/chatsSclice';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 

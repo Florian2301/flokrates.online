@@ -4,7 +4,7 @@ import { AppDispatch, RootState } from '../../store/store';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { fetchMessagesForChat } from '../../store/chatsSclice';
+import { fetchMessagesForChat } from '../../store/messagesSlice';
 import { languageMap } from '../../constants/language';
 
 const ChatInfo: React.FC = () => {

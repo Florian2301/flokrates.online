@@ -16,6 +16,29 @@ const initialState: MessagesState = {
   error: null,
 };
 
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
+
+// get messages for selected chat
+export const fetchMessagesForChat = createAsyncThunk<
+  Message[],
+  number,
+  { rejectValue: string }
+>(
+  'chats/fetchMessagesForChat',
+  async (chatId, { dispatch, rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/messages/chat/${chatId}`);
+      if (!res.ok) throw new Error('Fehler beim Laden der Nachrichten');
+      const data: Message[] = await res.json();
+      dispatch(setMessages(data));
+      return data;
+    } catch (err) {
+      console.error(err);
+      return rejectWithValue('Fehler beim Laden der Nachrichten');
+    }
+  }
+);
+
 // get all messages
 export const fetchMessages = createAsyncThunk<Message[]>(
   'messages/fetch',
@@ -280,6 +303,17 @@ const messagesSlice = createSlice({
         state.loading = false;
         state.error = action.error.message ?? 'Fehler beim Laden';
       })
+      .addCase(fetchMessagesForChat.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchMessagesForChat.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(fetchMessagesForChat.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Fehler beim Laden der Nachrichten';
+      })
       .addCase(createMessage.fulfilled, (state, action) => {
         state.chatmessages.push(action.payload);
       })
@@ -292,7 +326,6 @@ const messagesSlice = createSlice({
         s.chatmessages = a.payload;
       })
       .addCase(patchMessage.fulfilled, (state, action) => {
-        const updated = action.payload;
         const idx = state.chatmessages.findIndex(
           (m) => m.messageId === action.payload.messageId
         );

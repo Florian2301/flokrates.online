@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { ChatMessage } from '../message/ChatMessage';
 import NewMessage from '../message/NewMessage';
-import { fetchMessagesForChat } from '../../store/chatsSclice';
+import { fetchMessagesForChat } from '../../store/messagesSlice';
 
 export const ChatBox: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
