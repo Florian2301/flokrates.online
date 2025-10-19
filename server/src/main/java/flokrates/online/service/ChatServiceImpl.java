@@ -2,6 +2,7 @@ package flokrates.online.service;
 
 import flokrates.online.model.Chat;
 import flokrates.online.repository.ChatRepo;
+import flokrates.online.repository.MessageRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,15 @@ import java.util.Optional;
 @Transactional
 public class ChatServiceImpl implements ChatService {
     @Autowired
-    private ChatRepo chatRepo;
+    private final ChatRepo chatRepo;
+
+    @Autowired
+    private final MessageRepo messageRepo;
+
+    public ChatServiceImpl(ChatRepo chatRepo, MessageRepo messageRepo) {
+        this.chatRepo = chatRepo;
+        this.messageRepo = messageRepo;
+    }
 
     @Override
     public Chat saveChat(Chat chat) {
@@ -27,6 +36,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public void deleteChat(Integer id) {
+        messageRepo.deleteByChatId(id);
         chatRepo.delete(chatRepo.getReferenceById(id));
     }
 

@@ -219,6 +219,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
         style={{ padding: '8px', background: '#eee' }}
       ></div>
       <textarea
+        id="newmessage-textarea"
         ref={textareaRef}
         value={editedText}
         onChange={(e) => setEditedText(e.target.value)}

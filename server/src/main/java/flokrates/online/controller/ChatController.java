@@ -9,6 +9,7 @@ import flokrates.online.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,9 +29,13 @@ public class ChatController {
     private final ChatMapper chatMapper;
 
     @PostMapping
-    public ResponseEntity<String> addChat(@RequestBody Chat chat) {
-        chatService.saveChat(chat);
-        return ResponseEntity.ok("New Chat " + chat.getChatId() + " is added");
+    public ResponseEntity<Chat> addChat(@RequestBody Chat chat) {
+        Chat saved = chatService.saveChat(chat);
+        System.out.println("New Chat " + saved.getChatId() + " is added");
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(saved);
     }
 
     @GetMapping
@@ -104,13 +109,19 @@ public class ChatController {
         Chat existingChat = existingChatOpt.get();
         updates.forEach((key, value) -> {
             switch (key) {
-                case "chatNumber" -> existingChat.setChatNumber((Integer) value);
+                case "chatNumber" -> existingChat.setChatNumber(value != null ? (Integer) value : null);
                 case "title" -> existingChat.setTitle((String) value);
                 case "tags" -> existingChat.setTags((String) value);
                 case "description" -> existingChat.setDescription((String) value);
                 case "language" -> existingChat.setLanguage(Language.valueOf((String) value));
                 case "status" -> existingChat.setStatus(Status.valueOf((String) value));
-                case "datePublished" -> existingChat.setDatePublished(LocalDateTime.parse((String) value));
+                case "datePublished" -> {
+                    if (value != null && !value.toString().isBlank()) {
+                        existingChat.setDatePublished(LocalDateTime.parse(value.toString()));
+                    } else {
+                        existingChat.setDatePublished(null);
+                    }
+                }
             }
         });
         existingChat.setDateModified(LocalDateTime.now());

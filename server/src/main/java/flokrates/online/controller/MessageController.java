@@ -49,6 +49,12 @@ public class MessageController {
         return "Message " + id + " deleted";
     }
 
+    @DeleteMapping("/chat/{chatId}")
+    public ResponseEntity<String> deleteMessagesForChat(@PathVariable("chatId") Integer chatId) {
+        messageService.deleteMessagesByChatId(chatId);
+        return ResponseEntity.ok("All messages for chat " + chatId + " deleted");
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<MessageDto> getMessageById(@PathVariable Integer id) {
         return messageService.getMessageById(id)

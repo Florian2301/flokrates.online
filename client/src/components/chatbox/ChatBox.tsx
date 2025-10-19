@@ -45,10 +45,6 @@ export const ChatBox: React.FC = () => {
     return <div>Bitte wähle zuerst einen Chat aus.</div>;
   }
 
-  if (!messages || messages.length === 0) {
-    return <div>Lade Nachrichten...</div>;
-  }
-
   return (
     <div className="chatbox-main">
       {messages
@@ -66,11 +62,16 @@ export const ChatBox: React.FC = () => {
           );
         })}
 
-      <div className="chatbox-header">
-        <button className="new-message-button" onClick={handleNewMessageClick}>
-          +
-        </button>
-      </div>
+      {selectedChat ? (
+        <div className="chatbox-header">
+          <button
+            className="new-message-button"
+            onClick={handleNewMessageClick}
+          >
+            +
+          </button>
+        </div>
+      ) : null}
 
       {newMessageId && (
         <NewMessage

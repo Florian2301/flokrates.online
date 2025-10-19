@@ -182,7 +182,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
               onInput={adjustHeight}
             />
           ) : (
-            <div>{messageText}</div>
+            <div id="message-display">{messageText}</div>
           )}
         </div>
       </div>

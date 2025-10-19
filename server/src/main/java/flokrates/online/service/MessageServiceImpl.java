@@ -31,6 +31,11 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    public void deleteMessagesByChatId(Integer chatId) {
+        messageRepo.deleteByChatId(chatId);
+    }
+
+    @Override
     public Optional<Message> getMessageById(Integer id) {
         return messageRepo.findById(id);
     }

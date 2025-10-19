@@ -82,3 +82,8 @@
 #number {
   font-size: larger;
 }
+
+#newmessage-textarea {
+  font-size: 16px;
+  word-break: break-all;
+}

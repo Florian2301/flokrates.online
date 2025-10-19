@@ -10,9 +10,8 @@ import {
   saveSingleChat,
   setSelectedChat,
 } from '../../store/chatsSclice';
+import { fetchMessagesForChat, setMessages } from '../../store/messagesSlice';
 import { useDispatch, useSelector } from 'react-redux';
-
-import { fetchMessagesForChat } from '../../store/messagesSlice';
 
 const ChatInfo: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -22,7 +21,10 @@ const ChatInfo: React.FC = () => {
   const messages = useSelector(
     (state: RootState) => state.messages.chatmessages
   );
-
+  const chats = useSelector((state: RootState) => state.chats.chats);
+  const maxChatNumber = chats.reduce((max, c) => {
+    return c.chatNumber !== null && c.chatNumber > max ? c.chatNumber : max;
+  }, 0);
   const [editMode, setEditMode] = useState(false);
   const [chatForm, setChatForm] = useState<Partial<Chat>>({});
 
@@ -35,31 +37,50 @@ const ChatInfo: React.FC = () => {
     setChatForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSaveDraft = async () => {
-    if (!chatForm || !selectedChat) return;
-    await dispatch(
+  const handleSave = async () => {
+    if (!chatForm.chatId) return;
+    const result = await dispatch(
       saveSingleChat({
-        chatId: selectedChat.chatId,
-        updates: { ...chatForm, chatNumber: null },
+        chatId: chatForm.chatId,
+        updates: { ...chatForm, chatNumber: chatForm.chatNumber },
       })
     );
-    setEditMode(false);
+
+    if (saveSingleChat.fulfilled.match(result)) {
+      setEditMode(false);
+      dispatch(setSelectedChat(result.payload));
+      setChatForm(result.payload);
+    }
   };
 
   const handlePublish = async () => {
-    if (!chatForm || !selectedChat) return;
-    await dispatch(
+    if (!chatForm.chatId) return;
+
+    const result = await dispatch(
       saveSingleChat({
-        chatId: selectedChat.chatId,
-        updates: { ...chatForm, chatNumber: selectedChat.chatNumber ?? 999 },
+        chatId: chatForm.chatId,
+        updates: {
+          ...chatForm,
+          chatNumber:
+            chatForm.chatNumber === 0 ? maxChatNumber + 1 : chatForm.chatNumber,
+          status: 'PUB' as Status,
+        },
       })
     );
-    setEditMode(false);
+
+    if (saveSingleChat.fulfilled.match(result)) {
+      setEditMode(false);
+      dispatch(setSelectedChat(result.payload));
+      setChatForm(result.payload);
+    }
   };
 
   const handleDelete = async () => {
-    if (!selectedChat?.chatId) return;
-    await dispatch(deleteChatThunk(selectedChat.chatId));
+    if (!chatForm?.chatId) return;
+    const result = await dispatch(deleteChatThunk(chatForm.chatId));
+    if (deleteChatThunk.fulfilled.match(result)) {
+      handleClear();
+    }
   };
 
   const handleCreate = async () => {
@@ -79,22 +100,27 @@ const ChatInfo: React.FC = () => {
     const result = await dispatch(createChat(newChatData));
 
     if (createChat.fulfilled.match(result)) {
+      setEditMode(true);
       dispatch(setSelectedChat(result.payload));
       setChatForm(result.payload);
-      setEditMode(true);
     }
   };
 
-  useEffect(() => {
-    if (selectedChat && !editMode) {
-      dispatch(fetchMessagesForChat(selectedChat.chatId));
-      setChatForm(selectedChat);
-    }
-  }, [selectedChat, editMode]);
+  const handleClear = () => {
+    setChatForm({});
+    dispatch(setMessages([]));
+    dispatch(setSelectedChat(null));
+    setEditMode(false);
+  };
 
-  if (!selectedChat && !editMode) {
-    return <div>Lade Chat...</div>;
-  }
+  useEffect(() => {
+    if (selectedChat) {
+      setChatForm(selectedChat);
+      dispatch(fetchMessagesForChat(selectedChat.chatId));
+    } else {
+      setChatForm({});
+    }
+  }, [selectedChat, dispatch]);
 
   return (
     <div>
@@ -104,13 +130,13 @@ const ChatInfo: React.FC = () => {
           <input
             className="chatinfo-input"
             type="text"
-            value={chatForm.chatNumber ?? selectedChat?.chatNumber ?? ''}
-            onChange={(e) => handleChange('chatNumber', e.target.value)}
+            value={chatForm.chatNumber ?? undefined}
+            onChange={(e) =>
+              handleChange('chatNumber', parseInt(e.target.value) || 0)
+            }
           />
         ) : (
-          <p className="chatpara">
-            {chatForm.chatNumber ?? selectedChat?.chatNumber ?? ''}
-          </p>
+          <p className="chatpara">{chatForm.chatNumber ?? ''}</p>
         )}
       </div>
       <div className="chatinfo">
@@ -119,13 +145,11 @@ const ChatInfo: React.FC = () => {
           <input
             className="chatinfo-input"
             type="text"
-            value={chatForm.title ?? selectedChat?.title ?? ''}
+            value={chatForm.title ?? ''}
             onChange={(e) => handleChange('title', e.target.value)}
           />
         ) : (
-          <p className="chatpara">
-            {chatForm.title ?? selectedChat?.title ?? ''}
-          </p>
+          <p className="chatpara">{chatForm.title ?? ''}</p>
         )}
       </div>
       <div className="chatinfo">
@@ -134,13 +158,11 @@ const ChatInfo: React.FC = () => {
           <input
             className="chatinfo-input"
             type="text"
-            value={chatForm.description ?? selectedChat?.description ?? ''}
+            value={chatForm.description ?? ''}
             onChange={(e) => handleChange('description', e.target.value)}
           />
         ) : (
-          <p className="chatpara">
-            {chatForm.description ?? selectedChat?.description ?? ''}
-          </p>
+          <p className="chatpara">{chatForm.description ?? ''}</p>
         )}
       </div>
       <div className="chatinfo">
@@ -149,13 +171,11 @@ const ChatInfo: React.FC = () => {
           <input
             className="chatinfo-input"
             type="text"
-            value={chatForm.tags ?? selectedChat?.tags ?? ''}
+            value={chatForm.tags ?? ''}
             onChange={(e) => handleChange('tags', e.target.value)}
           />
         ) : (
-          <p className="chatpara">
-            {chatForm.tags ?? selectedChat?.tags ?? ''}
-          </p>
+          <p className="chatpara">{chatForm.tags ?? ''}</p>
         )}
       </div>
       {editMode ? (
@@ -169,7 +189,7 @@ const ChatInfo: React.FC = () => {
         {editMode ? (
           <select
             className="chatinfo-input"
-            value={chatForm.status ?? selectedChat?.status ?? ''}
+            value={chatForm.status ?? ''}
             onChange={(e) => handleChange('status', e.target.value as Status)}
           >
             <option value="" disabled>
@@ -182,9 +202,7 @@ const ChatInfo: React.FC = () => {
             ))}
           </select>
         ) : (
-          <p className="chatpara">
-            {chatForm.status ?? selectedChat?.status ?? ''}
-          </p>
+          <p className="chatpara">{chatForm.status ?? ''}</p>
         )}
       </div>
       <div className="chatinfo">
@@ -192,7 +210,7 @@ const ChatInfo: React.FC = () => {
         {editMode ? (
           <select
             className="chatinfo-input"
-            value={chatForm.language ?? selectedChat?.language ?? 'DE'}
+            value={chatForm.language ?? 'DE'}
             onChange={(e) => handleChange('language', e.target.value)}
           >
             {Object.entries(languageMap).map(([code, name]) => (
@@ -203,9 +221,8 @@ const ChatInfo: React.FC = () => {
           </select>
         ) : (
           <p className="chatpara">
-            {selectedChat?.language
-              ? languageMap[chatForm.language as LanguageCode] ||
-                selectedChat.language
+            {chatForm.language
+              ? languageMap[chatForm.language as LanguageCode]
               : ''}
           </p>
         )}
@@ -242,23 +259,36 @@ const ChatInfo: React.FC = () => {
       <hr className="chatinfo-divider" />
 
       <div className="chatinfo-actions">
-        <button className="chatinfo-buttons" onClick={handleSaveDraft}>
-          Save Draft
-        </button>
-        <button className="chatinfo-buttons" onClick={handlePublish}>
-          Publish
-        </button>
-        <button className="chatinfo-buttons" onClick={handleCreate}>
-          Create Chat
-        </button>
-        <button className="chatinfo-buttons" onClick={handleDelete}>
-          Delete
-        </button>
         <button
           className="chatinfo-buttons"
           onClick={() => setEditMode((prev) => !prev)}
         >
           {editMode ? 'Cancel' : 'Edit'}
+        </button>
+        <button className="chatinfo-buttons" onClick={handleClear}>
+          Clear
+        </button>
+        <button className="chatinfo-buttons" onClick={handleCreate}>
+          Create
+        </button>
+      </div>
+      <div className="chatinfo-actions">
+        <button className="chatinfo-buttons" onClick={handleSave}>
+          Save
+        </button>
+        <button
+          className="chatinfo-buttons"
+          onClick={handlePublish}
+          disabled={!editMode}
+        >
+          Publish
+        </button>
+        <button
+          className="chatinfo-buttons"
+          onClick={handleDelete}
+          disabled={!editMode}
+        >
+          Delete
         </button>
       </div>
     </div>

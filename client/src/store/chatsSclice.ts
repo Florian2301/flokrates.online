@@ -1,6 +1,6 @@
+import { Chat, Status } from '../types/Chats';
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { Chat } from '../types/Chats';
 import { RootState } from './store';
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
@@ -104,27 +104,10 @@ export const saveAllChats = createAsyncThunk(
   }
 );
 
-// delete chat
-export const deleteDraftThunk = createAsyncThunk<
+// delete messages!!!!!!
+export const deleteChatThunk = createAsyncThunk<
   number, // Feedback from Server (could also be boolean)
   number, // chatId as parameter (dispatch(deleteChatThink(3)))
-  { rejectValue: string }
->('chats/deleteDraft', async (chatId, { rejectWithValue }) => {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/chats/${chatId}`, {
-      method: 'DELETE',
-    });
-    if (!res.ok) throw new Error('Fehler beim Löschen des Chats');
-    return chatId;
-  } catch (err) {
-    console.error(err);
-    return rejectWithValue('Fehler beim Löschen des Chats');
-  }
-});
-
-export const deleteChatThunk = createAsyncThunk<
-  number,
-  number,
   { state: RootState; rejectValue: string }
 >(
   'chats/deleteChat',
@@ -144,7 +127,9 @@ export const deleteChatThunk = createAsyncThunk<
       if (chatToDelete.chatNumber !== null) {
         updatedChats = updatedChats
           .map((c) =>
-            c.chatNumber !== null && c.chatNumber > chatToDelete.chatNumber!
+            c.chatNumber !== null &&
+            c.chatNumber > chatToDelete.chatNumber! &&
+            c.status === ('PUB' as Status)
               ? { ...c, chatNumber: c.chatNumber - 1 }
               : c
           )
@@ -241,9 +226,6 @@ export const chatsSlice = createSlice({
         state.chats.push(action.payload);
       })
       .addCase(deleteChatThunk.fulfilled, (state, action) => {
-        state.chats = state.chats.filter((c) => c.chatId !== action.payload);
-      })
-      .addCase(deleteDraftThunk.fulfilled, (state, action) => {
         state.chats = state.chats.filter((c) => c.chatId !== action.payload);
       })
       .addCase(deleteChatThunk.rejected, (state, action) => {

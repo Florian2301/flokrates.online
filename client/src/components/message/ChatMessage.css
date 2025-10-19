@@ -62,10 +62,18 @@
   white-space: pre-wrap;
   font-size: 16px;
   text-align: left;
+  word-break: break-all;
 }
 
 #message-textarea {
   width: 100%;
+  font-size: 16px;
+  word-break: break-all;
+}
+
+#message-display {
+  font-size: 16px;
+  word-break: break-all;
 }
 
 /* Farben */
