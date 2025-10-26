@@ -1,6 +1,8 @@
 .message-wrapper {
   display: flex;
   margin: 0.5rem 0;
+  flex-direction: column;
+  position: relative;
 }
 
 .message-container {
@@ -14,6 +16,11 @@
 
   background-color: white;
   background-image: url('../../img/message_background.jpg');
+}
+
+#message-container-preview {
+  border-color: royalblue;
+  border-width: medium;
 }
 
 .edit {
@@ -33,6 +40,7 @@
 .message-button-edit:hover {
   color: black;
   cursor: pointer;
+  text-decoration: underline;
 }
 
 .message-header {
@@ -102,4 +110,67 @@
 .align-right .message-container {
   margin-left: auto;
   margin-right: 0;
+}
+
+.response-info {
+  font-size: 11px;
+  color: #2f4858;
+  text-align: center;
+}
+
+.response-link {
+  background: none;
+  border: none;
+  color: #2f4858;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-size: 11px;
+}
+
+.response-link:hover {
+  color: black;
+}
+
+.response-popup {
+  position: absolute;
+  background: transparent;
+  max-height: 300px;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  bottom: 75%;
+  left: 30%;
+  animation: fadeIn 0.2s ease-in-out;
+  padding: 0;
+}
+
+.response-popup::-webkit-scrollbar {
+  width: 16px;
+}
+
+.response-popup::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 8px;
+}
+
+.response-popup::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 8px;
+}
+
+.response-popup::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+@keyframes highlight {
+  0% {
+    background-color: dodgerblue;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.message-highlight {
+  animation: highlight 2s ease-out;
 }

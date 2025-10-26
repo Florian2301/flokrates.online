@@ -260,7 +260,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
           )}
         </div>
         <label className="newMessage-label" id="number-label">
-          <section id="number">#{selectedMessageNumber}</section> -&gt;
+          <section id="number">#{selectedMessageNumber}</section> &gt;
           <select
             className="newMessage-select"
             value={'-'}
@@ -293,7 +293,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
               ? `#${messages.find((m) => m.messageId === respMessageId)?.messageNumber}`
               : '0'}
           </span>
-          -&gt;
+          &gt;
           <select
             className="newMessage-select"
             value={respMessageId ?? '-'}

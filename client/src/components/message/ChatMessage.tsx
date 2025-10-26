@@ -7,15 +7,18 @@ import { AppDispatch } from '../../store/store';
 import { Message } from '../../types/Message';
 import NewMessage from './NewMessage';
 import Picker from '@emoji-mart/react';
+import { RootState } from '../../store/store';
 import { actorStyles } from '../../types/ActorStyles';
 import data from '@emoji-mart/data';
 import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 type ChatMessageProps = {
   message: Message;
   isEditing: boolean;
   activeEditId: number | null;
   setActiveEditId: React.Dispatch<React.SetStateAction<number | null>>;
+  previewMode?: boolean;
 };
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -23,6 +26,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   isEditing,
   activeEditId,
   setActiveEditId,
+  previewMode = false,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { messageId, messageText, actor, messageNumber, respId } = message;
@@ -35,6 +39,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const [fullEdit, setFullEdit] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const messagesInChat = useSelector((state: RootState) =>
+    state.messages.chatmessages.filter((m) => m.chatId === message.chatId)
+  );
+  const responseMessage = respId
+    ? messagesInChat.find((m) => m.messageId === respId)
+    : null;
+  const [showResponsePopup, setShowResponsePopup] = useState(false);
 
   const adjustHeight = () => {
     if (textareaRef.current) {
@@ -90,9 +101,55 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     };
   }, [edit, editedText]);
 
+  const handleJumpToMessage = () => {
+    if (!messageId) return;
+
+    const target = document.getElementById(`message-${messageId}`);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.classList.add('message-highlight');
+      setTimeout(() => target.classList.remove('message-highlight'), 2000);
+    }
+    setShowResponsePopup(false);
+  };
+
   return (
-    <div className={`message-wrapper ${alignClass}`}>
-      <div className={`message-container ${edit ? 'edit' : 'save'}`}>
+    <div
+      className={`message-wrapper ${alignClass}`}
+      id={`message-${messageId}`}
+    >
+      {showResponsePopup && responseMessage && (
+        <div className="response-popup">
+          <ChatMessage
+            message={responseMessage}
+            isEditing={false}
+            activeEditId={null}
+            setActiveEditId={() => {}}
+            previewMode={true}
+          />
+        </div>
+      )}
+      <div
+        className={`message-container ${edit ? 'edit' : 'save'}`}
+        id={`${previewMode ? 'message-container-preview' : undefined}`}
+      >
+        {respId && responseMessage && (
+          <div className="response-info">
+            <span>
+              <button
+                className="response-link"
+                onClick={() => setShowResponsePopup((prev) => !prev)}
+              >
+                {`${
+                  showResponsePopup
+                    ? 'Close preview'
+                    : 'Response to #' + responseMessage.messageNumber
+                }`}
+              </button>
+            </span>
+          </div>
+        )}
+
         <div className="message-header">
           <div className="message-header-block">
             <span id="message-span"># {messageNumber}</span>
@@ -125,51 +182,62 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
               </div>
             )}
           </div>
-          <div className="message-header-block">
-            <span
-              className="message-button-edit"
-              onClick={() => {
-                if (edit) {
-                  handleSaveEdit();
-                  setEdit(false);
-                } else {
-                  if (activeEditId && activeEditId !== messageId) {
+          {!previewMode ? (
+            <div className="message-header-block">
+              <span
+                className="message-button-edit"
+                onClick={() => {
+                  if (edit) {
+                    handleSaveEdit();
+                    setEdit(false);
+                  } else {
+                    if (activeEditId && activeEditId !== messageId) {
+                      const event = new CustomEvent('save-message', {
+                        detail: { id: activeEditId },
+                      });
+                      window.dispatchEvent(event);
+                    }
+                    setActiveEditId(messageId);
+                    setEdit(true);
+                  }
+                }}
+              >
+                {edit ? 'Save' : 'Edit'}
+              </span>
+              <span
+                className="message-button-edit"
+                onClick={() => {
+                  if (fullEdit) {
                     const event = new CustomEvent('save-message', {
-                      detail: { id: activeEditId },
+                      detail: { id: messageId },
                     });
                     window.dispatchEvent(event);
+                    setFullEdit(false);
+                  } else {
+                    if (activeEditId && activeEditId !== messageId) {
+                      const event = new CustomEvent('save-message', {
+                        detail: { id: activeEditId },
+                      });
+                      window.dispatchEvent(event);
+                    }
+                    setActiveEditId(messageId);
+                    setFullEdit(true);
                   }
-                  setActiveEditId(messageId);
-                  setEdit(true);
-                }
-              }}
-            >
-              {edit ? 'Save' : 'Edit'}
-            </span>
-            <span
-              className="message-button-edit"
-              onClick={() => {
-                if (fullEdit) {
-                  const event = new CustomEvent('save-message', {
-                    detail: { id: messageId },
-                  });
-                  window.dispatchEvent(event);
-                  setFullEdit(false);
-                } else {
-                  if (activeEditId && activeEditId !== messageId) {
-                    const event = new CustomEvent('save-message', {
-                      detail: { id: activeEditId },
-                    });
-                    window.dispatchEvent(event);
-                  }
-                  setActiveEditId(messageId);
-                  setFullEdit(true);
-                }
-              }}
-            >
-              Fulledit
-            </span>
-          </div>
+                }}
+              >
+                Fulledit
+              </span>
+            </div>
+          ) : (
+            <div className="message-header-block">
+              <span
+                className="message-button-edit"
+                onClick={handleJumpToMessage}
+              >
+                jump to
+              </span>
+            </div>
+          )}
         </div>
         <div className="message-body">
           {edit ? (

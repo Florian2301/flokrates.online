@@ -1,5 +1,3 @@
-//import './ChatList.css';
-
 import { AppDispatch } from '../../store/store';
 import { Chat } from '../../types/Chats';
 import React from 'react';
@@ -19,7 +17,6 @@ export const DraftListTable: React.FC<Props> = ({ chats }) => {
   const handleClick = (chat: Chat) => {
     dispatch(setSelectedChat(chat));
     dispatch(fetchMessagesForChat(chat.chatId));
-    //navigate(`/chatbox`);
   };
 
   return (
