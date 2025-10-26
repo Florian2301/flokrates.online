@@ -12,6 +12,7 @@ export const ChatList: React.FC = () => {
     loading,
     error,
   } = useSelector((state: RootState) => state.chats);
+  const publishedChats = chats.filter((c) => c.status === 'PUB');
 
   useEffect(() => {
     dispatch(fetchChats());
@@ -22,7 +23,7 @@ export const ChatList: React.FC = () => {
 
   return (
     <div className="chat-overview">
-      <ChatListTable chats={chats} />
+      <ChatListTable chats={publishedChats} />
     </div>
   );
 };

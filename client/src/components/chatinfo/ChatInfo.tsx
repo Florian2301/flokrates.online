@@ -7,11 +7,14 @@ import React, { useEffect, useState } from 'react';
 import {
   createChat,
   deleteChatThunk,
+  fetchChats,
   saveSingleChat,
   setSelectedChat,
 } from '../../store/chatsSclice';
 import { fetchMessagesForChat, setMessages } from '../../store/messagesSlice';
 import { useDispatch, useSelector } from 'react-redux';
+
+import { DraftListTable } from './DraftListTable';
 
 const ChatInfo: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -22,6 +25,7 @@ const ChatInfo: React.FC = () => {
     (state: RootState) => state.messages.chatmessages
   );
   const chats = useSelector((state: RootState) => state.chats.chats);
+  const drafts = chats.filter((c) => c.status !== 'PUB');
   const maxChatNumber = chats.reduce((max, c) => {
     return c.chatNumber !== null && c.chatNumber > max ? c.chatNumber : max;
   }, 0);
@@ -121,6 +125,10 @@ const ChatInfo: React.FC = () => {
       setChatForm({});
     }
   }, [selectedChat, dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchChats());
+  }, [dispatch]);
 
   return (
     <div>
@@ -290,6 +298,9 @@ const ChatInfo: React.FC = () => {
         >
           Delete
         </button>
+      </div>
+      <div className="chat-overview">
+        <DraftListTable chats={drafts} />
       </div>
     </div>
   );
