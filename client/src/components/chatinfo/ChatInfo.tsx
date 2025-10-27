@@ -186,12 +186,10 @@ const ChatInfo: React.FC = () => {
           <p className="chatpara">{chatForm.tags ?? ''}</p>
         )}
       </div>
-      {editMode ? (
-        <div className="chatinfo">
-          <p className="chatpara">Messages:</p>
-          <p className="chatpara">{messages.length}</p>
-        </div>
-      ) : null}
+      <div className="chatinfo">
+        <p className="chatpara">Messages:</p>
+        <p className="chatpara">{messages.length}</p>
+      </div>
       <div className="chatinfo">
         <p className="chatpara">Status:</p>
         {editMode ? (

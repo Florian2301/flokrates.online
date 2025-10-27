@@ -1,8 +1,9 @@
 import './ChatList.css';
 
+import React, { useEffect, useState } from 'react';
+
 import { AppDispatch } from '../../store/store';
 import { Chat } from '../../types/Chats';
-import React from 'react';
 import { fetchMessagesForChat } from '../../store/messagesSlice';
 import { setSelectedChat } from '../../store/chatsSclice';
 import { useDispatch } from 'react-redux';
@@ -15,17 +16,27 @@ type Props = {
 export const ChatListTable: React.FC<Props> = ({ chats }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-
-  const formatDate = (isoString: string) => {
-    const date = new Date(isoString);
-    return date.toLocaleDateString('de-DE');
-  };
+  const [activeChatId, setActiveChatId] = useState<number | null>(null);
 
   const handleClick = (chat: Chat) => {
     dispatch(setSelectedChat(chat));
     dispatch(fetchMessagesForChat(chat.chatId));
     navigate(`/chatbox`);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        !target.closest('.chat-info-popup') &&
+        !target.closest('.chat-date')
+      ) {
+        setActiveChatId(null);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   return (
     <div className="table-chats">
@@ -34,7 +45,8 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
           #
         </div>
         <div className="thead">Title</div>
-        <div className="thead">Date</div>
+        <div className="thead"></div>
+        <div className="thead"></div>
       </div>
       <div
         className={
@@ -47,15 +59,54 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
           <div
             key={chat.chatId}
             className="table-rows-data"
-            onClick={() => handleClick(chat)}
+            onClick={(e) => {
+              activeChatId === chat.chatId
+                ? (e.stopPropagation(), setActiveChatId(null))
+                : handleClick(chat);
+            }}
           >
             <div className="table-columns" id="table-columns-number">
               {chat.chatNumber}
             </div>
             <div className="table-columns">{chat.title}</div>
-            <div className="table-columns">
-              {formatDate(chat.datePublished ? chat.datePublished : '')}
+            <div
+              className="table-columns"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveChatId(
+                  activeChatId === chat.chatId ? null : chat.chatId
+                );
+              }}
+            >
+              info
             </div>
+            <div
+              className="table-columns"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              pdf
+            </div>
+            <div></div>
+            {activeChatId === chat.chatId && (
+              <div
+                className="chat-info-popup"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveChatId(null);
+                }}
+              >
+                <div className="popup-body">
+                  <p className="popup-body">{chat.tags}</p>
+                  <hr className="chatlist-divider" />
+
+                  <p className="popup-body">
+                    {chat.description || 'Keine Beschreibung'}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
