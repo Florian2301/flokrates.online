@@ -298,7 +298,7 @@ const ChatInfo: React.FC = () => {
         </button>
       </div>
       <div className="chat-overview">
-        <DraftListTable chats={drafts} />
+        <DraftListTable chats={drafts} messages={messages} />
       </div>
     </div>
   );

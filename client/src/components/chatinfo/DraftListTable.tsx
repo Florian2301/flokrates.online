@@ -1,5 +1,6 @@
 import { AppDispatch } from '../../store/store';
 import { Chat } from '../../types/Chats';
+import { Message } from '../../types/Message';
 import React from 'react';
 import { fetchMessagesForChat } from '../../store/messagesSlice';
 import { setSelectedChat } from '../../store/chatsSclice';
@@ -8,10 +9,10 @@ import { useNavigate } from 'react-router-dom';
 
 type Props = {
   chats: Chat[];
+  messages: Message[];
 };
 
-export const DraftListTable: React.FC<Props> = ({ chats }) => {
-  const navigate = useNavigate();
+export const DraftListTable: React.FC<Props> = ({ chats, messages }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const handleClick = (chat: Chat) => {
@@ -27,6 +28,7 @@ export const DraftListTable: React.FC<Props> = ({ chats }) => {
         </div>
         <div className="thead">Title</div>
         <div className="thead">Status</div>
+        <div className="thead">M</div>
       </div>
       <div
         className={
@@ -46,6 +48,7 @@ export const DraftListTable: React.FC<Props> = ({ chats }) => {
             </div>
             <div className="table-columns">{chat.title}</div>
             <div className="table-columns">{chat.status}</div>
+            <div className="table-columns">{messages.length} </div>
           </div>
         ))}
       </div>
