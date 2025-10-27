@@ -10,15 +10,15 @@ public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer authorId;
-    @Column(name = "author_name", length = 255, nullable = true)
+    @Column(name = "author_name")
     private String authorName;
-    @Column(name = "email", length = 255, nullable = false)
+    @Column(name = "email", nullable = false)
     private String email;
-    @Column(name = "password", length = 255, nullable = false)
+    @Column(name = "password", nullable = false)
     private String password;
     @Column(name = "date_created", nullable = false)
     private LocalDateTime dateCreated;
-    @Column(name = "date_modified", nullable = true)
+    @Column(name = "date_modified")
     private LocalDateTime dateModified;
 
     // Getter and Setter

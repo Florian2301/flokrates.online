@@ -10,13 +10,13 @@ public class Chat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer chatId;
-    @Column(name = "chat_number", columnDefinition = "INT", nullable = true)
+    @Column(name = "chat_number", columnDefinition = "INT")
     private Integer chatNumber;
-    @Column(name = "title", length = 255, nullable = false)
+    @Column(name = "title", nullable = false)
     private String title;
-    @Column(name = "tags", length = 255, nullable = true)
+    @Column(name = "tags")
     private String tags;
-    @Column(name = "description", length = 255, nullable = true)
+    @Column(name = "description")
     private String description;
     @Enumerated(EnumType.STRING)
     @Column(name = "language", length = 2, nullable = false)
@@ -24,13 +24,13 @@ public class Chat {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 2, nullable = false)
     private Status status;
-    @Column(name = "author_id", columnDefinition = "INT", nullable = true)
+    @Column(name = "author_id", columnDefinition = "INT")
     private Integer authorId;
-    @Column(name = "date_published", nullable = true)
+    @Column(name = "date_published")
     private LocalDateTime datePublished;
     @Column(name = "date_created", nullable = false)
     private LocalDateTime dateCreated;
-    @Column(name = "date_modified", nullable = true)
+    @Column(name = "date_modified")
     private LocalDateTime dateModified;
 
     // Getters and Setters

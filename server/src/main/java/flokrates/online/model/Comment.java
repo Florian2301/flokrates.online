@@ -18,7 +18,7 @@ public class Comment {
     private String commentText;
     @Column(name = "date_created", nullable = false)
     private LocalDateTime dateCreated;
-    @Column(name = "date_modified", nullable = true)
+    @Column(name = "date_modified")
     private LocalDateTime dateModified;
 
     // Getter and Setter

@@ -14,7 +14,7 @@ public class Message {
     private Integer messageNumber;
     @Column(name = "chat_id", columnDefinition = "INT", nullable = false)
     private Integer chatId;
-    @Column(name = "resp_id", columnDefinition = "INT", nullable = true)
+    @Column(name = "resp_id", columnDefinition = "INT")
     private Integer respId;
     @Enumerated(EnumType.STRING)
     @Column(name = "actor", length = 2, nullable = false)
@@ -23,7 +23,7 @@ public class Message {
     private String messageText;
     @Column(name = "date_created", nullable = false)
     private LocalDateTime dateCreated;
-    @Column(name = "date_modified", nullable = true)
+    @Column(name = "date_modified")
     private LocalDateTime dateModified;
 
     // Getter und Setter
