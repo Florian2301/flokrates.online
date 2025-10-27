@@ -14,22 +14,18 @@ import java.util.Optional;
 public class CommentServiceImpl implements CommentService {
     @Autowired
     private CommentRepo commentRepo;
-
     @Override
     public Comment saveComment(Comment comment) {
         return commentRepo.save(comment);
     }
-
     @Override
     public List<Comment> getAllComments() {
         return commentRepo.findAll();
     }
-
     @Override
     public void deleteComment(Integer id) {
         commentRepo.delete(commentRepo.getReferenceById(id));
     }
-
     @Override
     public Optional<Comment> getCommentById(Integer id) {
         return commentRepo.findById(id);

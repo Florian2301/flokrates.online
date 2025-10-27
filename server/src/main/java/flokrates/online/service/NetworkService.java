@@ -7,12 +7,10 @@ import java.util.Optional;
 
 public interface NetworkService {
     Network saveNetwork(Network network);
-
     List<Network> getAllNetworks();
-
     void deleteNetwork(Integer id);
-
     Optional<Network> getNetworkById(Integer id);
+    List<Network> getReferencesForChat(Integer chatId);
 
     // public ResponseEntity<NetworkDto> updateNetwork(Integer Id, NetworkDto networkDto);
 

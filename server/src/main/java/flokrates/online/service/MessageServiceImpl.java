@@ -14,27 +14,22 @@ import java.util.Optional;
 public class MessageServiceImpl implements MessageService {
     @Autowired
     private MessageRepo messageRepo;
-
     @Override
     public Message saveMessage(Message message) {
         return messageRepo.save(message);
     }
-
     @Override
     public List<Message> getAllMessages() {
         return messageRepo.findAll();
     }
-
     @Override
     public void deleteMessage(Integer id) {
         messageRepo.delete(messageRepo.getReferenceById(id));
     }
-
     @Override
     public void deleteMessagesByChatId(Integer chatId) {
         messageRepo.deleteByChatId(chatId);
     }
-
     @Override
     public Optional<Message> getMessageById(Integer id) {
         return messageRepo.findById(id);

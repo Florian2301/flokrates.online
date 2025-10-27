@@ -7,10 +7,7 @@ import java.util.Optional;
 
 public interface ChatService {
     Chat saveChat(Chat chat);
-
     List<Chat> getAllChats();
-
     void deleteChat(Integer id);
-
     Optional<Chat> getChatById(Integer id);
 }

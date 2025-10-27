@@ -3,9 +3,11 @@ package flokrates.online.controller;
 import flokrates.online.mapper.ChatMapper;
 import flokrates.online.model.Chat;
 import flokrates.online.model.Language;
+import flokrates.online.model.Network;
 import flokrates.online.model.Status;
 import flokrates.online.model.dto.ChatDto;
 import flokrates.online.service.ChatService;
+import flokrates.online.service.NetworkService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -27,6 +30,7 @@ public class ChatController {
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
     private final ChatService chatService;
     private final ChatMapper chatMapper;
+    private final NetworkService networkService;
 
     @PostMapping
     public ResponseEntity<Chat> addChat(@RequestBody Chat chat) {
@@ -52,25 +56,6 @@ public class ChatController {
     @GetMapping("/{id}")
     public ResponseEntity<ChatDto> getChatById(@PathVariable Integer id) {
 
-        /*
-        Optional<Chat> chatOpt = chatService.getChatById(id);
-        chatOpt.ifPresent(chat -> System.out.println("Chat aus DB: " + chat.getTitle()));
-
-        Chat chat = chatOpt.get();
-        ChatDto dto = new ChatDto();
-        dto.setChatId(chat.getChatId());
-        dto.setChatNumber(chat.getChatNumber());
-        dto.setTitle(chat.getTitle());
-        dto.setTags(chat.getTags());
-        dto.setDescription(chat.getDescription());
-        dto.setLanguage(chat.getLanguage());
-        dto.setPublished(chat.isPublished());
-        dto.setDatePublished(chat.getDatePublished());
-        dto.setDateCreated(chat.getDateCreated());
-        dto.setDateModified(chat.getDateModified());
-
-         */
-
         return chatService.getChatById(id)
                 .map(chatMapper::toDto)
                 .map(ResponseEntity::ok)
@@ -94,7 +79,7 @@ public class ChatController {
         existingChat.setDatePublished(chatDto.getDatePublished());
         existingChat.setDateModified(LocalDateTime.now());
 
-        Chat updatedChat = chatService.saveChat(existingChat);  // Speichere das aktualisierte Objekt
+        Chat updatedChat = chatService.saveChat(existingChat);
         ChatDto updatedDto = chatMapper.toDto(updatedChat);
         return ResponseEntity.ok(updatedDto);
     }
@@ -130,6 +115,16 @@ public class ChatController {
         ChatDto updatedDto = chatMapper.toDto(updatedChat);
         return ResponseEntity.ok(updatedDto);
     }
+
+    @GetMapping("/chats/{chatId}/references")
+    public List<Chat> getChatReferences(@PathVariable Integer chatId) {
+        List<Network> links = networkService.getReferencesForChat(chatId);
+        return links.stream()
+                .map(n -> chatService.getChatById(n.getRefId()).orElse(null))
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
 }
 
 /*

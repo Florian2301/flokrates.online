@@ -7,12 +7,8 @@ import java.util.Optional;
 
 public interface MessageService {
     Message saveMessage(Message message);
-
     List<Message> getAllMessages();
-
     void deleteMessage(Integer id);
-
     void deleteMessagesByChatId(Integer chatId);
-
     Optional<Message> getMessageById(Integer id);
 }

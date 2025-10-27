@@ -14,22 +14,18 @@ import java.util.Optional;
 public class AuthorServiceImpl implements AuthorService {
     @Autowired
     private AuthorRepo authorRepo;
-
     @Override
     public Author saveAuthor(Author author) {
         return authorRepo.save(author);
     }
-
     @Override
     public List<Author> getAllAuthors() {
         return authorRepo.findAll();
     }
-
     @Override
     public void deleteAuthor(Integer id) {
         authorRepo.delete(authorRepo.getReferenceById(id));
     }
-
     @Override
     public Optional<Author> getAuthorById(Integer id) {
         return authorRepo.findById(id);
