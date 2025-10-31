@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: networks-indexes-unique
+      author: floki
+      changes:
+        - createIndex:
+            tableName: networks
+            indexName: idx_network_chat_id
+            columns:
+              - column: { name: chat_id }
+        - createIndex:
+            tableName: networks
+            indexName: idx_network_ref_id
+            columns:
+              - column: { name: ref_id }
+        - addUniqueConstraint:
+            tableName: networks
+            columnNames: chat_id, ref_id
+            constraintName: uq_network_chat_ref
+      rollback:
+        - dropUniqueConstraint:
+            tableName: networks
+            constraintName: uq_network_chat_ref
+        - dropIndex:
+            tableName: networks
+            indexName: idx_network_ref_id
+        - dropIndex:
+            tableName: networks
+            indexName: idx_network_chat_id
