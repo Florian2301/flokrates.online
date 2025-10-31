@@ -16,7 +16,7 @@ const initialState: MessagesState = {
   error: null,
 };
 
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8080';
 
 // get messages for selected chat
 export const fetchMessagesForChat = createAsyncThunk<
@@ -28,13 +28,13 @@ export const fetchMessagesForChat = createAsyncThunk<
   async (chatId, { dispatch, rejectWithValue }) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/messages/chat/${chatId}`);
-      if (!res.ok) throw new Error('Fehler beim Laden der Nachrichten');
+      if (!res.ok) throw new Error('Error loading messages');
       const data: Message[] = await res.json();
       dispatch(setMessages(data));
       return data;
     } catch (err) {
       console.error(err);
-      return rejectWithValue('Fehler beim Laden der Nachrichten');
+      return rejectWithValue('Error loading messages');
     }
   }
 );
@@ -43,7 +43,7 @@ export const fetchMessagesForChat = createAsyncThunk<
 export const fetchMessages = createAsyncThunk<Message[]>(
   'messages/fetch',
   async () => {
-    const res = await fetch(`${process.env.API_BASE_URL}/api/messages`);
+    const res = await fetch(`${API_BASE_URL}/api/messages`);
     const data = await res.json();
     return data as Message[];
   }
@@ -56,18 +56,18 @@ export const createMessage = createAsyncThunk<
   { rejectValue: string }
 >('messages/createMessage', async (newMessage, { rejectWithValue }) => {
   try {
-    const res = await fetch(`${process.env.API_BASE_URL}/api/messages`, {
+    const res = await fetch(`${API_BASE_URL}/api/messages`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newMessage),
     });
 
-    if (!res.ok) throw new Error('Fehler beim Erstellen der Nachricht');
+    if (!res.ok) throw new Error('Error creating message');
     const created = await res.json();
     return created as Message;
   } catch (err) {
     console.error(err);
-    return rejectWithValue('Fehler beim Erstellen der Nachricht');
+    return rejectWithValue('Error creating message');
   }
 });
 
@@ -80,21 +80,25 @@ export const patchMessage = createAsyncThunk<
   'messages/patchMessage',
   async ({ messageId, updates }, { rejectWithValue }) => {
     try {
-      const res = await fetch(
-        `${process.env.API_BASE_URL}/api/messages/${messageId}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updates),
-        }
-      );
+      const { messageNumber, respId, actor, messageText } = updates;
+      const body: Partial<Message> = {
+        ...(messageNumber !== undefined ? { messageNumber } : {}),
+        ...(respId !== undefined ? { respId } : {}),
+        ...(actor !== undefined ? { actor } : {}),
+        ...(messageText !== undefined ? { messageText } : {}),
+      };
 
-      if (!res.ok) throw new Error('Fehler beim Patchen der Nachricht');
-      const updated = await res.json();
-      return updated as Message;
+      const res = await fetch(`${API_BASE_URL}/api/messages/${messageId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) throw new Error('Error patching message');
+      return (await res.json()) as Message;
     } catch (err) {
       console.error(err);
-      return rejectWithValue('Fehler beim Patchen der Nachricht');
+      return rejectWithValue('Error patching message');
     }
   }
 );
@@ -112,7 +116,7 @@ export const deleteMessageThunk = createAsyncThunk<
     return messageId;
   }
 
-  await fetch(`${process.env.API_BASE_URL}/api/messages/${messageId}`, {
+  await fetch(`${API_BASE_URL}/api/messages/${messageId}`, {
     method: 'DELETE',
   });
 
@@ -137,7 +141,7 @@ export const saveAllMessages = createAsyncThunk(
   async (msgs: Message[]) => {
     await Promise.all(
       msgs.map((msg) =>
-        fetch(`${process.env.API_BASE_URL}/api/messages/${msg.messageId}`, {
+        fetch(`${API_BASE_URL}/api/messages/${msg.messageId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(msg),
@@ -301,7 +305,7 @@ const messagesSlice = createSlice({
       })
       .addCase(fetchMessages.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message ?? 'Fehler beim Laden';
+        state.error = action.error.message ?? 'Error loading messages';
       })
       .addCase(fetchMessagesForChat.pending, (state) => {
         state.loading = true;
@@ -312,7 +316,7 @@ const messagesSlice = createSlice({
       })
       .addCase(fetchMessagesForChat.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Fehler beim Laden der Nachrichten';
+        state.error = action.payload || 'Error loading messages';
       })
       .addCase(createMessage.fulfilled, (state, action) => {
         state.chatmessages.push(action.payload);

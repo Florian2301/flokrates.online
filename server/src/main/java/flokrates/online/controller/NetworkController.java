@@ -10,10 +10,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,20 +25,20 @@ public class NetworkController {
     private final NetworkMapper networkMapper;
 
     @PostMapping
-    public String adNetwork(@RequestBody Network network) {
-        networkService.saveNetwork(network);
-        return "New Network " + network.getNetId() + " is added";
+    public ResponseEntity<NetworkDto> createNetwork(@RequestBody NetworkDto dto) {
+        Network toSave = networkMapper.toEntity(dto);
+        Network saved = networkService.saveNetwork(toSave);
+        return ResponseEntity
+                .created(URI.create("/api/networks/" + saved.getNetId()))
+                .body(networkMapper.toDto(saved));
     }
 
     @GetMapping
-    public List<Network> getAllNetworks() {
-        return networkService.getAllNetworks();
-    }
-
-    @DeleteMapping("/{id}")
-    public String deleteNetwork(@PathVariable("id") Integer id) {
-        networkService.deleteNetwork(id);
-        return "Network " + id + " deleted";
+    public ResponseEntity<List<NetworkDto>> getAllNetworks() {
+        List<NetworkDto> result = networkService.getAllNetworks().stream()
+                .map(networkMapper::toDto)
+                .toList();
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{id}")
@@ -51,40 +50,57 @@ public class NetworkController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<NetworkDto> updateNetwork(@PathVariable Integer id, @RequestBody NetworkDto networkDto) {
-        Optional<Network> existingNetworkOpt = networkService.getNetworkById(id);
+    public ResponseEntity<NetworkDto> updateNetwork(@PathVariable Integer id,
+                                                    @RequestBody NetworkDto dto) {
+        return networkService.updateNetwork(id, dto)
+                .map(n -> ResponseEntity.ok(networkMapper.toDto(n)))
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-        if (existingNetworkOpt.isEmpty())
-            return ResponseEntity.notFound().build();
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteNetwork(@PathVariable Integer id) {
+        boolean deleted = networkService.deleteNetwork(id);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
 
-        Network existingNetwork = existingNetworkOpt.get();
-        existingNetwork.setChatId(networkDto.getChatId());
-        existingNetwork.setRefId(networkDto.getRefId());
-        existingNetwork.setDateModified(LocalDateTime.now());
+    // ===== References (Subresource) =====
 
-        Network updatedNetwork = networkService.saveNetwork(existingNetwork);
-        NetworkDto updatedDto = networkMapper.toDto(updatedNetwork);
-        return ResponseEntity.ok(updatedDto);
+    @GetMapping("/by-chat/{chatId}")
+    public ResponseEntity<List<NetworkDto>> getByChat(@PathVariable Integer chatId) {
+        return ResponseEntity.ok(
+                networkService.getReferencesForChat(chatId).stream()
+                        .map(networkMapper::toDto)
+                        .toList()
+        );
+    }
+
+    @GetMapping("/by-ref/{chatId}")
+    public ResponseEntity<List<NetworkDto>> getByRef(@PathVariable Integer chatId) {
+        return ResponseEntity.ok(
+                networkService.getBackReferencesForChat(chatId).stream()
+                        .map(networkMapper::toDto)
+                        .toList()
+        );
+    }
+
+    @PostMapping("/references")
+    public ResponseEntity<NetworkDto> upsertReference(@RequestBody NetworkDto dto) {
+        Network saved = networkService.upsertReference(dto.getChatId(), dto.getRefId());
+        return ResponseEntity.ok(networkMapper.toDto(saved));
+    }
+
+    @DeleteMapping("/references")
+    public ResponseEntity<Void> deleteReference(@RequestParam Integer chatId,
+                                                @RequestParam Integer refId) {
+        networkService.deleteReference(chatId, refId);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<NetworkDto> patchNetwork(@PathVariable Integer id, @RequestBody Map<String, Object> updates) {
-        Optional<Network> existingNetworkOpt = networkService.getNetworkById(id);
-
-        if (existingNetworkOpt.isEmpty())
-            return ResponseEntity.notFound().build();
-
-        Network existingNetwork = existingNetworkOpt.get();
-        updates.forEach((key, value) -> {
-            switch (key) {
-                case "chatId" -> existingNetwork.setChatId((Integer) value);
-                case "refId" -> existingNetwork.setRefId((Integer) value);
-            }
-        });
-        existingNetwork.setDateModified(LocalDateTime.now());
-
-        Network updatedNetwork = networkService.saveNetwork(existingNetwork);
-        NetworkDto updatedDto = networkMapper.toDto(updatedNetwork);
-        return ResponseEntity.ok(updatedDto);
+    public ResponseEntity<NetworkDto> patchNetwork(@PathVariable Integer id,
+                                                   @RequestBody Map<String, Object> updates) {
+        return networkService.patchNetwork(id, updates)
+                .map(n -> ResponseEntity.ok(networkMapper.toDto(n)))
+                .orElse(ResponseEntity.notFound().build());
     }
 }

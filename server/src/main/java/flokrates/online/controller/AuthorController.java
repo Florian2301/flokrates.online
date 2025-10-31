@@ -8,8 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -19,26 +21,28 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RequestMapping("/api/authors")
 @CrossOrigin(origins = "http://localhost:8081")
+@Validated
 public class AuthorController {
     private static final Logger logger = LoggerFactory.getLogger(AuthorController.class);
     private final AuthorService authorService;
     private final AuthorMapper authorMapper;
 
     @PostMapping
-    public String addAuthor(@RequestBody Author author) {
-        authorService.saveAuthor(author);
-        return "New Author " + author.getAuthorId() + " is added";
+    public ResponseEntity<AuthorDto> createAuthor(@RequestBody AuthorDto dto) {
+        Author entity = authorMapper.toEntity(dto);
+        Author created = authorService.saveAuthor(entity);
+        AuthorDto body = authorMapper.toDto(created);
+        return ResponseEntity
+                .created(URI.create("/api/authors/" + created.getAuthorId()))
+                .body(body);
     }
 
     @GetMapping
-    public List<Author> getAllAuthors() {
-        return authorService.getAllAuthors();
-    }
-
-    @DeleteMapping("/{id}")
-    public String deleteAuthor(@PathVariable Integer id) {
-        authorService.deleteAuthor(id);
-        return "Author " + id + " deleted";
+    public ResponseEntity<List<AuthorDto>> getAllAuthors() {
+        List<AuthorDto> list = authorService.getAllAuthors().stream()
+                .map(authorMapper::toDto)
+                .toList();
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/{id}")
@@ -50,42 +54,27 @@ public class AuthorController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AuthorDto> updateAuthor(@PathVariable Integer id, @RequestBody AuthorDto authorDto) {
-        Optional<Author> existingAuthorOpt = authorService.getAuthorById(id);
-
-        if (existingAuthorOpt.isEmpty())
-            return ResponseEntity.notFound().build();
-
-        Author existingAuthor = existingAuthorOpt.get();
-        existingAuthor.setAuthorName(authorDto.getAuthorName());
-        existingAuthor.setEmail(authorDto.getEmail());
-        existingAuthor.setPassword(authorDto.getPassword());
-        existingAuthor.setDateModified(LocalDateTime.now());
-
-        Author updatedAuthor = authorService.saveAuthor(existingAuthor);
-        AuthorDto updatedDto = authorMapper.toDto(updatedAuthor);
-        return ResponseEntity.ok(updatedDto);
+    public ResponseEntity<AuthorDto> updateAuthor(@PathVariable Integer id,
+                                                  @RequestBody AuthorDto dto) {
+        return authorService.updateAuthor(id, dto)
+                .map(authorMapper::toDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<AuthorDto> patchAuthor(@PathVariable Integer id, @RequestBody Map<String, Object> updates) {
-        Optional<Author> existingAuthorOpt = authorService.getAuthorById(id);
+    public ResponseEntity<AuthorDto> patchAuthor(@PathVariable Integer id,
+                                                 @RequestBody Map<String, Object> updates) {
+        return authorService.patchAuthor(id, updates)
+                .map(authorMapper::toDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-        if (existingAuthorOpt.isEmpty())
-            return ResponseEntity.notFound().build();
-
-        Author existingAuthor = existingAuthorOpt.get();
-        updates.forEach((key, value) -> {
-            switch (key) {
-                case "authorName" -> existingAuthor.setAuthorName((String) value);
-                case "email" -> existingAuthor.setEmail((String) value);
-                case "password" -> existingAuthor.setPassword((String) value);
-            }
-        });
-        existingAuthor.setDateModified(LocalDateTime.now());
-
-        Author updatedAuthor = authorService.saveAuthor(existingAuthor);
-        AuthorDto updatedDto = authorMapper.toDto(updatedAuthor);
-        return ResponseEntity.ok(updatedDto);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAuthor(@PathVariable Integer id) {
+        boolean deleted = authorService.deleteAuthor(id);
+        return deleted ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 }

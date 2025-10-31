@@ -2,6 +2,7 @@ import { Chat, Status } from '../types/Chats';
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from './store';
+import { setMessages } from './messagesSlice';
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
 
@@ -10,6 +11,8 @@ type ChatsState = {
   selectedChat: Chat | null;
   loading: boolean;
   error: string | null;
+  referencesByChatId: Record<number, Chat[]>;
+  referencesLoadingByChatId: Record<number, boolean>;
 };
 
 const initialState: ChatsState = {
@@ -19,6 +22,8 @@ const initialState: ChatsState = {
     : null,
   loading: false,
   error: null,
+  referencesByChatId: {},
+  referencesLoadingByChatId: {},
 };
 
 // get all chats
@@ -29,12 +34,12 @@ export const fetchChats = createAsyncThunk<
 >('chats/fetchChats', async (_, { rejectWithValue }) => {
   try {
     const res = await fetch(`${API_BASE_URL}/api/chats`);
-    if (!res.ok) throw new Error('Fehler beim Laden der Chats');
+    if (!res.ok) throw new Error('Error loading chats');
     const data: Chat[] = await res.json();
     return data;
   } catch (err) {
     console.error(err);
-    return rejectWithValue('Fehler beim Laden der Chats');
+    return rejectWithValue('Error loading chats');
   }
 });
 
@@ -52,8 +57,8 @@ export const createChat = createAsyncThunk<
     });
     if (!res.ok) {
       const errorText = await res.text();
-      console.error('Fehler beim Erstellen des Chats:', res.status, errorText);
-      throw new Error('Fehler beim Erstellen des Chats');
+      console.error('Error creating chat:', res.status, errorText);
+      throw new Error('Error creating chat');
     }
 
     const data: Chat =
@@ -63,37 +68,39 @@ export const createChat = createAsyncThunk<
     return data;
   } catch (err) {
     console.error(err);
-    return rejectWithValue('Fehler beim Erstellen des Chats');
+    return rejectWithValue('Error creating chat');
   }
 });
 
+// save single chat
 export const saveSingleChat = createAsyncThunk<
   Chat,
   { chatId: number; updates: Partial<Chat> },
   { rejectValue: string }
 >('chats/saveSingle', async ({ chatId, updates }, { rejectWithValue }) => {
   try {
-    const res = await fetch(`${process.env.API_BASE_URL}/api/chats/${chatId}`, {
+    const res = await fetch(`${API_BASE_URL}/api/chats/${chatId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
     });
 
-    if (!res.ok) throw new Error('Fehler beim Speichern des Chats');
+    if (!res.ok) throw new Error('Error saving chat');
     const updated = await res.json();
     return updated as Chat;
   } catch (err) {
     console.error(err);
-    return rejectWithValue('Fehler beim Speichern des Chats');
+    return rejectWithValue('Error saving chat');
   }
 });
 
+// save all chats
 export const saveAllChats = createAsyncThunk(
   'chats/saveAll',
   async (chats: Chat[]) => {
     await Promise.all(
       chats.map((chat) =>
-        fetch(`${process.env.API_BASE_URL}/api/chats/${chat.chatId}`, {
+        fetch(`${API_BASE_URL}/api/chats/${chat.chatId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(chat),
@@ -104,7 +111,7 @@ export const saveAllChats = createAsyncThunk(
   }
 );
 
-// delete messages!!!!!!
+// delete chat (+ messages & network via backend)
 export const deleteChatThunk = createAsyncThunk<
   number, // Feedback from Server (could also be boolean)
   number, // chatId as parameter (dispatch(deleteChatThink(3)))
@@ -121,8 +128,27 @@ export const deleteChatThunk = createAsyncThunk<
       const res = await fetch(`${API_BASE_URL}/api/chats/${chatId}`, {
         method: 'DELETE',
       });
-      if (!res.ok) throw new Error('Fehler beim Löschen des Chats');
+      if (!res.ok) throw new Error('Error deleting chat');
 
+      // delete messages for chat in state
+      const currentMsgs = state.messages.chatmessages;
+      if (currentMsgs.length) {
+        const left = currentMsgs.filter((m) => m.chatId !== chatId);
+        dispatch(setMessages(left));
+      }
+
+      // delete referenced chats
+      delete state.chats.referencesByChatId[chatId];
+      delete state.chats.referencesLoadingByChatId[chatId];
+      Object.keys(state.chats.referencesByChatId).forEach((k) => {
+        const key = Number(k);
+        state.chats.referencesByChatId[key] =
+          state.chats.referencesByChatId[key]?.filter(
+            (ref) => ref.chatId !== chatId
+          ) ?? [];
+      });
+
+      // set new chatnumbers for chats
       let updatedChats = chats.filter((c) => c.chatId !== chatId);
       if (chatToDelete.chatNumber !== null) {
         updatedChats = updatedChats
@@ -143,10 +169,15 @@ export const deleteChatThunk = createAsyncThunk<
 
       await dispatch(saveAllChats(updatedChats));
 
+      const wasSelected = state.chats.selectedChat?.chatId === chatId;
+      if (wasSelected) {
+        dispatch(setSelectedChat(null));
+      }
+
       return chatId;
     } catch (err) {
       console.error(err);
-      return rejectWithValue('Fehler beim Löschen des Chats');
+      return rejectWithValue('Error deleting chat');
     }
   }
 );
@@ -163,12 +194,29 @@ export const patchChat = createAsyncThunk<
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
     });
-    if (!res.ok) throw new Error('Fehler beim Patchen des Chats');
+    if (!res.ok) throw new Error('Error patching chat');
     const updatedChat: Chat = await res.json();
     return updatedChat;
   } catch (err) {
     console.error(err);
-    return rejectWithValue('Fehler beim Patchen des Chats');
+    return rejectWithValue('Error patching chat');
+  }
+});
+
+// get referenced chats for selectedchat
+export const fetchChatReferences = createAsyncThunk<
+  Chat[], // return list of referenced chats
+  number, // Arg: chatId
+  { rejectValue: string }
+>('chats/fetchChatReferences', async (chatId, { rejectWithValue }) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/chats/${chatId}/references`);
+    if (!res.ok) throw new Error('Error loading references');
+    const data: Chat[] = await res.json();
+    return data;
+  } catch (err) {
+    console.error(err);
+    return rejectWithValue('Error loading references');
   }
 });
 
@@ -220,7 +268,7 @@ export const chatsSlice = createSlice({
       })
       .addCase(fetchChats.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Unbekannter Fehler';
+        state.error = action.payload || 'Unknown error';
       })
       .addCase(createChat.fulfilled, (state, action) => {
         state.chats.push(action.payload);
@@ -229,7 +277,7 @@ export const chatsSlice = createSlice({
         state.chats = state.chats.filter((c) => c.chatId !== action.payload);
       })
       .addCase(deleteChatThunk.rejected, (state, action) => {
-        state.error = action.payload || 'Fehler beim Löschen des Chats';
+        state.error = action.payload || 'Error deleting chat';
       })
       .addCase(patchChat.fulfilled, (state, action) => {
         const idx = state.chats.findIndex(
@@ -250,10 +298,37 @@ export const chatsSlice = createSlice({
       })
       .addCase(saveAllChats.fulfilled, (state, action) => {
         state.chats = action.payload;
+      })
+      .addCase(fetchChatReferences.pending, (state, action) => {
+        const chatId = action.meta.arg;
+        state.referencesLoadingByChatId[chatId] = true;
+      })
+      .addCase(fetchChatReferences.fulfilled, (state, action) => {
+        const chatId = action.meta.arg;
+        state.referencesByChatId[chatId] = action.payload;
+        state.referencesLoadingByChatId[chatId] = false;
+      })
+      .addCase(fetchChatReferences.rejected, (state, action) => {
+        const chatId = action.meta.arg;
+        state.referencesLoadingByChatId[chatId] = false;
+        state.error = action.payload || 'Error loading references';
       });
   },
 });
 
 export const { setSelectedChat, setChats, addChat, updateChat, removeChat } =
   chatsSlice.actions;
+
+export const selectReferencesForSelectedChat = (state: RootState) => {
+  const sc = state.chats.selectedChat;
+  if (!sc) return [];
+  return state.chats.referencesByChatId[sc.chatId] ?? [];
+};
+
+export const selectReferencesLoadingForSelectedChat = (state: RootState) => {
+  const sc = state.chats.selectedChat;
+  if (!sc) return false;
+  return state.chats.referencesLoadingByChatId[sc.chatId] ?? false;
+};
+
 export default chatsSlice.reducer;

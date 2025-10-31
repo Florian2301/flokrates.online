@@ -18,6 +18,15 @@ public class Network {
     private LocalDateTime dateCreated;
     @Column(name = "date_modified")
     private LocalDateTime dateModified;
+    @PrePersist
+    public void prePersist() {
+        dateCreated = LocalDateTime.now();
+        dateModified = dateCreated;
+    }
+    @PreUpdate
+    public void preUpdate() {
+        dateModified = LocalDateTime.now();
+    }
 
     // Getter and Setter
     public Integer getNetId() {

@@ -1,13 +1,58 @@
 package flokrates.online.service;
 
 import flokrates.online.model.Chat;
+import flokrates.online.repository.ChatRepo;
+import flokrates.online.repository.MessageRepo;
+import flokrates.online.repository.NetworkRepo;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface ChatService {
-    Chat saveChat(Chat chat);
-    List<Chat> getAllChats();
-    void deleteChat(Integer id);
-    Optional<Chat> getChatById(Integer id);
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class ChatService {
+    @Autowired
+    private final ChatRepo chatRepo;
+    @Autowired
+    private final MessageRepo messageRepo;
+    @Autowired
+    private final NetworkRepo networkRepo;
+
+    public Chat saveChat(Chat chat) {
+            var now = LocalDateTime.now();
+            if (chat.getDateCreated() == null) chat.setDateCreated(now);
+            chat.setDateModified(now);
+
+        return chatRepo.save(chat);
+    }
+    public List<Chat> getAllChats() {
+        return chatRepo.findAll();
+    }
+    public Optional<Chat> getChatById(Integer id) {
+        return chatRepo.findById(id);
+    }
+
+    public boolean deleteChat(Integer id) {
+        if (!chatRepo.existsById(id)) return false;
+        // abhängige Daten entfernen
+        networkRepo.deleteByChatId(id);
+        networkRepo.deleteByRefId(id);
+        messageRepo.deleteByChatId(id);
+        chatRepo.deleteById(id);
+        return true;
+    }
+    public List<Chat> getReferencedChats(Integer chatId) {
+        var refs = networkRepo.findByChatId(chatId); // hat refId
+        var refIds = refs.stream()
+                .map(n -> n.getRefId())
+                .distinct()
+                .toList();
+        return refIds.isEmpty() ? List.of() : chatRepo.findAllByChatIdIn(refIds);
+    }
 }

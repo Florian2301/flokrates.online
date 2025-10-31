@@ -35,11 +35,6 @@ public class Chat {
     @Column(name = "date_modified")
     private LocalDateTime dateModified;
 
-    @ElementCollection
-    @CollectionTable(name = "chat_references", joinColumns = @JoinColumn(name = "chat_id"))
-    @Column(name = "referenced_chat_id")
-    private List<Integer> referencedChatIds = new ArrayList<>();
-
     // Getters and Setters
     public Integer getChatId() {
         return chatId;

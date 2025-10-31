@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -30,27 +31,27 @@ public class ChatController {
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
     private final ChatService chatService;
     private final ChatMapper chatMapper;
-    private final NetworkService networkService;
 
     @PostMapping
-    public ResponseEntity<Chat> addChat(@RequestBody Chat chat) {
-        Chat saved = chatService.saveChat(chat);
-        System.out.println("New Chat " + saved.getChatId() + " is added");
+    public ResponseEntity<ChatDto> createChat(@RequestBody ChatDto dto) {
+        Chat entity = chatMapper.toEntity(dto);
+        // (optional) Timestamps auch hier setzen; der Service setzt sie ebenfalls sicherheitshalber
+        if (entity.getDateCreated() == null) entity.setDateCreated(LocalDateTime.now());
+        entity.setDateModified(LocalDateTime.now());
+
+        Chat created = chatService.saveChat(entity);
+        ChatDto body = chatMapper.toDto(created);
         return ResponseEntity
-                .ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(saved);
+                .created(URI.create("/api/chats/" + created.getChatId()))
+                .body(body);
     }
 
     @GetMapping
-    public List<Chat> getAllChats() {
-        return chatService.getAllChats();
-    }
-
-    @DeleteMapping("/{id}")
-    public String deleteChat(@PathVariable Integer id) {
-        chatService.deleteChat(id);
-        return "Chat " + id + " deleted";
+    public ResponseEntity<List<ChatDto>> getAllChats() {
+        List<ChatDto> list = chatService.getAllChats().stream()
+                .map(chatMapper::toDto)
+                .toList();
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/{id}")
@@ -116,15 +117,20 @@ public class ChatController {
         return ResponseEntity.ok(updatedDto);
     }
 
-    @GetMapping("/chats/{chatId}/references")
-    public List<Chat> getChatReferences(@PathVariable Integer chatId) {
-        List<Network> links = networkService.getReferencesForChat(chatId);
-        return links.stream()
-                .map(n -> chatService.getChatById(n.getRefId()).orElse(null))
-                .filter(Objects::nonNull)
-                .toList();
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteChat(@PathVariable Integer id) {
+        boolean deleted = chatService.deleteChat(id);
+        return deleted ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/{id}/references")
+    public ResponseEntity<List<ChatDto>> getChatReferences(@PathVariable Integer id) {
+        List<ChatDto> refs = chatService.getReferencedChats(id).stream()
+                .map(chatMapper::toDto)
+                .toList();
+        return ResponseEntity.ok(refs);
+    }
 }
 
 /*
