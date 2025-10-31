@@ -11,6 +11,13 @@ import {
   saveSingleChat,
   setSelectedChat,
 } from '../../store/chatsSclice';
+import {
+  deleteReference,
+  fetchRefsByChat,
+  selectRefsByChat,
+  selectRefsLoading,
+  upsertReference,
+} from '../../store/networksSclice';
 import { fetchMessagesForChat, setMessages } from '../../store/messagesSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -31,6 +38,29 @@ const ChatInfo: React.FC = () => {
   }, 0);
   const [editMode, setEditMode] = useState(false);
   const [chatForm, setChatForm] = useState<Partial<Chat>>({});
+  const publishedChats = chats.filter(
+    (c) => c.status === 'PUB' && c.chatId !== chatForm?.chatId
+  );
+
+  const chatId = chatForm.chatId ?? selectedChat?.chatId ?? null;
+
+  // Refs aus networks-Slice
+  const refs = useSelector((state: RootState) =>
+    chatId ? selectRefsByChat(state, chatId) : []
+  );
+  /** IDs der referenzierten Chats */
+  const currentRefIds = refs.map((n) => n.refId);
+
+  // (optional) Loading-Flag, falls du es anzeigen willst
+  const refsLoading = useSelector((state: RootState) =>
+    chatId ? selectRefsLoading(state, chatId) : false
+  );
+
+  const chatById = (id: number) => chats.find((c) => c.chatId === id);
+
+  const currentRefs: number[] = Array.isArray(chatForm.referencedChatIds)
+    ? chatForm.referencedChatIds!
+    : [];
 
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
@@ -43,22 +73,45 @@ const ChatInfo: React.FC = () => {
 
   const handleSave = async () => {
     if (!chatForm.chatId) return;
+    const payloadRefs = Array.isArray(chatForm.referencedChatIds)
+      ? chatForm.referencedChatIds
+      : [];
     const result = await dispatch(
       saveSingleChat({
         chatId: chatForm.chatId,
-        updates: { ...chatForm, chatNumber: chatForm.chatNumber },
+        updates: {
+          ...chatForm,
+          chatNumber: chatForm.chatNumber,
+          referencedChatIds: payloadRefs,
+        },
       })
     );
 
+    if (!saveSingleChat.fulfilled.match(result)) return;
+
+    const refetch = await dispatch(fetchChats());
+    if (fetchChats.fulfilled.match(refetch)) {
+      const list = refetch.payload as Chat[];
+      const updated = list.find((c) => c.chatId === chatForm.chatId);
+      if (updated) {
+        setEditMode(false);
+        dispatch(setSelectedChat(updated));
+        setChatForm(updated);
+      }
+    }
+    /*
     if (saveSingleChat.fulfilled.match(result)) {
       setEditMode(false);
       dispatch(setSelectedChat(result.payload));
       setChatForm(result.payload);
-    }
+    }*/
   };
 
   const handlePublish = async () => {
     if (!chatForm.chatId) return;
+    const payloadRefs = Array.isArray(chatForm.referencedChatIds)
+      ? chatForm.referencedChatIds
+      : [];
 
     const result = await dispatch(
       saveSingleChat({
@@ -68,15 +121,29 @@ const ChatInfo: React.FC = () => {
           chatNumber:
             chatForm.chatNumber === 0 ? maxChatNumber + 1 : chatForm.chatNumber,
           status: 'PUB' as Status,
+          referencedChatIds: payloadRefs,
         },
       })
     );
 
+    if (!saveSingleChat.fulfilled.match(result)) return;
+
+    const refetch = await dispatch(fetchChats());
+    if (fetchChats.fulfilled.match(refetch)) {
+      const list = refetch.payload as Chat[];
+      const updated = list.find((c) => c.chatId === chatForm.chatId);
+      if (updated) {
+        setEditMode(false);
+        dispatch(setSelectedChat(updated));
+        setChatForm(updated);
+      }
+    }
+    /*
     if (saveSingleChat.fulfilled.match(result)) {
       setEditMode(false);
       dispatch(setSelectedChat(result.payload));
       setChatForm(result.payload);
-    }
+    }*/
   };
 
   const handleDelete = async () => {
@@ -96,6 +163,7 @@ const ChatInfo: React.FC = () => {
       chatNumber: null,
       status: 'DRA' as Status,
       authorId: 1,
+      referencedChatIds: [],
       datePublished: null,
       dateCreated: new Date().toISOString(),
       dateModified: null,
@@ -129,6 +197,32 @@ const ChatInfo: React.FC = () => {
   useEffect(() => {
     dispatch(fetchChats());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (chatId) {
+      dispatch(fetchRefsByChat(chatId));
+    }
+  }, [dispatch, chatId]);
+
+  // References
+  const handleAddReference = (refId: number) => {
+    if (!chatId || !refId) return;
+    if (currentRefIds.includes(refId)) return;
+    dispatch(upsertReference({ chatId, refId }));
+  };
+
+  const handleRemoveReference = (refId: number) => {
+    if (!chatId) return;
+    dispatch(deleteReference({ chatId, refId }));
+  };
+
+  // Im Nicht-Edit-Mode: klick auf Referenz öffnet diesen Chat
+  const openReferencedChat = (chatId: number) => {
+    const target = chats.find((c) => c.chatId === chatId);
+    if (!target) return;
+    dispatch(setSelectedChat(target));
+    dispatch(fetchMessagesForChat(target.chatId));
+  };
 
   return (
     <div>
@@ -186,6 +280,73 @@ const ChatInfo: React.FC = () => {
           <p className="chatpara">{chatForm.tags ?? ''}</p>
         )}
       </div>
+      {/* REFERENZEN */}
+      <div className="chatinfo">
+        <p className="chatpara">Referenzen:</p>
+
+        {editMode ? (
+          <div className="chatinfo-ref-editor">
+            <select
+              className="chatinfo-input"
+              onChange={(e) => handleAddReference(Number(e.target.value))}
+              value=""
+            >
+              <option value="" disabled>
+                + reference
+              </option>
+              {publishedChats.map((c) => (
+                <option key={c.chatId} value={c.chatId}>
+                  {`#${c.chatNumber ?? '—'} · ${c.title}`}
+                </option>
+              ))}
+            </select>
+
+            {/* Ausgewählte Referenzen als Chips mit Entfernen */}
+            <div className="ref-chip-list">
+              {currentRefIds.length === 0
+                ? null
+                : currentRefIds.map((id) => {
+                    const ref = chatById(id);
+                    if (!ref) return null;
+                    return (
+                      <span key={id} className="ref-chip">
+                        #{ref.chatNumber ?? '—'}
+                        <button
+                          className="ref-chip-remove"
+                          onClick={() => handleRemoveReference(id)}
+                          title="Entfernen"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    );
+                  })}
+            </div>
+          </div>
+        ) : (
+          <div className="chatinfo-ref-view">
+            {currentRefIds.length === 0 ? (
+              <p className="chatpara">–</p>
+            ) : (
+              currentRefIds.map((id) => {
+                const ref = chatById(id);
+                if (!ref) return null;
+                return (
+                  <button
+                    key={id}
+                    className="linklike"
+                    onClick={() => openReferencedChat(id)}
+                    title={ref.title}
+                  >
+                    #{ref.chatNumber ?? '—'}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        )}
+      </div>
+
       <div className="chatinfo">
         <p className="chatpara">Messages:</p>
         <p className="chatpara">{messages.length}</p>

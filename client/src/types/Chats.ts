@@ -10,6 +10,7 @@ export interface Chat {
   language: Language;
   status: Status;
   authorId: number;
+  referencedChatIds?: number[];
   datePublished: string | null;
   dateCreated: string;
   dateModified: string | null;
