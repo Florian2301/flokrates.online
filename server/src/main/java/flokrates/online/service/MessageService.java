@@ -4,6 +4,7 @@ import flokrates.online.mapper.MessageMapper;
 import flokrates.online.model.Actor;
 import flokrates.online.model.Message;
 import flokrates.online.model.dto.MessageDto;
+import flokrates.online.repository.MessageAttachmentRepo;
 import flokrates.online.repository.MessageRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,8 @@ import java.util.Optional;
 public class MessageService {
     @Autowired
     private MessageRepo messageRepo;
+    @Autowired
+    private MessageAttachmentRepo attachmentRepo;
 
     public Message createMessage(Message entity) {
         // Timestamps setzen
@@ -91,6 +94,15 @@ public class MessageService {
         return true;
     }
     public void deleteMessagesByChatId(Integer chatId) {
+        // 1) IDs der Messages ermitteln
+        var messageIds = messageRepo.findByChatIdOrderByMessageNumberAsc(chatId)
+                .stream().map(Message::getMessageId).toList();
+        if (messageIds.isEmpty()) return;
+
+        // 2) Attachments löschen
+        attachmentRepo.deleteByMessageIdIn(messageIds);
+
+        // 3) Messages löschen
         messageRepo.deleteByChatId(chatId);
     }
 }

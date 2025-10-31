@@ -1,0 +1,33 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2025-10-31-msgatt-check-kind-fields-sql
+      author: floki
+      preConditions:
+        onFail: MARK_RAN
+        sqlCheck:
+          expectedResult: "0"
+          sql: |
+            SELECT COUNT(*)
+            FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+            WHERE CONSTRAINT_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'message_attachments'
+              AND CONSTRAINT_NAME = 'chk_msgatt_kind_and_links'
+      changes:
+        - sql:
+            stripComments: true
+            splitStatements: false
+            sql: |
+              ALTER TABLE message_attachments
+              ADD CONSTRAINT chk_msgatt_kind_and_links
+              CHECK (
+                (kind = 'file' AND (storage_key IS NOT NULL OR href IS NOT NULL))
+                OR
+                (kind = 'external_url' AND href IS NOT NULL)
+              );
+      rollback:
+        - sql:
+            stripComments: true
+            splitStatements: false
+            sql: |
+              ALTER TABLE message_attachments
+              DROP CONSTRAINT chk_msgatt_kind_and_links;

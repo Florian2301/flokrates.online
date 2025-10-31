@@ -1,0 +1,144 @@
+databaseChangeLog:
+  # --- messages.chat_id -> chats.chat_id (CASCADE) ---
+  - changeSet:
+      id: fk-messages-chat-drop-if-exists
+      author: floki
+      preConditions:
+        onFail: MARK_RAN
+        foreignKeyConstraintExists:
+          foreignKeyName: fk_messages_chat
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: messages
+            constraintName: fk_messages_chat
+      rollback:
+        - sql: "/* no-op rollback for drop of old fk_messages_chat */"
+
+  - changeSet:
+      id: fk-messages-chat-add-cascade
+      author: floki
+      preConditions:
+        onFail: CONTINUE
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_messages_chat
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: messages
+            baseColumnNames: chat_id
+            referencedTableName: chats
+            referencedColumnNames: chat_id
+            onDelete: CASCADE
+            constraintName: fk_messages_chat
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: messages
+            constraintName: fk_messages_chat
+
+  # --- networks.chat_id -> chats.chat_id (CASCADE) ---
+  - changeSet:
+      id: fk-networks-chat-drop-if-exists
+      author: floki
+      preConditions:
+        onFail: MARK_RAN
+        foreignKeyConstraintExists:
+          foreignKeyName: fk_networks_chat
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: networks
+            constraintName: fk_networks_chat
+      rollback:
+        - sql: "/* no-op rollback for drop of old fk_networks_chat */"
+
+  - changeSet:
+      id: fk-networks-chat-add-cascade
+      author: floki
+      preConditions:
+        onFail: CONTINUE
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_networks_chat
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: networks
+            baseColumnNames: chat_id
+            referencedTableName: chats
+            referencedColumnNames: chat_id
+            onDelete: CASCADE
+            constraintName: fk_networks_chat
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: networks
+            constraintName: fk_networks_chat
+
+  # --- networks.ref_id -> chats.chat_id (CASCADE) ---
+  - changeSet:
+      id: fk-networks-ref-drop-if-exists
+      author: floki
+      preConditions:
+        onFail: MARK_RAN
+        foreignKeyConstraintExists:
+          foreignKeyName: fk_networks_ref
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: networks
+            constraintName: fk_networks_ref
+      rollback:
+        - sql: "/* no-op rollback for drop of old fk_networks_ref */"
+
+  - changeSet:
+      id: fk-networks-ref-add-cascade
+      author: floki
+      preConditions:
+        onFail: CONTINUE
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_networks_ref
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: networks
+            baseColumnNames: ref_id
+            referencedTableName: chats
+            referencedColumnNames: chat_id
+            onDelete: CASCADE
+            constraintName: fk_networks_ref
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: networks
+            constraintName: fk_networks_ref
+
+  # --- comments.chat_id -> chats.chat_id (CASCADE) ---
+  - changeSet:
+      id: fk-comments-chat-drop-if-exists
+      author: floki
+      preConditions:
+        onFail: MARK_RAN
+        foreignKeyConstraintExists:
+          foreignKeyName: fk_comments_chat
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: comments
+            constraintName: fk_comments_chat
+      rollback:
+        - sql: "/* no-op rollback for drop of old fk_comments_chat */"
+
+  - changeSet:
+      id: fk-comments-chat-add-cascade
+      author: floki
+      preConditions:
+        onFail: CONTINUE
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_comments_chat
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: comments
+            baseColumnNames: chat_id
+            referencedTableName: chats
+            referencedColumnNames: chat_id
+            onDelete: CASCADE
+            constraintName: fk_comments_chat
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: comments
+            constraintName: fk_comments_chat

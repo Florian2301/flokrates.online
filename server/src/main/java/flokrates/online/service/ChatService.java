@@ -18,11 +18,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ChatService {
     @Autowired
-    private final ChatRepo chatRepo;
+    private ChatRepo chatRepo;
     @Autowired
-    private final MessageRepo messageRepo;
+    private MessageRepo messageRepo;
     @Autowired
-    private final NetworkRepo networkRepo;
+    private NetworkRepo networkRepo;
 
     public Chat saveChat(Chat chat) {
             var now = LocalDateTime.now();
@@ -41,9 +41,9 @@ public class ChatService {
     public boolean deleteChat(Integer id) {
         if (!chatRepo.existsById(id)) return false;
         // abhängige Daten entfernen
-        networkRepo.deleteByChatId(id);
-        networkRepo.deleteByRefId(id);
-        messageRepo.deleteByChatId(id);
+        //networkRepo.deleteByChatId(id);
+        //networkRepo.deleteByRefId(id);
+        //messageRepo.deleteByChatId(id);
         chatRepo.deleteById(id);
         return true;
     }

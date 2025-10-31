@@ -1,0 +1,145 @@
+databaseChangeLog:
+  - changeSet:
+      id: message-attachments-create
+      author: floki
+      changes:
+        - createTable:
+            tableName: message_attachments
+            remarks: "Anhänge/Links pro Chat-Nachricht"
+            columns:
+              - column:
+                  name: attachment_id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_message_attachments
+                    nullable: false
+              - column:
+                  name: message_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: kind
+                  type: VARCHAR(20)          # 'file' | 'external_url'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: storage_key
+                  type: VARCHAR(512)
+              - column:
+                  name: href
+                  type: VARCHAR(1024)
+              - column:
+                  name: content_type
+                  type: VARCHAR(255)
+              - column:
+                  name: file_name
+                  type: VARCHAR(255)
+              - column:
+                  name: file_size_bytes
+                  type: BIGINT
+              - column:
+                  name: width_px
+                  type: INT
+              - column:
+                  name: height_px
+                  type: INT
+              - column:
+                  name: duration_ms
+                  type: INT
+              - column:
+                  name: page_count
+                  type: INT
+              - column:
+                  name: preview_href
+                  type: VARCHAR(1024)
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+              - column:
+                  name: description
+                  type: TEXT
+              - column:
+                  name: sort_order
+                  type: INT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_deleted
+                  type: TINYINT(1)
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_created
+                  type: DATETIME
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        # FK -> messages(message_id)
+        - addForeignKeyConstraint:
+            baseTableName: message_attachments
+            baseColumnNames: message_id
+            referencedTableName: messages
+            referencedColumnNames: message_id
+            onDelete: CASCADE
+            constraintName: fk_msgatt_message
+
+        # Indizes für gängige Abfragen
+        - createIndex:
+            tableName: message_attachments
+            indexName: idx_msgatt_message
+            columns:
+              - column: { name: message_id }
+              - column: { name: is_deleted }
+              - column: { name: sort_order }
+
+        - createIndex:
+            tableName: message_attachments
+            indexName: idx_msgatt_kind
+            columns:
+              - column: { name: kind }
+
+        - createIndex:
+            tableName: message_attachments
+            indexName: idx_msgatt_content_type
+            columns:
+              - column: { name: content_type }
+
+        - createIndex:
+            tableName: message_attachments
+            indexName: idx_msgatt_href
+            columns:
+              - column: { name: href }
+
+        - createIndex:
+            tableName: message_attachments
+            indexName: idx_msgatt_storage_key
+            columns:
+              - column: { name: storage_key }
+
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: message_attachments
+            constraintName: fk_msgatt_message
+        - dropIndex:
+            tableName: message_attachments
+            indexName: idx_msgatt_storage_key
+        - dropIndex:
+            tableName: message_attachments
+            indexName: idx_msgatt_href
+        - dropIndex:
+            tableName: message_attachments
+            indexName: idx_msgatt_content_type
+        - dropIndex:
+            tableName: message_attachments
+            indexName: idx_msgatt_kind
+        - dropIndex:
+            tableName: message_attachments
+            indexName: idx_msgatt_message
+        - dropTable:
+            tableName: message_attachments
