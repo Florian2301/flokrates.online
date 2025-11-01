@@ -131,85 +131,20 @@ public class ChatController {
                 .toList();
         return ResponseEntity.ok(refs);
     }
+    @GetMapping("/{id}/messageCount")
+    public ResponseEntity<Map<String, Object>> getMessageCount(@PathVariable Integer id) {
+        return chatService.getChatById(id).isEmpty()
+                ? ResponseEntity.notFound().build()
+                : ResponseEntity.ok(Map.of("chatId", id, "messageCount", chatService.getMessageCountForChat(id)));
+    }
+
+    @GetMapping("/counts")
+    public ResponseEntity<Map<Integer, Long>> getMessageCounts(
+            @RequestParam(value = "ids", required = false) List<Integer> ids) {
+        Map<Integer, Long> counts = (ids == null || ids.isEmpty())
+                ? chatService.getMessageCountsForAllChats()
+                : chatService.getMessageCountsForChats(ids);
+        return ResponseEntity.ok(counts);
+    }
+
 }
-
-/*
------------------------------
-Angenommen du hast in deinem React-Formular ein Eingabefeld für den title, z.B.:
-
-const [title, setTitle] = useState("");
-
-// onChange des Feldes
-<input value={title} onChange={e => setTitle(e.target.value)} />
-
-----------------------
-Und dein Button ruft dann z.B. folgendes auf:
-
-const patchChat = async () => {
-  const response = await fetch(`http://localhost:8080/chat/patchChat/2`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      title: title,  // Oder { title } – wenn Key und Value gleich heißen
-    }),
-  });
-
-  if (response.ok) {
-    const updatedChat = await response.json();
-    console.log("Erfolgreich gepatcht:", updatedChat);
-  } else {
-    console.error("Fehler beim Patch:", response.status);
-  }
-};
-
----------------------------
-
-Falls du axios verwendest:
-
-import axios from "axios";
-
-const patchChat = async () => {
-  try {
-    const response = await axios.patch("http://localhost:8080/chat/patchChat/2", {
-      title: title,
-    });
-
-    console.log("Erfolgreich gepatcht:", response.data);
-  } catch (error) {
-    console.error("Fehler beim Patch:", error);
-  }
-};
-
-
-----------------
-Du kannst auch mehrere Felder auf einmal schicken:
-{
-  "title": "Neuer Titel",
-  "description": "Kurze Beschreibung",
-  "published": true
-}
-
-Das entspricht im Backend:
-
-Map<String, Object> updates = {
-  "title" -> "Neuer Titel",
-  "description" -> "Kurze Beschreibung",
-  "published" -> true
-}
-
-------------------------
- Zusammenfassung
-
-    Verwende PATCH-Request mit einem JSON-Body, der ein Key-Value-Objekt ist.
-
-    Das entspricht exakt der Map<String, Object> in Java.
-
-    In React kannst du fetch oder axios nutzen, beides funktioniert gut.
-
-    Die Keys im JSON-Body müssen exakt mit den case-Bezeichnungen im Switch-Block
-    deines Controllers übereinstimmen ("title", "published", etc.).
-
-
- */

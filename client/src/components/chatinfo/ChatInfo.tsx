@@ -8,6 +8,7 @@ import {
   createChat,
   deleteChatThunk,
   fetchChats,
+  fetchChatsWithCounts,
   saveSingleChat,
   setSelectedChat,
 } from '../../store/chatsSclice';
@@ -15,16 +16,17 @@ import {
   deleteReference,
   fetchRefsByChat,
   selectRefsByChat,
-  selectRefsLoading,
   upsertReference,
 } from '../../store/networksSclice';
 import { fetchMessagesForChat, setMessages } from '../../store/messagesSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { DraftListTable } from './DraftListTable';
+import { useNavigate } from 'react-router-dom';
 
 const ChatInfo: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const selectedChat = useSelector(
     (state: RootState) => state.chats.selectedChat
   );
@@ -44,17 +46,11 @@ const ChatInfo: React.FC = () => {
 
   const chatId = chatForm.chatId ?? selectedChat?.chatId ?? null;
 
-  // Refs aus networks-Slice
   const refs = useSelector((state: RootState) =>
     chatId ? selectRefsByChat(state, chatId) : []
   );
-  /** IDs der referenzierten Chats */
-  const currentRefIds = refs.map((n) => n.refId);
 
-  // (optional) Loading-Flag, falls du es anzeigen willst
-  const refsLoading = useSelector((state: RootState) =>
-    chatId ? selectRefsLoading(state, chatId) : false
-  );
+  const currentRefIds = refs.map((n) => n.refId);
 
   const chatById = (id: number) => chats.find((c) => c.chatId === id);
 
@@ -195,7 +191,7 @@ const ChatInfo: React.FC = () => {
   }, [selectedChat, dispatch]);
 
   useEffect(() => {
-    dispatch(fetchChats());
+    dispatch(fetchChatsWithCounts());
   }, [dispatch]);
 
   useEffect(() => {
@@ -222,6 +218,7 @@ const ChatInfo: React.FC = () => {
     if (!target) return;
     dispatch(setSelectedChat(target));
     dispatch(fetchMessagesForChat(target.chatId));
+    navigate('/chatbox');
   };
 
   return (
@@ -326,7 +323,9 @@ const ChatInfo: React.FC = () => {
         ) : (
           <div className="chatinfo-ref-view">
             {currentRefIds.length === 0 ? (
-              <p className="chatpara">–</p>
+              <p className="chatpara" id="ref-view-placeholder">
+                –
+              </p>
             ) : (
               currentRefIds.map((id) => {
                 const ref = chatById(id);
@@ -435,7 +434,11 @@ const ChatInfo: React.FC = () => {
         <button className="chatinfo-buttons" onClick={handleClear}>
           Clear
         </button>
-        <button className="chatinfo-buttons" onClick={handleCreate}>
+        <button
+          className="chatinfo-buttons"
+          onClick={handleCreate}
+          disabled={editMode}
+        >
           Create
         </button>
       </div>

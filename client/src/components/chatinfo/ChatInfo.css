@@ -94,6 +94,10 @@
   width: 80%;
 }
 
+#ref-view-placeholder {
+  margin-left: 0;
+}
+
 .ref-chip-list {
   display: flex;
   gap: 6px;

@@ -55,4 +55,24 @@ public class ChatService {
                 .toList();
         return refIds.isEmpty() ? List.of() : chatRepo.findAllByChatIdIn(refIds);
     }
+
+    public long getMessageCountForChat(Integer chatId) {
+        return messageRepo.countByChatId(chatId);
+    }
+    public java.util.Map<Integer, Long> getMessageCountsForChats(java.util.Collection<Integer> chatIds) {
+        if (chatIds == null || chatIds.isEmpty()) return java.util.Map.of();
+
+        var rows = messageRepo.countByChatIds(chatIds);
+        java.util.Map<Integer, Long> map = new java.util.HashMap<>();
+        for (var r : rows) map.put(r.getChatId(), r.getCnt());
+        for (Integer id : chatIds) map.putIfAbsent(id, 0L);
+        return map;
+    }
+    public java.util.Map<Integer, Long> getMessageCountsForAllChats() {
+        var allIds = chatRepo.findAll()
+                .stream()
+                .map(Chat::getChatId)
+                .toList();
+        return getMessageCountsForChats(allIds);
+    }
 }

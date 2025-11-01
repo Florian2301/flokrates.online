@@ -1,11 +1,11 @@
-import { AppDispatch } from '../../store/store';
+import { AppDispatch, RootState } from '../../store/store';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { Chat } from '../../types/Chats';
 import { Message } from '../../types/Message';
 import React from 'react';
 import { fetchMessagesForChat } from '../../store/messagesSlice';
 import { setSelectedChat } from '../../store/chatsSclice';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 
 type Props = {
   chats: Chat[];
@@ -14,6 +14,12 @@ type Props = {
 
 export const DraftListTable: React.FC<Props> = ({ chats, messages }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const countsByChatId = useSelector(
+    (s: RootState) => s.chats.messageCountsByChatId
+  );
+  const loadingCounts = useSelector(
+    (s: RootState) => s.chats.messageCountsLoading
+  );
 
   const handleClick = (chat: Chat) => {
     dispatch(setSelectedChat(chat));
@@ -28,7 +34,7 @@ export const DraftListTable: React.FC<Props> = ({ chats, messages }) => {
         </div>
         <div className="thead">Title</div>
         <div className="thead">Status</div>
-        <div className="thead">M</div>
+        <div className="thead">Msg</div>
       </div>
       <div
         className={
@@ -37,7 +43,7 @@ export const DraftListTable: React.FC<Props> = ({ chats, messages }) => {
             : 'chatlist-scroll'
         }
       >
-        {chats.map((chat: Chat) => (
+        {chats.map((chat) => (
           <div
             key={chat.chatId}
             className="table-rows-data"
@@ -48,7 +54,11 @@ export const DraftListTable: React.FC<Props> = ({ chats, messages }) => {
             </div>
             <div className="table-columns">{chat.title}</div>
             <div className="table-columns">{chat.status}</div>
-            <div className="table-columns">{messages.length} </div>
+            <div className="table-columns">
+              {loadingCounts && countsByChatId[chat.chatId] == null
+                ? '…'
+                : (countsByChatId[chat.chatId] ?? 0)}
+            </div>
           </div>
         ))}
       </div>

@@ -1,10 +1,10 @@
+import { AppDispatch, RootState } from './store';
 import { Chat, Status } from '../types/Chats';
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { RootState } from './store';
 import { setMessages } from './messagesSlice';
 
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8080';
 
 type ChatsState = {
   chats: Chat[];
@@ -13,6 +13,9 @@ type ChatsState = {
   error: string | null;
   referencesByChatId: Record<number, Chat[]>;
   referencesLoadingByChatId: Record<number, boolean>;
+  messageCountsByChatId: Record<number, number>;
+  messageCountsLoading: boolean;
+  messageCountsError: string | null;
 };
 
 const initialState: ChatsState = {
@@ -24,6 +27,9 @@ const initialState: ChatsState = {
   error: null,
   referencesByChatId: {},
   referencesLoadingByChatId: {},
+  messageCountsByChatId: {},
+  messageCountsLoading: false,
+  messageCountsError: null,
 };
 
 // get all chats
@@ -220,6 +226,53 @@ export const fetchChatReferences = createAsyncThunk<
   }
 });
 
+//MessageCount
+export const fetchMessageCounts = createAsyncThunk<
+  Record<number, number>, // Return: Map chatId -> count
+  number[] | undefined, // Arg: Liste von IDs oder undefined
+  { rejectValue: string }
+>('chats/fetchMessageCounts', async (ids, { rejectWithValue }) => {
+  try {
+    const url =
+      ids && ids.length
+        ? `${API_BASE_URL}/api/chats/counts?ids=${encodeURIComponent(ids.join(','))}`
+        : `${API_BASE_URL}/api/chats/counts`;
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Error loading message counts');
+
+    // Server liefert Keys als Strings -> in Numbers mappen
+    const raw: Record<string, number> = await res.json();
+    const normalized: Record<number, number> = {};
+    Object.entries(raw).forEach(([k, v]) => {
+      normalized[Number(k)] = v ?? 0;
+    });
+
+    // Falls ids mitgegeben wurden: fehlende IDs auf 0 setzen (Safety)
+    if (ids && ids.length)
+      ids.forEach((id) => {
+        if (normalized[id] == null) normalized[id] = 0;
+      });
+
+    return normalized;
+  } catch (err) {
+    console.error(err);
+    return rejectWithValue('Error loading message counts');
+  }
+});
+
+export const fetchChatsWithCounts = createAsyncThunk<
+  void,
+  void,
+  { state: RootState; dispatch: AppDispatch }
+>('chats/fetchChatsWithCounts', async (_, { dispatch, getState }) => {
+  await dispatch(fetchChats());
+  const ids = getState()
+    .chats.chats.map((c) => c.chatId)
+    .filter((x): x is number => x != null);
+  if (ids.length) await dispatch(fetchMessageCounts(ids));
+});
+
 export const chatsSlice = createSlice({
   name: 'chats',
   initialState,
@@ -274,7 +327,9 @@ export const chatsSlice = createSlice({
         state.chats.push(action.payload);
       })
       .addCase(deleteChatThunk.fulfilled, (state, action) => {
-        state.chats = state.chats.filter((c) => c.chatId !== action.payload);
+        const deletedId = action.payload;
+        state.chats = state.chats.filter((c) => c.chatId !== deletedId);
+        delete state.messageCountsByChatId[deletedId];
       })
       .addCase(deleteChatThunk.rejected, (state, action) => {
         state.error = action.payload || 'Error deleting chat';
@@ -312,6 +367,23 @@ export const chatsSlice = createSlice({
         const chatId = action.meta.arg;
         state.referencesLoadingByChatId[chatId] = false;
         state.error = action.payload || 'Error loading references';
+      })
+      .addCase(fetchMessageCounts.pending, (state) => {
+        state.messageCountsLoading = true;
+        state.messageCountsError = null;
+      })
+      .addCase(fetchMessageCounts.fulfilled, (state, action) => {
+        state.messageCountsLoading = false;
+        // flach mergen: neue Counts überschreiben vorhandene
+        state.messageCountsByChatId = {
+          ...state.messageCountsByChatId,
+          ...action.payload,
+        };
+      })
+      .addCase(fetchMessageCounts.rejected, (state, action) => {
+        state.messageCountsLoading = false;
+        state.messageCountsError =
+          action.payload || 'Error loading message counts';
       });
   },
 });
@@ -330,5 +402,14 @@ export const selectReferencesLoadingForSelectedChat = (state: RootState) => {
   if (!sc) return false;
   return state.chats.referencesLoadingByChatId[sc.chatId] ?? false;
 };
+
+export const selectMessageCountMap = (state: RootState) =>
+  state.chats.messageCountsByChatId;
+
+export const selectMessageCountLoading = (state: RootState) =>
+  state.chats.messageCountsLoading;
+
+export const selectMessageCountFor = (chatId: number) => (state: RootState) =>
+  state.chats.messageCountsByChatId[chatId] ?? 0;
 
 export default chatsSlice.reducer;
