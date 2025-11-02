@@ -19,6 +19,7 @@ public class MessageAttachmentDto {
     private Integer durationMs;
     private Integer pageCount;
 
+    private String checksumSha256Hex;
     private String previewHref;
     private String title;
     private String description;

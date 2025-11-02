@@ -1,17 +1,34 @@
 import './ChatMessage.css';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { patchMessage, updateMessage } from '../../store/messagesSlice';
+import {
+  fetchAttachmentsForMessage,
+  patchMessage,
+} from '../../store/messagesSlice';
 
 import { AppDispatch } from '../../store/store';
 import { Message } from '../../types/Message';
 import NewMessage from './NewMessage';
 import Picker from '@emoji-mart/react';
+import ReactModal from 'react-modal';
 import { RootState } from '../../store/store';
 import { actorStyles } from '../../types/ActorStyles';
 import data from '@emoji-mart/data';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
+
+type MessageAttachment = {
+  attachmentId: number;
+  messageId: number;
+  kind: 'file' | 'external_url';
+  href?: string | null;
+  storageKey?: string | null;
+  title?: string | null;
+  contentType?: string | null;
+  fileName?: string | null;
+  previewHref?: string | null;
+  isDeleted?: boolean;
+};
 
 type ChatMessageProps = {
   message: Message;
@@ -46,6 +63,53 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     ? messagesInChat.find((m) => m.messageId === respId)
     : null;
   const [showResponsePopup, setShowResponsePopup] = useState(false);
+  const isImage = (ct?: string | null) => !!ct && ct.startsWith('image/');
+  const isPdf = (ct?: string | null) => ct === 'application/pdf';
+  const attachments = useSelector(
+    (s: RootState) => s.messages.attachmentsByMessageId[messageId] || []
+  );
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
+  const [viewerType, setViewerType] = useState<'image' | 'pdf' | null>(null);
+
+  const toAbsoluteUrl = (u?: string | null) => {
+    if (!u) return null;
+    if (/^https?:\/\//i.test(u)) return u;
+    return `https://${u}`;
+  };
+
+  useEffect(() => {
+    dispatch(fetchAttachmentsForMessage(messageId));
+  }, [dispatch, messageId]);
+
+  const openAttachment = (att: MessageAttachment) => {
+    // externe Links → im neuen Tab
+    if (att.kind === 'external_url') {
+      const url = toAbsoluteUrl(att.href);
+      if (url) window.open(url, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    // Files
+    const direct = toAbsoluteUrl(att.href || att.previewHref || null);
+    if (direct) {
+      if (isImage(att.contentType)) {
+        setViewerSrc(direct);
+        setViewerType('image');
+        setViewerOpen(true);
+        return;
+      }
+      if (isPdf(att.contentType)) {
+        setViewerSrc(direct);
+        setViewerType('pdf');
+        setViewerOpen(true);
+        return;
+      }
+      window.open(direct, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    console.warn('No href/preview available for attachment', att);
+  };
 
   const adjustHeight = () => {
     if (textareaRef.current) {
@@ -159,6 +223,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             {edit && (
               <div className="emoji-section">
                 <button
+                  id="emoji-btn"
                   type="button"
                   onClick={() => setShowEmojiPicker((prev) => !prev)}
                 >
@@ -184,6 +249,16 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           </div>
           {!previewMode ? (
             <div className="message-header-block">
+              {edit ? (
+                <span
+                  className="message-button-edit"
+                  onClick={() => {
+                    setEdit(false);
+                  }}
+                >
+                  Close
+                </span>
+              ) : null}
               <span
                 className="message-button-edit"
                 onClick={() => {
@@ -253,6 +328,60 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             <div id="message-display">{messageText}</div>
           )}
         </div>
+        <div className="message-bottom">
+          {attachments.length > 0 && (
+            <div className="attachments-row">
+              {attachments.map((att) => {
+                const label =
+                  att.title ||
+                  att.fileName ||
+                  att.href ||
+                  `#${att.attachmentId}`;
+                const thumb =
+                  isImage(att.contentType) && (att.previewHref || att.href)
+                    ? (att.previewHref || att.href)!
+                    : null;
+                const isLink = att.kind === 'external_url';
+
+                return (
+                  <div
+                    key={att.attachmentId}
+                    className="attachment-pill"
+                    role="button"
+                    title={label}
+                    onClick={() => openAttachment(att)}
+                  >
+                    <div className="pill-text" title={label}>
+                      {label}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Inline-Viewer (Modal) für Bilder/PDF) */}
+        <ReactModal
+          isOpen={viewerOpen}
+          onRequestClose={() => setViewerOpen(false)}
+          className="att-modal"
+          overlayClassName="att-modal-overlay"
+          ariaHideApp={false}
+        >
+          <button
+            className="att-modal-close"
+            onClick={() => setViewerOpen(false)}
+          >
+            ✕
+          </button>
+          {viewerSrc && viewerType === 'image' && (
+            <img className="att-modal-content" src={viewerSrc} alt="" />
+          )}
+          {viewerSrc && viewerType === 'pdf' && (
+            <iframe className="att-modal-content" src={viewerSrc} title="PDF" />
+          )}
+        </ReactModal>
       </div>
 
       {fullEdit && (

@@ -7,3 +7,7 @@ databaseChangeLog:
       file: db/changelog/db.changelog-2025-10-31-msgatt-check-kind-fields.yaml
   - include:
       file: db/changelog/db.changelog-2025-10-31-fk-messages-chat-cascade.yaml
+  - include:
+      file: db/changelog/db.changelog-2025-11-01-msgatt-add-checksum.yaml
+  - include:
+      file: db/changelog/db.changelog-2025-11-01-msgatt-add-date-modified.yaml

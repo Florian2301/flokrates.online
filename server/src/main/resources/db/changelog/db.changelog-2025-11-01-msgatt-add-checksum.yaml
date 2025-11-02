@@ -1,0 +1,25 @@
+databaseChangeLog:
+  - changeSet:
+      id: msgatt-add-col-checksum
+      author: floki
+      changes:
+        - addColumn:
+            tableName: message_attachments
+            columns:
+              - column:
+                  name: checksum_sha256
+                  type: BINARY(32)
+                  remarks: "Optionaler SHA-256 Prüfsummen-Hash zum Deduplizieren"
+        - createIndex:
+            tableName: message_attachments
+            indexName: idx_msgatt_checksum
+            columns:
+              - column: { name: checksum_sha256 }
+      rollback:
+        - dropIndex:
+            tableName: message_attachments
+            indexName: idx_msgatt_checksum
+        - dropColumn:
+            tableName: message_attachments
+            columnName: checksum_sha256
+            newDataType: VARCHAR(64)

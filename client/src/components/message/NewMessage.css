@@ -32,9 +32,8 @@
 
 .new-message-window .actions {
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
-  gap: 8px;
 }
 
 .newMessage-btn {
@@ -45,7 +44,7 @@
 }
 
 #save-btn {
-  margin-left: 2rem;
+  margin-left: 1rem;
 }
 
 .newMessage-btn:hover {
@@ -75,8 +74,7 @@
 }
 
 #number-label {
-  margin-right: 2rem;
-  margin-left: 2rem;
+  margin-right: 0rem;
 }
 
 #number {
@@ -86,4 +84,131 @@
 #newmessage-textarea {
   font-size: 16px;
   word-break: break-all;
+}
+
+#emoji-btn {
+  font-size: 16px;
+  line-height: 1;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  padding: 2px 2px;
+  border-radius: 4px;
+}
+
+#emoji-btn:hover {
+  background-color: #f0f0f0;
+  border-color: dodgerblue;
+}
+
+/* Attachments*/
+/* Paperclip button */
+.attach-btn {
+  font-size: 16px;
+  line-height: 1;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  padding: 2px 2px;
+  border-radius: 4px;
+}
+.attach-btn:hover {
+  background-color: #f0f0f0;
+  border-color: dodgerblue;
+}
+
+/* Attachments bar */
+.attachments-bar {
+  margin-top: 8px;
+  padding: 8px;
+  background: #f7f9fc;
+  border: 1px dashed #c9d8ee;
+  border-radius: 6px;
+}
+
+.attachments-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.attachment-mode {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  align-items: center;
+}
+
+.attachment-fields {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  align-items: center;
+  min-width: 260px;
+}
+
+.attachment-input {
+  flex: 1;
+  min-width: 1rem;
+  height: 1.5rem;
+  padding: 0 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.attachments-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eef4ff;
+  border: 1px solid #cfe1ff;
+  color: #1b3a66;
+  border-radius: 16px;
+  padding: 2px 8px;
+}
+
+.chip-icon {
+  font-size: 14px;
+}
+
+.chip-thumb {
+  width: 20px;
+  height: 20px;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid #d0d0d0;
+}
+
+.chip-text {
+  font-size: 12px;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip-remove {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: #555;
+  margin-left: 2px;
+}
+.chip-remove:hover {
+  color: #c00;
+}
+
+#attachment-file-upload {
+  height: 1.5rem;
+  font-size: 12px;
 }

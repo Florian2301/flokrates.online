@@ -1,19 +1,42 @@
-import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { AppDispatch, RootState } from './store';
+import {
+  AsyncThunkAction,
+  PayloadAction,
+  ThunkDispatch,
+  UnknownAction,
+  createAsyncThunk,
+  createSlice,
+} from '@reduxjs/toolkit';
 
 import { Actor } from '../types/ActorStyles';
 import { Message } from '../types/Message';
-import { RootState } from './store';
 
 type MessagesState = {
   chatmessages: Message[];
   loading: boolean;
   error?: string | null;
+  attachmentsByMessageId: Record<number, MessageAttachment[]>;
+};
+
+// === Attachment-Response vom Backend ===
+export type MessageAttachment = {
+  attachmentId: number;
+  messageId: number;
+  kind: 'file' | 'external_url';
+  href?: string | null;
+  storageKey?: string | null;
+  title?: string | null;
+  contentType?: string | null;
+  fileName?: string | null;
+  previewHref?: string | null;
+  deleted?: boolean; // Achtung: Backend liefert "deleted", nicht "isDeleted"
 };
 
 const initialState: MessagesState = {
   chatmessages: [],
   loading: false,
   error: null,
+  attachmentsByMessageId: {},
 };
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8080';
@@ -264,6 +287,157 @@ export const changeMessage = createAsyncThunk<
   }
 );
 
+// === Attachment-Types (nur fürs Frontend/POST) ===
+export type NewAttachment =
+  | {
+      kind: 'external_url';
+      href: string;
+      title?: string | null;
+      sortOrder?: number;
+    }
+  | {
+      kind: 'file';
+      storageKey: string; // später: echter Key (z.B. von Upload)
+      href?: string | null;
+      fileName?: string | null;
+      contentType?: string | null;
+      fileSizeBytes?: number | null;
+      title?: string | null;
+      sortOrder?: number;
+    };
+
+// kleine Helper für bessere Fehlermeldungen
+async function readError(res: Response) {
+  const text = await res.text().catch(() => '');
+  return `HTTP ${res.status} ${res.statusText}${text ? ` — ${text}` : ''}`;
+}
+
+// === Einzelnes Attachment anlegen ===
+export const createAttachment = createAsyncThunk<
+  void,
+  { messageId: number; attachment: NewAttachment },
+  { rejectValue: string; state: RootState }
+>(
+  'messages/createAttachment',
+  async ({ messageId, attachment }, { rejectWithValue, dispatch }) => {
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/messages/${messageId}/attachments`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(attachment),
+        }
+      );
+      if (!res.ok) {
+        const errText = await readError(res);
+        return rejectWithValue(errText);
+      }
+      // <-- NEU
+      await dispatch(fetchAttachmentsForMessage(messageId));
+    } catch (err: any) {
+      const msg = err?.message || String(err);
+      return rejectWithValue(msg);
+    }
+  }
+);
+
+// === Mehrere Attachments in einem Rutsch ===
+export const createAttachmentsBulk = createAsyncThunk<
+  void,
+  { messageId: number; attachments: NewAttachment[] },
+  { state: RootState; rejectValue: string }
+>(
+  'messages/createAttachmentsBulk',
+  async ({ messageId, attachments }, { dispatch, rejectWithValue }) => {
+    try {
+      for (const a of attachments) {
+        // unwrap() wirft bei Fehler -> catch greift
+        await dispatch(createAttachment({ messageId, attachment: a })).unwrap();
+      }
+    } catch (err: any) {
+      return rejectWithValue(err?.message || 'Error adding attachments');
+    }
+  }
+);
+
+// === Message + Attachments in einem Schritt (für neue Message) ===
+export const createMessageWithAttachments = createAsyncThunk<
+  Message,
+  { message: Omit<Message, 'messageId'>; attachments?: NewAttachment[] },
+  { state: RootState; rejectValue: string }
+>(
+  'messages/createMessageWithAttachments',
+  async ({ message, attachments = [] }, { dispatch, rejectWithValue }) => {
+    try {
+      // 1) Message anlegen
+      const created = await dispatch(createMessage(message)).unwrap();
+
+      // 2) Attachments (optional)
+      if (attachments.length > 0) {
+        await dispatch(
+          createAttachmentsBulk({ messageId: created.messageId, attachments })
+        ).unwrap();
+        // Sicherheitshalber neu laden (wird schon im createAttachment gemacht, aber tut nicht weh):
+        await dispatch(fetchAttachmentsForMessage(created.messageId));
+      }
+
+      return created;
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.message || 'Error creating message with attachments'
+      );
+    }
+  }
+);
+
+// === Attachments für bestehende Message ===
+export const addAttachmentsToExistingMessage = createAsyncThunk<
+  void,
+  { messageId: number; attachments: NewAttachment[] },
+  { state: RootState; rejectValue: string }
+>(
+  'messages/addAttachmentsToExistingMessage',
+  async ({ messageId, attachments }, { dispatch, rejectWithValue }) => {
+    try {
+      if (!attachments.length) return;
+      await dispatch(
+        createAttachmentsBulk({ messageId, attachments })
+      ).unwrap();
+      await dispatch(fetchAttachmentsForMessage(messageId));
+    } catch (err: any) {
+      return rejectWithValue(err?.message || 'Error adding attachments');
+    }
+  }
+);
+
+export const fetchAttachmentsForMessage = createAsyncThunk<
+  { messageId: number; attachments: MessageAttachment[] },
+  number,
+  { rejectValue: string }
+>(
+  'messages/fetchAttachmentsForMessage',
+  async (messageId, { rejectWithValue }) => {
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/messages/${messageId}/attachments`
+      );
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(
+          `HTTP ${res.status} ${res.statusText}${text ? ` — ${text}` : ''}`
+        );
+      }
+      const data = (await res.json()) as MessageAttachment[];
+      // nur nicht-gelöschte
+      const filtered = data.filter((a) => !a.deleted);
+      return { messageId, attachments: filtered };
+    } catch (err: any) {
+      return rejectWithValue(err?.message || 'Error loading attachments');
+    }
+  }
+);
+
 const messagesSlice = createSlice({
   name: 'messages',
   initialState,
@@ -339,6 +513,10 @@ const messagesSlice = createSlice({
             ...action.payload,
           };
         }
+      })
+      .addCase(fetchAttachmentsForMessage.fulfilled, (state, action) => {
+        const { messageId, attachments } = action.payload;
+        state.attachmentsByMessageId[messageId] = attachments;
       });
   },
 });
@@ -346,3 +524,21 @@ const messagesSlice = createSlice({
 export const { setMessages, addMessage, updateMessage, removeMessage } =
   messagesSlice.actions;
 export default messagesSlice.reducer;
+function dispatch(
+  arg0: AsyncThunkAction<
+    { messageId: number; attachments: MessageAttachment[] },
+    number,
+    {
+      rejectValue: string;
+      state?: unknown;
+      dispatch?: ThunkDispatch<unknown, unknown, UnknownAction> | undefined;
+      extra?: unknown;
+      serializedErrorType?: unknown;
+      pendingMeta?: unknown;
+      fulfilledMeta?: unknown;
+      rejectedMeta?: unknown;
+    }
+  >
+) {
+  throw new Error('Function not implemented.');
+}

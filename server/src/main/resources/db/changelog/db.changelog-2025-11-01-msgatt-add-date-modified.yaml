@@ -1,0 +1,37 @@
+databaseChangeLog:
+  # 1) date_modified hinzufügen, falls nicht vorhanden
+  - changeSet:
+      id: msgatt-add-col-date-modified
+      author: floki
+      changes:
+        - addColumn:
+            tableName: message_attachments
+            columns:
+              - column:
+                  name: date_modified
+                  type: DATETIME
+                  remarks: "Appseitig via @PreUpdate befüllt"
+      rollback:
+        - dropColumn:
+            tableName: message_attachments
+            columnName: date_modified
+
+  # 2) (Optional) MySQL: ON UPDATE-Automatismus setzen
+  #    Nur wenn du zusätzlich DB-seitig auto-updates willst.
+  - changeSet:
+      id: msgatt-alter-date-modified-onupdate
+      author: floki
+      changes:
+        - sql:
+            dbms: mysql
+            sql: |
+              ALTER TABLE message_attachments
+              MODIFY COLUMN date_modified DATETIME NULL
+              DEFAULT CURRENT_TIMESTAMP
+              ON UPDATE CURRENT_TIMESTAMP;
+      rollback:
+        - sql:
+            dbms: mysql
+            sql: |
+              ALTER TABLE message_attachments
+              MODIFY COLUMN date_modified DATETIME NULL;

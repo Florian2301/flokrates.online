@@ -1,12 +1,15 @@
 import './NewMessage.css';
 
 import { AppDispatch, RootState } from '../../store/store';
-import React, { useEffect, useRef, useState } from 'react';
 import {
+  NewAttachment,
+  addAttachmentsToExistingMessage,
   changeMessage,
-  createMessage,
+  createMessageWithAttachments,
   deleteMessageThunk,
+  fetchAttachmentsForMessage,
 } from '../../store/messagesSlice';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Actor } from '../../types/ActorStyles';
@@ -21,6 +24,29 @@ type NewMessageProps = {
   onCancel: () => void;
 };
 
+type BackendAttachment = {
+  attachmentId: number;
+  messageId: number;
+  kind: 'file' | 'external_url';
+  href?: string | null;
+  storageKey?: string | null;
+  title?: string | null;
+  contentType?: string | null;
+  fileName?: string | null;
+  previewHref?: string | null;
+  isDeleted?: boolean;
+};
+
+type PendingAttachment =
+  | { id: string; kind: 'external_url'; href: string; title?: string }
+  | {
+      id: string;
+      kind: 'file';
+      file: File;
+      previewUrl?: string;
+      title?: string;
+    };
+
 const NewMessage: React.FC<NewMessageProps> = ({
   messageId,
   isNew,
@@ -33,6 +59,10 @@ const NewMessage: React.FC<NewMessageProps> = ({
   const messages = useSelector(
     (state: RootState) => state.messages.chatmessages
   );
+  const savedAttachments: BackendAttachment[] =
+    useSelector(
+      (s: RootState) => s.messages.attachmentsByMessageId?.[messageId]
+    ) || [];
   const tempMessage: Message = {
     messageId: messageId,
     messageText: '',
@@ -67,6 +97,30 @@ const NewMessage: React.FC<NewMessageProps> = ({
     initY: number;
   } | null>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const [showAttachmentsBar, setShowAttachmentsBar] = useState(false);
+  const [attachmentMode, setAttachmentMode] = useState<'link' | 'file'>('link');
+  const [pendingAttachments, setPendingAttachments] = useState<
+    PendingAttachment[]
+  >([]);
+  const [linkInput, setLinkInput] = useState('');
+  const [linkTitle, setLinkTitle] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isImage = (ct?: string | null) => !!ct && ct.startsWith('image/');
+  const isPdf = (ct?: string | null) => ct === 'application/pdf';
+
+  const openBackendAttachment = (att: BackendAttachment) => {
+    if (att.kind === 'external_url' && att.href) {
+      window.open(att.href, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    const direct = att.href || att.previewHref;
+    if (direct) {
+      window.open(direct, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    console.warn('Kein href/previewHref für Attachment vorhanden:', att);
+  };
 
   const startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
     setDragging(true);
@@ -117,19 +171,25 @@ const NewMessage: React.FC<NewMessageProps> = ({
     setShowEmojiPicker(false);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    const attachmentsToSend: NewAttachment[] =
+      mapPendingToNewAttachments(pendingAttachments);
     if (isNew) {
-      dispatch(
-        createMessage({
-          messageText: editedText,
-          actor: selectedActor,
-          respId: respMessageId,
-          messageNumber: selectedMessageNumber,
-          chatId: message.chatId,
+      await dispatch(
+        createMessageWithAttachments({
+          message: {
+            messageText: editedText,
+            actor: selectedActor,
+            respId: respMessageId,
+            messageNumber: selectedMessageNumber,
+            chatId: message.chatId,
+          },
+          attachments: attachmentsToSend,
         })
-      );
+      ).unwrap();
+      onCancel();
     } else {
-      dispatch(
+      await dispatch(
         changeMessage({
           messageId,
           updatedText: editedText,
@@ -139,9 +199,18 @@ const NewMessage: React.FC<NewMessageProps> = ({
           responseId: respMessageId,
         })
       );
+      if (attachmentsToSend.length) {
+        await dispatch(
+          addAttachmentsToExistingMessage({
+            messageId: message.messageId,
+            attachments: attachmentsToSend,
+          })
+        ).unwrap();
+        await dispatch(fetchAttachmentsForMessage(message.messageId));
+        setPendingAttachments([]);
+      }
+      onCancel();
     }
-
-    onCancel();
   };
 
   const handleDelete = () => {
@@ -149,9 +218,80 @@ const NewMessage: React.FC<NewMessageProps> = ({
     onCancel();
   };
 
+  const addLinkAttachment = () => {
+    if (!linkInput.trim()) return;
+    const url = linkInput.trim();
+    setPendingAttachments((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        kind: 'external_url',
+        href: url,
+        title: linkTitle || undefined,
+      },
+    ]);
+    setLinkInput('');
+    setLinkTitle('');
+  };
+
+  const onFilePicked: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const isImage = file.type.startsWith('image/');
+    const previewUrl = isImage ? URL.createObjectURL(file) : undefined;
+    setPendingAttachments((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        kind: 'file',
+        file,
+        previewUrl,
+        title: file.name,
+      },
+    ]);
+    // reset input, damit das gleiche File erneut gewählt werden kann
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  function mapPendingToNewAttachments(
+    pending: PendingAttachment[]
+  ): NewAttachment[] {
+    return pending.map((p) => {
+      if (p.kind === 'external_url') {
+        return {
+          kind: 'external_url',
+          href: p.href,
+          title: p.title ?? null,
+          sortOrder: 0,
+        };
+      }
+      // Datei: bis du einen echten Upload hast, nimm file.name als Dummy-storageKey
+      return {
+        kind: 'file',
+        storageKey: p.file.name,
+        href: null,
+        fileName: p.file.name,
+        contentType: p.file.type,
+        fileSizeBytes: p.file.size,
+        title: p.title ?? null,
+        sortOrder: 0,
+      };
+    });
+  }
+
+  const removeAttachment = (id: string) => {
+    setPendingAttachments((prev) => prev.filter((a) => a.id !== id));
+  };
+
   useEffect(() => {
     adjustHeight();
   }, [editedText]);
+
+  useEffect(() => {
+    if (!isNew) {
+      dispatch(fetchAttachmentsForMessage(messageId));
+    }
+  }, [dispatch, isNew, messageId]);
 
   useEffect(() => {
     function handleSaveEvent(e: Event) {
@@ -241,6 +381,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
         </label>
         <div className="emoji-section">
           <button
+            id="emoji-btn"
             type="button"
             onClick={() => setShowEmojiPicker((prev) => !prev)}
           >
@@ -259,6 +400,14 @@ const NewMessage: React.FC<NewMessageProps> = ({
             </div>
           )}
         </div>
+        <button
+          type="button"
+          className="attach-btn"
+          title="Add Attachment"
+          onClick={() => setShowAttachmentsBar((s) => !s)}
+        >
+          🔗
+        </button>
         <label className="newMessage-label" id="number-label">
           <section id="number">#{selectedMessageNumber}</section> &gt;
           <select
@@ -324,6 +473,133 @@ const NewMessage: React.FC<NewMessageProps> = ({
           Cancel
         </button>
       </div>
+      {showAttachmentsBar && (
+        <div className="attachments-bar">
+          {/* Gespeicherte Attachments */}
+          {!isNew && savedAttachments.length > 0 && (
+            <>
+              <div className="attachments-list">
+                {savedAttachments
+                  .filter((a) => !a.isDeleted)
+                  .map((att) => {
+                    const label =
+                      att.title ||
+                      att.fileName ||
+                      att.href ||
+                      `#${att.attachmentId}`;
+                    const thumb =
+                      isImage(att.contentType) && (att.previewHref || att.href)
+                        ? (att.previewHref || att.href)!
+                        : null;
+                    const isLink = att.kind === 'external_url';
+
+                    return (
+                      <div
+                        key={`saved-${att.attachmentId}`}
+                        className="attachment-chip saved"
+                        role="button"
+                        title={label}
+                        onClick={() => openBackendAttachment(att)}
+                      >
+                        <span className="chip-text">{label}</span>
+                      </div>
+                    );
+                  })}
+              </div>
+              <hr className="attachments-sep" />
+            </>
+          )}
+          {/* Eingabezeile für neue Attachments */}
+          <div className="attachments-input-row">
+            <div className="attachment-mode">
+              <label>
+                <input
+                  type="radio"
+                  name="att-mode"
+                  value="link"
+                  checked={attachmentMode === 'link'}
+                  onChange={() => setAttachmentMode('link')}
+                />
+                Link
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="att-mode"
+                  value="file"
+                  checked={attachmentMode === 'file'}
+                  onChange={() => setAttachmentMode('file')}
+                />
+                File
+              </label>
+            </div>
+
+            {attachmentMode === 'link' ? (
+              <div className="attachment-fields">
+                <input
+                  type="url"
+                  placeholder="https://example.com"
+                  value={linkInput}
+                  onChange={(e) => setLinkInput(e.target.value)}
+                  className="attachment-input"
+                />
+                <input
+                  type="text"
+                  placeholder="Title (optional)"
+                  value={linkTitle}
+                  onChange={(e) => setLinkTitle(e.target.value)}
+                  className="attachment-input"
+                />
+                <button
+                  type="button"
+                  className="newMessage-btn"
+                  onClick={addLinkAttachment}
+                >
+                  Add
+                </button>
+              </div>
+            ) : (
+              <div className="attachment-fields">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={onFilePicked}
+                  id="attachment-file-upload"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Liste der pending Attachments */}
+          <div className="attachments-list">
+            {pendingAttachments.map((att) => (
+              <div key={att.id} className="attachment-chip pending">
+                {att.kind === 'external_url' ? (
+                  <>
+                    <span className="chip-text">{att.title ?? att.href}</span>
+                  </>
+                ) : (
+                  <>
+                    {'previewUrl' in att && att.previewUrl ? (
+                      <img src={att.previewUrl} alt="" className="chip-thumb" />
+                    ) : null}
+                    <span className="chip-text">
+                      {att.title ?? att.file.name}
+                    </span>
+                  </>
+                )}
+                <button
+                  className="chip-remove"
+                  onClick={() => removeAttachment(att.id)}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
