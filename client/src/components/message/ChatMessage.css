@@ -34,6 +34,7 @@
 
 .message-button-edit {
   margin-right: 10px;
+  margin-left: 10px;
 }
 
 .message-button-edit:hover {
@@ -128,18 +129,20 @@
 }
 
 .response-link:hover {
-  color: black;
+  color: dodgerblue;
 }
 
 .response-popup {
   position: absolute;
   background: transparent;
-  max-height: 300px;
+  max-height: 200px;
+  min-width: 50%;
   overflow-y: hidden;
   overflow-x: hidden;
   bottom: 85%;
   left: 30%;
   animation: fadeIn 0.2s ease-in-out;
+  pointer-events: auto;
 }
 
 @keyframes highlight {
@@ -159,11 +162,24 @@
   background-color: transparent;
   cursor: pointer;
   border-radius: 4px;
+  margin-right: 10px;
 }
 
 #emoji-btn:hover {
   border-color: dodgerblue;
   background-color: transparent;
+}
+
+#message-button-popup {
+  color: #2f4858; /* oder deine Standardtextfarbe */
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+#message-button-popup:hover {
+  color: dodgerblue;
 }
 
 /* horizontale Liste */

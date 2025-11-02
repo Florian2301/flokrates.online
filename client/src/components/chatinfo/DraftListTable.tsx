@@ -1,3 +1,5 @@
+import './ChatInfo.css';
+
 import { AppDispatch, RootState } from '../../store/store';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -27,34 +29,39 @@ export const DraftListTable: React.FC<Props> = ({ chats, messages }) => {
   };
 
   return (
-    <div className="table-chats">
-      <div className="table-rows-head">
+    <div className="table-drafts">
+      <div className="table-drafts-rows-head">
         <div className="thead" id="thead-number">
           #
         </div>
-        <div className="thead">Title</div>
-        <div className="thead">Status</div>
-        <div className="thead">Msg</div>
+        <div className="thead-drafts">Title</div>
+        <div className="thead-drafts">Status</div>
+        <div className="thead-drafts">Msg</div>
       </div>
       <div
         className={
           window.innerWidth <= 1000
-            ? 'chatlist-scroll-mobile'
-            : 'chatlist-scroll'
+            ? 'chatlist-drafts-scroll-mobile'
+            : 'chatlist-drafts-scroll'
         }
       >
         {chats.map((chat) => (
           <div
             key={chat.chatId}
-            className="table-rows-data"
+            className="table-drafts-rows-data"
             onClick={() => handleClick(chat)}
           >
-            <div className="table-columns" id="table-columns-number">
+            <div
+              className="table-drafts-columns"
+              id="table-drafts-columns-number"
+            >
               {chat.chatNumber}
             </div>
-            <div className="table-columns">{chat.title}</div>
-            <div className="table-columns">{chat.status}</div>
-            <div className="table-columns">
+            <div className="table-drafts-columns">{chat.title}</div>
+            <div className="table-drafts-columns" id="table-drafts-status">
+              {chat.status}
+            </div>
+            <div className="table-drafts-columns">
               {loadingCounts && countsByChatId[chat.chatId] == null
                 ? '…'
                 : (countsByChatId[chat.chatId] ?? 0)}

@@ -2,6 +2,15 @@ import './NewMessage.css';
 
 import { AppDispatch, RootState } from '../../store/store';
 import {
+  ArrowUpDown,
+  CornerRightUp,
+  Paperclip,
+  Plus,
+  Save,
+  Trash2,
+  X,
+} from 'lucide-react';
+import {
   NewAttachment,
   addAttachmentsToExistingMessage,
   changeMessage,
@@ -214,6 +223,8 @@ const NewMessage: React.FC<NewMessageProps> = ({
   };
 
   const handleDelete = () => {
+    const ok = window.confirm('Delete this message?');
+    if (!ok) return;
     dispatch(deleteMessageThunk(message.messageId));
     onCancel();
   };
@@ -368,7 +379,6 @@ const NewMessage: React.FC<NewMessageProps> = ({
       />
       <div className="actions" onMouseDown={startDrag} onMouseMove={onDrag}>
         <label className="newMessage-label">
-          Name
           <select
             className="newMessage-select"
             value={selectedActor}
@@ -406,10 +416,44 @@ const NewMessage: React.FC<NewMessageProps> = ({
           title="Add Attachment"
           onClick={() => setShowAttachmentsBar((s) => !s)}
         >
-          🔗
+          <Paperclip size={18} strokeWidth={1.5} />
         </button>
-        <label className="newMessage-label" id="number-label">
-          <section id="number">#{selectedMessageNumber}</section> &gt;
+        <button className="newMessage-btn" onClick={handleSave} title="Save">
+          <Save size={18} strokeWidth={1.5} />
+        </button>
+        <button className="newMessage-btn" onClick={onCancel} title="Cancel">
+          <X size={18} strokeWidth={1.5} />
+        </button>
+        <label className="newMessage-label" title="Respond to message">
+          <CornerRightUp size={18} strokeWidth={1.5} />
+          <select
+            className="newMessage-select"
+            value={respMessageId ?? '-'}
+            onChange={(e) =>
+              setRespMessageId(
+                e.target.value === '-' ? null : Number(e.target.value)
+              )
+            }
+          >
+            <option value="-">-</option>
+            {[...messages]
+              .filter((msg) => msg.messageNumber < selectedMessageNumber)
+              .sort((a, b) => a.messageNumber - b.messageNumber)
+              .map((msg) => (
+                <option key={msg.messageId} value={msg.messageId}>
+                  {msg.messageNumber}
+                </option>
+              ))}
+          </select>
+        </label>
+        <label
+          className="newMessage-label"
+          id="number-label"
+          title="move up or down"
+        >
+          <section id="number">
+            <ArrowUpDown size={18} strokeWidth={1.5} />
+          </section>
           <select
             className="newMessage-select"
             value={'-'}
@@ -434,43 +478,12 @@ const NewMessage: React.FC<NewMessageProps> = ({
               ))}
           </select>
         </label>
-
-        <label className="newMessage-label">
-          Re:
-          <span className="current-reply" id="number">
-            {respMessageId
-              ? `#${messages.find((m) => m.messageId === respMessageId)?.messageNumber}`
-              : '0'}
-          </span>
-          &gt;
-          <select
-            className="newMessage-select"
-            value={respMessageId ?? '-'}
-            onChange={(e) =>
-              setRespMessageId(
-                e.target.value === '-' ? null : Number(e.target.value)
-              )
-            }
-          >
-            <option value="-">-</option>
-            {[...messages]
-              .filter((msg) => msg.messageNumber < selectedMessageNumber)
-              .sort((a, b) => a.messageNumber - b.messageNumber)
-              .map((msg) => (
-                <option key={msg.messageId} value={msg.messageId}>
-                  {msg.messageNumber}
-                </option>
-              ))}
-          </select>
-        </label>
-        <button className="newMessage-btn" id="save-btn" onClick={handleSave}>
-          Save
-        </button>
-        <button className="newMessage-btn" onClick={handleDelete}>
-          Delete
-        </button>
-        <button className="newMessage-btn" onClick={onCancel}>
-          Cancel
+        <button
+          className="newMessage-btn"
+          onClick={handleDelete}
+          title="Delete"
+        >
+          <Trash2 size={18} strokeWidth={1.5} />
         </button>
       </div>
       {showAttachmentsBar && (
@@ -555,7 +568,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
                   className="newMessage-btn"
                   onClick={addLinkAttachment}
                 >
-                  Add
+                  <Plus size={18} strokeWidth={1.5} />
                 </button>
               </div>
             ) : (

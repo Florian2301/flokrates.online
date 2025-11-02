@@ -1,6 +1,16 @@
 import './ChatInfo.css';
 
 import { AppDispatch, RootState } from '../../store/store';
+import {
+  BookOpenCheck,
+  BrushCleaning,
+  PencilLine,
+  Plus,
+  Save,
+  SquarePen,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { Chat, Language, Status, statusMap } from '../../types/Chats';
 import { LanguageCode, languageMap } from '../../constants/language';
 import React, { useEffect, useState } from 'react';
@@ -105,6 +115,8 @@ const ChatInfo: React.FC = () => {
 
   const handlePublish = async () => {
     if (!chatForm.chatId) return;
+    const ok = window.confirm('Publish this chat?');
+    if (!ok) return;
     const payloadRefs = Array.isArray(chatForm.referencedChatIds)
       ? chatForm.referencedChatIds
       : [];
@@ -144,6 +156,8 @@ const ChatInfo: React.FC = () => {
 
   const handleDelete = async () => {
     if (!chatForm?.chatId) return;
+    const ok = window.confirm('Delete this chat?');
+    if (!ok) return;
     const result = await dispatch(deleteChatThunk(chatForm.chatId));
     if (deleteChatThunk.fulfilled.match(result)) {
       handleClear();
@@ -209,6 +223,8 @@ const ChatInfo: React.FC = () => {
 
   const handleRemoveReference = (refId: number) => {
     if (!chatId) return;
+    const ok = window.confirm('Delete this message?');
+    if (!ok) return;
     dispatch(deleteReference({ chatId, refId }));
   };
 
@@ -279,7 +295,7 @@ const ChatInfo: React.FC = () => {
       </div>
       {/* REFERENZEN */}
       <div className="chatinfo">
-        <p className="chatpara">Referenzen:</p>
+        <p className="chatpara">Relations:</p>
 
         {editMode ? (
           <div className="chatinfo-ref-editor">
@@ -428,39 +444,56 @@ const ChatInfo: React.FC = () => {
         <button
           className="chatinfo-buttons"
           onClick={() => setEditMode((prev) => !prev)}
+          title="Edit/Cancel"
         >
-          {editMode ? 'Cancel' : 'Edit'}
+          {editMode ? (
+            <X size={18} strokeWidth={1.5} />
+          ) : (
+            <PencilLine size={18} strokeWidth={1.5} />
+          )}
         </button>
-        <button className="chatinfo-buttons" onClick={handleClear}>
-          Clear
+        <button
+          className="chatinfo-buttons"
+          onClick={handleClear}
+          title="Clear"
+        >
+          <BrushCleaning size={18} strokeWidth={1.5} />
         </button>
         <button
           className="chatinfo-buttons"
           onClick={handleCreate}
           disabled={editMode}
+          title="New Chat"
         >
-          Create
+          <SquarePen size={18} strokeWidth={1.5} />
         </button>
       </div>
-      <div className="chatinfo-actions">
-        <button className="chatinfo-buttons" onClick={handleSave}>
-          Save
-        </button>
-        <button
-          className="chatinfo-buttons"
-          onClick={handlePublish}
-          disabled={!editMode}
-        >
-          Publish
-        </button>
-        <button
-          className="chatinfo-buttons"
-          onClick={handleDelete}
-          disabled={!editMode}
-        >
-          Delete
-        </button>
-      </div>
+      {editMode ? (
+        <div className="chatinfo-actions">
+          <button
+            className="chatinfo-buttons"
+            onClick={handleSave}
+            title="Save"
+          >
+            <Save size={18} strokeWidth={1.5} />
+          </button>
+          <button
+            className="chatinfo-buttons"
+            onClick={handlePublish}
+            title="publish"
+          >
+            <BookOpenCheck size={18} strokeWidth={1.5} />
+          </button>
+          <button
+            className="chatinfo-buttons"
+            onClick={handleDelete}
+            title="Delete"
+          >
+            <Trash2 size={18} strokeWidth={1.5} />
+          </button>
+        </div>
+      ) : null}
+      <hr className="chatinfo-divider" />
       <div className="chat-overview">
         <DraftListTable chats={drafts} messages={messages} />
       </div>

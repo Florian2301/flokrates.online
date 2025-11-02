@@ -41,10 +41,6 @@ export const ChatBox: React.FC = () => {
     setActiveEditId(tempId);
   };
 
-  if (!selectedChat) {
-    return <div>Bitte wähle zuerst einen Chat aus.</div>;
-  }
-
   return (
     <div className="chatbox-main">
       {messages

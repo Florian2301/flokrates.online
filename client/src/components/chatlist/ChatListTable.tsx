@@ -1,5 +1,6 @@
 import './ChatList.css';
 
+import { FileText, Info } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { AppDispatch } from '../../store/store';
@@ -71,6 +72,7 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
             <div className="table-columns">{chat.title}</div>
             <div
               className="table-columns"
+              title="Quick Info"
               onClick={(e) => {
                 e.stopPropagation();
                 setActiveChatId(
@@ -78,15 +80,16 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
                 );
               }}
             >
-              info
+              <Info size={18} strokeWidth={1.5} />
             </div>
             <div
               className="table-columns"
+              title="PDF Download"
               onClick={(e) => {
                 e.stopPropagation();
               }}
             >
-              pdf
+              <FileText size={18} strokeWidth={1.5} />
             </div>
             <div></div>
             {activeChatId === chat.chatId && (

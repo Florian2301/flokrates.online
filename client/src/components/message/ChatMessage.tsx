@@ -1,5 +1,6 @@
 import './ChatMessage.css';
 
+import { ChevronsUp, PencilLine, Save, SquarePen, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   fetchAttachmentsForMessage,
@@ -36,6 +37,7 @@ type ChatMessageProps = {
   activeEditId: number | null;
   setActiveEditId: React.Dispatch<React.SetStateAction<number | null>>;
   previewMode?: boolean;
+  onClosePreview?: () => void;
 };
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -44,6 +46,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   activeEditId,
   setActiveEditId,
   previewMode = false,
+  onClosePreview = () => {},
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { messageId, messageText, actor, messageNumber, respId } = message;
@@ -177,19 +180,27 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     setShowResponsePopup(false);
   };
 
+  const handleClosePreviewClick: React.MouseEventHandler<HTMLSpanElement> = (
+    e
+  ) => {
+    e.stopPropagation();
+    onClosePreview();
+  };
+
   return (
     <div
       className={`message-wrapper ${alignClass}`}
       id={`message-${messageId}`}
     >
       {showResponsePopup && responseMessage && (
-        <div className="response-popup">
+        <div className="response-popup" onClick={(e) => e.stopPropagation()}>
           <ChatMessage
             message={responseMessage}
             isEditing={false}
             activeEditId={null}
             setActiveEditId={() => {}}
             previewMode={true}
+            onClosePreview={() => setShowResponsePopup(false)}
           />
         </div>
       )}
@@ -219,48 +230,37 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             <span id="message-span"># {messageNumber}</span>
             <span className={colorClass}>{actorName}</span>
           </div>
-          <div className="message-header-block">
-            {edit && (
-              <div className="emoji-section">
-                <button
-                  id="emoji-btn"
-                  type="button"
-                  onClick={() => setShowEmojiPicker((prev) => !prev)}
-                >
-                  😊
-                </button>
-                {showEmojiPicker && (
-                  <div
-                    className="emoji-picker-popup"
-                    id="empoji-picker-pop-chatmessage"
-                  >
-                    <Picker
-                      date={data}
-                      onEmojiSelect={handleEmojiSelect}
-                      previewPosition="none"
-                      skinTonePosition="none"
-                      theme="light"
-                      sheetSize={32}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
           {!previewMode ? (
             <div className="message-header-block">
-              {edit ? (
-                <span
-                  className="message-button-edit"
-                  onClick={() => {
-                    setEdit(false);
-                  }}
-                >
-                  Close
-                </span>
-              ) : null}
+              {edit && (
+                <div className="emoji-section">
+                  <button
+                    id="emoji-btn"
+                    type="button"
+                    onClick={() => setShowEmojiPicker((prev) => !prev)}
+                  >
+                    😊
+                  </button>
+                  {showEmojiPicker && (
+                    <div
+                      className="emoji-picker-popup"
+                      id="empoji-picker-pop-chatmessage"
+                    >
+                      <Picker
+                        date={data}
+                        onEmojiSelect={handleEmojiSelect}
+                        previewPosition="none"
+                        skinTonePosition="none"
+                        theme="light"
+                        sheetSize={32}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
               <span
                 className="message-button-edit"
+                title="Save"
                 onClick={() => {
                   if (edit) {
                     handleSaveEdit();
@@ -277,10 +277,24 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   }
                 }}
               >
-                {edit ? 'Save' : 'Edit'}
+                {edit ? <Save size={18} strokeWidth={1.5} /> : null}
               </span>
               <span
                 className="message-button-edit"
+                title="Edit/Cancel"
+                onClick={() => {
+                  setEdit(!edit);
+                }}
+              >
+                {edit ? (
+                  <X size={18} strokeWidth={1.5} />
+                ) : (
+                  <PencilLine size={18} strokeWidth={1.5} />
+                )}
+              </span>
+              <span
+                className="message-button-edit"
+                title="full edit"
                 onClick={() => {
                   if (fullEdit) {
                     const event = new CustomEvent('save-message', {
@@ -300,16 +314,25 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   }
                 }}
               >
-                Fulledit
+                <SquarePen size={18} strokeWidth={1.5} />
               </span>
             </div>
           ) : (
             <div className="message-header-block">
               <span
                 className="message-button-edit"
+                id="message-button-popup"
+                onClick={handleClosePreviewClick}
+              >
+                <X size={18} strokeWidth={1.5} />
+              </span>
+              <span
+                className="message-button-edit"
+                id="message-button-popup"
+                title="Jump to original message"
                 onClick={handleJumpToMessage}
               >
-                jump to
+                <ChevronsUp size={18} strokeWidth={1.5} />
               </span>
             </div>
           )}

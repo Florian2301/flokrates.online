@@ -74,9 +74,9 @@
 .chatinfo-divider {
   margin-top: 1rem;
   margin-bottom: 1rem;
-  border: none;
-  height: 1px;
-  background-color: #444;
+  border-bottom-color: dodgerblue;
+  border-bottom-width: thin;
+  border-bottom-style: solid;
 }
 
 /* References */
@@ -133,4 +133,60 @@
 .linklike:hover {
   color: dodgerblue;
   text-decoration: underline;
+}
+
+.table-drafts {
+  color: lightgray;
+}
+
+.table-drafts-rows-head {
+  display: grid;
+  grid-template-columns: 8% 72% 10% 10%;
+  border-bottom-color: dodgerblue;
+  border-bottom-width: thin;
+  border-bottom-style: solid;
+}
+
+.table-drafts-rows-data {
+  display: grid;
+  grid-template-columns: 8% 72% 10% 10%;
+}
+
+.table-drafts-rows-data:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  color: dodgerblue;
+}
+
+.thead-drafts {
+  padding: 0.5rem;
+  text-align: left;
+  font-size: 1rem;
+}
+
+#thead-drafts-number {
+  text-align: center;
+}
+
+.table-drafts-columns {
+  padding: 0.5rem;
+  text-align: left;
+  word-wrap: break-word;
+  font-size: 1rem;
+}
+
+.table-drafts-columns:hover {
+  text-decoration: underline;
+}
+
+#table-drafts-columns-number {
+  text-align: center;
+}
+
+.chatlist-drafts-scroll {
+  overflow: auto;
+}
+
+.chatlist-drafts-scroll-mobile {
+  overflow: auto;
 }

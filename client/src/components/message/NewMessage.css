@@ -41,10 +41,8 @@
   border-radius: 4px;
   cursor: pointer;
   height: 1.5rem;
-}
-
-#save-btn {
-  margin-left: 1rem;
+  background: transparent;
+  border: none;
 }
 
 .newMessage-btn:hover {
