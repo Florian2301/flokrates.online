@@ -2,6 +2,7 @@ import './Navigation.css';
 
 import { Nav, NavDropdown } from 'react-bootstrap';
 
+import { Menu } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 const NavBar = () => {
@@ -26,10 +27,9 @@ const NavBar = () => {
         </Nav.Link>
       </Nav.Item>
       <NavDropdown
-        title="More..."
-        id="nav-dropdown"
+        title={<Menu size={18} strokeWidth={1.5} />}
         menuVariant="dark"
-        placement="right"
+        id="menu"
       >
         <NavDropdown.Item
           className="nav-dropdown-item"
@@ -45,7 +45,6 @@ const NavBar = () => {
         >
           Settings
         </NavDropdown.Item>
-        <NavDropdown.Divider />
         <NavDropdown.Item
           className="nav-dropdown-item"
           as={NavLink}

@@ -5,7 +5,6 @@ import {
   BookOpenCheck,
   BrushCleaning,
   PencilLine,
-  Plus,
   Save,
   SquarePen,
   Trash2,

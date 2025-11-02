@@ -1,18 +1,69 @@
 .nav-pills .nav-link.active {
   background-color: transparent;
-  color: #0d6efd;
+  color: dodgerblue;
   /*color: #0d6efd; standardblau bei react bootstrap*/
 }
 
 .nav-link {
   color: silver;
   font-weight: bold;
+  font-size: smaller;
 }
 
-#nav-dropdown.active {
-  color: #0d6efd;
+.nav-link:hover {
+  color: dodgerblue;
 }
 
-.nav-dropdown-item:hover {
-  color: #0d6efd;
+/* Items im Menü */
+.dropdown .dropdown-item {
+  color: #ddd;
+}
+
+/* Hover-Effekt */
+.dropdown .dropdown-item:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+  color: white;
+}
+
+/* Aktiver Link (wenn Route aktiv ist) */
+.dropdown .dropdown-item.active {
+  background-color: rgba(0, 0, 0, 0.3);
+  color: silver;
+}
+
+.dropdown-toggle#nav-dropdown {
+  background: transparent;
+  color: silver;
+  font-size: smaller;
+  border: none;
+}
+
+.dropdown-toggle#nav-dropdown:active {
+  color: dodgerblue;
+}
+
+.dropdown-toggle#nav-dropdown:hover {
+  color: dodgerblue;
+}
+
+.nav-dropdown-item {
+  font-size: medium;
+}
+
+.dropdown-menu-dark {
+  background-color: rgba(0, 0, 0, 0.3);
+  min-width: 5rem;
+}
+
+#menu {
+  background-color: transparent;
+  color: silver;
+}
+
+#menu:hover {
+  color: dodgerblue;
+}
+
+.dropdown-menu {
+  margin-left: -1rem;
 }

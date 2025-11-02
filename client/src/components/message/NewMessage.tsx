@@ -391,7 +391,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
         </label>
         <div className="emoji-section">
           <button
-            id="emoji-btn"
+            id="newMessage-btn"
             type="button"
             onClick={() => setShowEmojiPicker((prev) => !prev)}
           >
@@ -412,7 +412,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
         </div>
         <button
           type="button"
-          className="attach-btn"
+          className="newMessage-btn"
           title="Add Attachment"
           onClick={() => setShowAttachmentsBar((s) => !s)}
         >
@@ -446,11 +446,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
               ))}
           </select>
         </label>
-        <label
-          className="newMessage-label"
-          id="number-label"
-          title="move up or down"
-        >
+        <label className="newMessage-label" title="move up or down">
           <section id="number">
             <ArrowUpDown size={18} strokeWidth={1.5} />
           </section>

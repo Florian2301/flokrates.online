@@ -4,7 +4,7 @@
 
 .table-rows-head {
   display: grid;
-  grid-template-columns: 8% 76% 8% 8%;
+  grid-template-columns: 8% 78% 6% 8%;
   border-bottom-color: dodgerblue;
   border-bottom-width: thin;
   border-bottom-style: solid;
@@ -12,7 +12,7 @@
 
 .table-rows-data {
   display: grid;
-  grid-template-columns: 8% 76% 8% 8%;
+  grid-template-columns: 8% 78% 6% 8%;
 }
 
 .table-rows-data:hover {
