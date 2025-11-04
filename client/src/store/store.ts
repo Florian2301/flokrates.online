@@ -1,3 +1,4 @@
+import aboutsReducer from './aboutSlice';
 import chatsReducer from './chatsSclice';
 import commentsReducer from './commentsSlice';
 import { configureStore } from '@reduxjs/toolkit';
@@ -10,6 +11,7 @@ export const store = configureStore({
     chats: chatsReducer,
     comments: commentsReducer,
     networks: networksReducer,
+    about: aboutsReducer,
   },
 });
 

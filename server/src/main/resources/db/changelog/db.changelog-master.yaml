@@ -11,3 +11,7 @@ databaseChangeLog:
       file: db/changelog/db.changelog-2025-11-01-msgatt-add-checksum.yaml
   - include:
       file: db/changelog/db.changelog-2025-11-01-msgatt-add-date-modified.yaml
+  - include:
+      - file: db/changelog/db.changelog-2025-11-04-create-about-table.yaml
+  - include:
+      - file: db/changelog/db.changelog-2025-11-04-add-section-identifier.yaml

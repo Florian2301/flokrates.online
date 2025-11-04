@@ -18,7 +18,7 @@
 .table-rows-data:hover {
   background-color: rgba(0, 0, 0, 0.3);
   cursor: pointer;
-  color: dodgerblue;
+  color: white;
 }
 
 .thead {

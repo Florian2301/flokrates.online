@@ -1,0 +1,72 @@
+databaseChangeLog:
+  # 1) Tabelle erstellen
+  - changeSet:
+      id: create-table-about
+      author: floki
+      changes:
+        - createTable:
+            tableName: about
+            remarks: "Stores localized text entries"
+            columns:
+              - column:
+                  name: id
+                  type: INT
+                  autoIncrement: true
+                  remarks: "Primary Key"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: text
+                  type: TEXT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: language
+                  type: VARCHAR(2)
+                  remarks: "German (DE) or English (EN)"
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: date_created
+                  type: TIMESTAMP
+                  remarks: "Date text has been created"
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: date_modified
+                  type: TIMESTAMP
+                  remarks: "Date text has been changed (nullable)"
+
+      rollback:
+        - dropTable:
+            tableName: about
+
+  # 2) (Optional, MySQL): Defaults + ON UPDATE für Zeitstempel
+  - changeSet:
+      id: text-mysql-timestamp-defaults
+      author: floki
+      changes:
+        - sql:
+            dbms: mysql
+            sql: |
+              ALTER TABLE text_entries
+              MODIFY date_created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              MODIFY date_modified TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP;
+      rollback:
+        - sql:
+            dbms: mysql
+            sql: |
+              ALTER TABLE text_entries
+              MODIFY date_created TIMESTAMP NOT NULL,
+              MODIFY date_modified TIMESTAMP NULL;

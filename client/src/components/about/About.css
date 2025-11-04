@@ -1,0 +1,46 @@
+.about-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+#about-tabs-tab-project {
+  font-size: small;
+}
+
+#about-tabs-tab-author {
+  font-size: small;
+}
+
+#about-tabs-tab-flokrates {
+  font-size: small;
+}
+
+#about-tabs-tab-lotharius {
+  font-size: small;
+}
+
+#about-tabs-tab-pablo {
+  font-size: small;
+}
+
+/* Einzelne Tab-Titel (nicht aktiv) */
+#about-tabs .nav-link {
+  background-color: transparent;
+  transition: all 0.2s ease-in-out;
+  margin-bottom: 5px;
+}
+
+/* Hover-Effekt */
+#about-tabs .nav-link:hover {
+  background-color: transparent;
+  border: 1px solid dodgerblue;
+  border-radius: 6px;
+  color: silver;
+}
+
+/* Aktiver Tab */
+#about-tabs .nav-link.active {
+  color: white;
+  border: 1px solid dodgerblue;
+  border-radius: 6px;
+}

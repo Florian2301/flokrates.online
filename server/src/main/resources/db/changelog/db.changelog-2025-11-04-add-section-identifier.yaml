@@ -1,0 +1,21 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-section-identifier
+      author: floki
+      changes:
+        - addColumn:
+            tableName: about
+            columns:
+              - column:
+                  name: section_key
+                  type: VARCHAR(50)
+                  remarks: "Logical section identifier (e.g. project, author, flokrates)"
+                  constraints:
+                    nullable: false
+                    defaultValue: 'project'
+                  afterColumn: id
+
+      rollback:
+        - dropColumn:
+            tableName: about
+            columnName: section_key
