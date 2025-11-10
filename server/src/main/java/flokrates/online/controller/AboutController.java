@@ -74,6 +74,7 @@ public class AboutController {
 
         About existing = existingOpt.get();
         existing.setTitle(dto.getTitle());
+        existing.setSectionKey(dto.getSectionKey());
         existing.setText(dto.getText());
         existing.setLanguage(dto.getLanguage());
         existing.setDateModified(LocalDateTime.now());
@@ -90,6 +91,7 @@ public class AboutController {
         About existing = existingOpt.get();
         updates.forEach((key, value) -> {
             switch (key) {
+                case "sectionKey" -> existing.setSectionKey((String) value);
                 case "title" -> existing.setTitle((String) value);
                 case "text" -> existing.setText((String) value);
                 case "language" -> {

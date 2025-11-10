@@ -1,4 +1,5 @@
 export interface About {
+  imageUrl: string | undefined;
   id: number;
   sectionKey: string;
   title: string;

@@ -18,8 +18,8 @@ export const ChatList: React.FC = () => {
     dispatch(fetchChats());
   }, [dispatch]);
 
-  if (loading) return <div>Lade Chats...</div>;
-  if (error) return <div>Fehler beim Laden: {error}</div>;
+  if (loading) console.log('Lade Chats...');
+  if (error) console.log('Fehler beim Laden:', error);
 
   return (
     <div className="chat-overview">

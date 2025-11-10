@@ -1,6 +1,8 @@
 .about-wrapper {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 #about-tabs-tab-project {
@@ -43,4 +45,98 @@
   color: white;
   border: 1px solid dodgerblue;
   border-radius: 6px;
+}
+
+.about-text-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* zentriert Inhalte (Überschrift, Text, ggf. Bild) */
+  text-align: center; /* Überschrift zentriert */
+  margin: 1rem auto;
+  background-color: rgba(0, 0, 0, 0.3);
+  width: 90%;
+  min-width: 25rem;
+  border-radius: 6px;
+}
+
+.about-text-content {
+  color: silver;
+  width: 90%;
+  text-align: justify; /* Blocksatz */
+  line-height: 1.6;
+}
+
+#about-title {
+  margin-top: 1rem;
+}
+
+#about-text {
+  font-size: 16px;
+}
+
+.about-input,
+.about-textarea {
+  width: 100%;
+  margin-bottom: 1rem;
+  border: 1px solid #666;
+  border-radius: 6px;
+  background: transparent;
+  color: white;
+  padding: 8px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.about-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.about-action {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.about-edit-btn {
+  font-size: 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  height: 1.8rem;
+  background-color: lightgray;
+  padding: 0 0.8rem;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.about-edit-btn:hover {
+  border-color: dodgerblue;
+}
+
+.about-input-language {
+  height: 1.8rem;
+  line-height: 1.8rem; /* sorgt dafür, dass Text mittig steht */
+  padding: 0 0.5rem; /* horizontaler Innenabstand */
+  vertical-align: middle;
+  color: black;
+  background-color: lightgray;
+  border: 1px solid #666;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  appearance: none;
+}
+
+.about-input-language:focus {
+  border-color: dodgerblue;
+  outline: none;
+}
+
+.about-input-language option {
+  background-color: lightgray;
+  font-size: 0.9rem;
+}
+
+#about-edit-btn-new {
+  margin-bottom: 1rem;
 }

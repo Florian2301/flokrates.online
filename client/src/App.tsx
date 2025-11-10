@@ -2,7 +2,7 @@ import './App.css';
 
 import { Route, Routes } from 'react-router-dom';
 
-import About from './components/about/About';
+import AboutPage from './components/about/AboutPage';
 import { BrowserRouter } from 'react-router-dom';
 import ChatBox from './components/chatbox/ChatBox';
 import ChatInfo from './components/chatinfo/ChatInfo';
@@ -19,7 +19,7 @@ function App() {
             <Route path="/chatlist" element={<ChatList />} />
             <Route path="/chatbox" element={<ChatBox />} />
             <Route path="/chatinfo" element={<ChatInfo />} />
-            <Route path="/about" element={<About />} />
+            <Route path="/about" element={<AboutPage />} />
           </Routes>
         </MainWindow>
       </div>
