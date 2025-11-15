@@ -43,7 +43,6 @@ public class CommentService {
             existing.setChatId(dto.getChatId());
             existing.setSender(dto.getSender());
             existing.setCommentText(dto.getCommentText());
-            existing.setDateModified(LocalDateTime.now());
             return commentRepo.save(existing);
         });
     }

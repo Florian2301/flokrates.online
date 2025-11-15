@@ -29,9 +29,9 @@ public class MessageService {
 
     public Message createMessage(Message entity) {
         // Timestamps setzen
-        var now = LocalDateTime.now();
-        if (entity.getDateCreated() == null) entity.setDateCreated(now);
-        entity.setDateModified(now);
+//        var now = LocalDateTime.now();
+//        if (entity.getDateCreated() == null) entity.setDateCreated(now);
+//        entity.setDateModified(now);
 
         // messageNumber vergeben, falls nicht gesetzt
         if (entity.getMessageNumber() == null) {
@@ -64,7 +64,7 @@ public class MessageService {
             existing.setRespId(dto.getRespId());
             if (dto.getActor() != null) existing.setActor(dto.getActor());
             existing.setMessageText(dto.getMessageText());
-            existing.setDateModified(LocalDateTime.now());
+//            existing.setDateModified(LocalDateTime.now());
             return messageRepo.save(existing);
         });
     }

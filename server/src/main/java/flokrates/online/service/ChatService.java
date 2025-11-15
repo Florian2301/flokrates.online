@@ -25,9 +25,9 @@ public class ChatService {
     private NetworkRepo networkRepo;
 
     public Chat saveChat(Chat chat) {
-            var now = LocalDateTime.now();
-            if (chat.getDateCreated() == null) chat.setDateCreated(now);
-            chat.setDateModified(now);
+//            var now = LocalDateTime.now();
+//            if (chat.getDateCreated() == null) chat.setDateCreated(now);
+//            chat.setDateModified(now);
 
         return chatRepo.save(chat);
     }

@@ -1,6 +1,8 @@
 package flokrates.online.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,8 +32,10 @@ public class Chat {
     private Integer authorId;
     @Column(name = "date_published")
     private LocalDateTime datePublished;
+    @CreationTimestamp
     @Column(name = "date_created", nullable = false)
     private LocalDateTime dateCreated;
+    @UpdateTimestamp
     @Column(name = "date_modified")
     private LocalDateTime dateModified;
 

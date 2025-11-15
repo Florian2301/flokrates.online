@@ -22,11 +22,11 @@ public class AboutService {
      * Erstellt oder aktualisiert einen About-Eintrag.
      */
     public About save(About about) {
-        LocalDateTime now = LocalDateTime.now();
-        if (about.getDateCreated() == null) {
-            about.setDateCreated(now);
-        }
-        about.setDateModified(now);
+//        LocalDateTime now = LocalDateTime.now();
+//        if (about.getDateCreated() == null) {
+//            about.setDateCreated(now);
+//        }
+//        about.setDateModified(now);
         return aboutRepo.save(about);
     }
 

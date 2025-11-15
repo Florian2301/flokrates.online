@@ -1,6 +1,8 @@
 package flokrates.online.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -14,8 +16,10 @@ public class Network {
     private Integer chatId;
     @Column(name = "ref_id", columnDefinition = "INT", nullable = false)
     private Integer refId;
+    @CreationTimestamp
     @Column(name = "date_created", nullable = false)
     private LocalDateTime dateCreated;
+    @UpdateTimestamp
     @Column(name = "date_modified")
     private LocalDateTime dateModified;
     @PrePersist

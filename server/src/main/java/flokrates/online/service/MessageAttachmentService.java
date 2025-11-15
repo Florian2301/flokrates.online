@@ -61,9 +61,9 @@ public class MessageAttachmentService {
         ensureMessageExists(messageId);
         a.setMessageId(messageId);
         validateKindAndFields(a);
-        var now = LocalDateTime.now();
-        if (a.getDateCreated() == null) a.setDateCreated(now);
-        a.setDateModified(now);
+//        var now = LocalDateTime.now();
+//        if (a.getDateCreated() == null) a.setDateCreated(now);
+//        a.setDateModified(now);
         return repo.save(a);
     }
 
@@ -87,7 +87,7 @@ public class MessageAttachmentService {
                     if (dto.getHeightPx() != null) a.setHeightPx(dto.getHeightPx());
                     if (dto.getDurationMs() != null) a.setDurationMs(dto.getDurationMs());
                     if (dto.getPageCount() != null) a.setPageCount(dto.getPageCount());
-                    a.setDateModified(LocalDateTime.now());
+//                    a.setDateModified(LocalDateTime.now());
                     validateKindAndFields(a);
                     return repo.save(a);
                 });

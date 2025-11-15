@@ -23,10 +23,10 @@ public class NetworkService {
     private NetworkRepo networkRepo;
 
     public Network saveNetwork(Network network) {
-        if (network.getDateCreated() == null) {
-            network.setDateCreated(LocalDateTime.now());
-        }
-        network.setDateModified(LocalDateTime.now());
+//        if (network.getDateCreated() == null) {
+//            network.setDateCreated(LocalDateTime.now());
+//        }
+//        network.setDateModified(LocalDateTime.now());
         return networkRepo.save(network);
     }
     public List<Network> getAllNetworks() {
@@ -41,7 +41,7 @@ public class NetworkService {
         return networkRepo.findById(id).map(n -> {
             n.setChatId(dto.getChatId());
             n.setRefId(dto.getRefId());
-            n.setDateModified(LocalDateTime.now());
+//            n.setDateModified(LocalDateTime.now());
             return networkRepo.save(n);
         });
     }
@@ -61,7 +61,7 @@ public class NetworkService {
                     // weitere erlaubte Keys hier whitelisten
                 }
             });
-            n.setDateModified(LocalDateTime.now());
+//            n.setDateModified(LocalDateTime.now());
             return networkRepo.save(n);
         });
     }
@@ -90,15 +90,15 @@ public class NetworkService {
 
         if (existing.isPresent()) {
             Network n = existing.get();
-            n.setDateModified(LocalDateTime.now());
+//            n.setDateModified(LocalDateTime.now());
             return networkRepo.save(n);
         }
 
         Network n = new Network();
         n.setChatId(chatId);
         n.setRefId(refId);
-        n.setDateCreated(LocalDateTime.now());
-        n.setDateModified(LocalDateTime.now());
+//        n.setDateCreated(LocalDateTime.now());
+//        n.setDateModified(LocalDateTime.now());
         return networkRepo.save(n);
     }
 

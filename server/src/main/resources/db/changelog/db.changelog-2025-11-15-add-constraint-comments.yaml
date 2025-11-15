@@ -1,0 +1,49 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2025-11-15-comments-fk-and-index
+      author: floki
+      preConditions:
+        onFail: CONTINUE
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_comments_chat
+      changes:
+        - addNotNullConstraint:
+            tableName: comments
+            columnName: chat_id
+            columnDataType: INT      # bei Bedarf an DB-Typ anpassen
+
+        - addForeignKeyConstraint:
+            baseTableName: comments
+            baseColumnNames: chat_id
+            referencedTableName: chats
+            referencedColumnNames: chat_id
+            constraintName: fk_comments_chat
+            onDelete: CASCADE
+
+        - createIndex:
+            tableName: comments
+            indexName: ix_comments_chat
+            columns:
+              - column:
+                  name: chat_id
+
+        - createIndex:
+            tableName: comments
+            indexName: ix_comments_chat_created
+            columns:
+              - column:
+                  name: chat_id
+              - column:
+                  name: date_created
+
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: comments
+            constraintName: fk_comments_chat
+        - dropIndex:
+            tableName: comments
+            indexName: ix_comments_chat_created
+        - dropIndex:
+            tableName: comments
+            indexName: ix_comments_chat

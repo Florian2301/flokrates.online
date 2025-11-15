@@ -23,10 +23,10 @@ public class AuthorService {
     private AuthorRepo authorRepo;
 
     public Author saveAuthor(Author author) {
-        if (author.getDateCreated() == null) {
-            author.setDateCreated(LocalDateTime.now());
-        }
-        author.setDateModified(LocalDateTime.now());
+//        if (author.getDateCreated() == null) {
+//            author.setDateCreated(LocalDateTime.now());
+//        }
+//        author.setDateModified(LocalDateTime.now());
         return authorRepo.save(author);
     }
 
@@ -45,7 +45,7 @@ public class AuthorService {
             if (dto.getPassword() != null) {
                 existing.setPassword(dto.getPassword());
             }
-            existing.setDateModified(LocalDateTime.now());
+//            existing.setDateModified(LocalDateTime.now());
             return authorRepo.save(existing);
         });
     }
@@ -64,7 +64,7 @@ public class AuthorService {
                     }
                 }
             });
-            existing.setDateModified(LocalDateTime.now());
+//            existing.setDateModified(LocalDateTime.now());
             return authorRepo.save(existing);
         });
     }
