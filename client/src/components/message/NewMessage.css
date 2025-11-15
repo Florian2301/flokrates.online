@@ -76,6 +76,7 @@
   font-size: 16px;
   word-break: break-all;
   overflow-y: scroll;
+  min-height: 10rem;
 }
 
 /* Attachments*/

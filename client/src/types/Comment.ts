@@ -6,3 +6,8 @@ export interface Comment {
   dateCreated: string;
   dateModified: string | null;
 }
+
+export type NewCommentPayload = Pick<
+  Comment,
+  'chatId' | 'sender' | 'commentText'
+>;

@@ -1,0 +1,138 @@
+.comment-item-wrapper {
+  display: flex;
+  margin: 0.5rem 0;
+  flex-direction: column;
+  position: relative;
+}
+
+.comment-container {
+  border-color: black;
+  border-width: thin;
+  border-style: solid;
+  border-radius: 1rem;
+  color: #2f4858;
+  position: relative;
+  width: fit-content;
+  background-color: white;
+  background-image: url('../../img/message_background.jpg'); /* optional */
+}
+
+.comment-container-preview {
+  border-color: royalblue;
+  border-width: medium;
+}
+
+.comment-edit {
+  min-width: 75%;
+  max-width: 100%;
+}
+
+.comment-save {
+  min-width: 50%;
+  max-width: 75%;
+}
+
+.comment-button-edit {
+  margin-right: 10px;
+  margin-left: 10px;
+}
+.comment-button-edit:hover {
+  color: black;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.comment-header {
+  border-color: black;
+  border-width: thin;
+  border-bottom-style: dotted;
+  padding: 0rem 0.6rem;
+  display: flex;
+  justify-content: space-between;
+  height: 2rem;
+  font-size: 16px;
+  align-items: center;
+}
+
+.comment-header-block {
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.comment-body {
+  padding: 0rem 0.6rem 0.2rem 0.6rem;
+  word-wrap: break-word;
+  margin-left: 0.5rem;
+  white-space: pre-wrap;
+  font-size: 16px;
+  text-align: left;
+  word-break: break-all;
+}
+
+.comment-textarea {
+  width: 100%;
+  font-size: 16px;
+  word-break: break-all;
+}
+
+.comment-display {
+  font-size: 16px;
+  word-break: break-all;
+}
+
+.comment-text-blue {
+  color: royalblue;
+}
+.comment-text-orange {
+  color: orangered;
+}
+.comment-text-pink {
+  color: deeppink;
+}
+
+.comment-align-left .comment-container {
+  margin-left: 0;
+  margin-right: auto;
+}
+.comment-align-center .comment-container {
+  margin-left: auto;
+  margin-right: auto;
+}
+.comment-align-right .comment-container {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.comment-emoji-btn {
+  background-color: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-right: 10px;
+  border: 1px solid transparent;
+}
+.comment-emoji-btn:hover {
+  border-color: dodgerblue;
+  background-color: transparent;
+}
+
+/* kleine Sender/Datum Styles */
+.comment-sender-strong {
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.comment-sender-input {
+  margin-left: 6px;
+}
+.comment-date {
+  color: #2f4858;
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+/* Emoji Picker Container */
+.comment-emoji-picker {
+  position: absolute;
+  z-index: 10;
+}

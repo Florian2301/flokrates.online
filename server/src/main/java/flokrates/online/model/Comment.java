@@ -20,7 +20,7 @@ public class Comment {
 //            foreignKey = @ForeignKey(name = "fk_comments_chat"))
 //    private Chat chat;
     // ALT: read-only Spiegel – bleibt für Repos/Mapper/DTOs erstmal erhalten
-    @Column(name = "chat_id", insertable = false, updatable = false)
+    @Column(name = "chat_id", nullable = false)
     private Integer chatId;
     @Column(name = "sender", length = 25, nullable = false)
     private String sender;

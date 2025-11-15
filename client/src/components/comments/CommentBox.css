@@ -1,0 +1,27 @@
+.commentbox-main {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.commentbox-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.new-comment-button {
+  background-color: dodgerblue;
+  opacity: 0.5;
+  color: white;
+  font-size: 18px;
+  height: 3rem;
+  width: 3rem;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.new-comment-button:hover {
+  background-color: dodgerblue;
+  opacity: 0.8;
+}

@@ -1,0 +1,79 @@
+.new-comment-inline {
+  background: #fafafa;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 8px 0;
+}
+
+.new-comment-textarea {
+  width: 100%;
+  margin-bottom: 5px;
+  max-height: 80vh;
+  font-size: 16px;
+  word-break: break-all;
+  overflow-y: scroll;
+  padding: 4px 6px;
+  box-sizing: border-box;
+  min-height: 10rem;
+}
+
+.new-comment-actions {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.newComment-btn {
+  font-size: 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 1.5rem;
+  background: transparent;
+  border: none;
+}
+.newComment-btn:hover {
+  background-color: #f0f0f0;
+  border-color: dodgerblue;
+}
+
+.new-comment-sender {
+  width: 100%;
+  padding: 4px 6px;
+  margin-bottom: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  height: 2rem;
+  font-size: 1rem;
+}
+
+/* Emoji Picker Container für New & Item */
+.comment-emoji-picker {
+  position: absolute;
+  z-index: 4000;
+}
+
+/* Scrollbar (Firefox) */
+.new-comment-textarea {
+  scrollbar-width: thin;
+  scrollbar-color: #bbb #f0f0f0;
+}
+/* Scrollbar (WebKit) */
+.new-comment-textarea::-webkit-scrollbar {
+  width: 10px;
+}
+.new-comment-textarea::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 5px;
+}
+.new-comment-textarea::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 5px;
+  border: 2px solid #f0f0f0;
+}
+.new-comment-textarea::-webkit-scrollbar-thumb:hover {
+  background-color: #888;
+}

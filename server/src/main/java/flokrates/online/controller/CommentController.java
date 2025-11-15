@@ -30,16 +30,9 @@ public class CommentController {
 
     @PostMapping
     public ResponseEntity<CommentDto> createComment(@RequestBody CommentDto dto) {
-        // DTO → Entity
+
         Comment entity = commentMapper.toEntity(dto);
-        if (entity.getDateCreated() == null)
-            entity.setDateCreated(LocalDateTime.now());
-        entity.setDateModified(LocalDateTime.now());
-
-        // Speichern
         Comment created = commentService.saveComment(entity);
-
-        // Entity → DTO
         CommentDto body = commentMapper.toDto(created);
 
         return ResponseEntity

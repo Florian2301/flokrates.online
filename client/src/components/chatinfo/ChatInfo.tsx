@@ -30,6 +30,7 @@ import {
 import { fetchMessagesForChat, setMessages } from '../../store/messagesSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
+import CommentBox from '../comments/CommentBox';
 import { DraftListTable } from './DraftListTable';
 import { useNavigate } from 'react-router-dom';
 
@@ -52,6 +53,14 @@ const ChatInfo: React.FC = () => {
   const publishedChats = chats.filter(
     (c) => c.status === 'PUB' && c.chatId !== chatForm?.chatId
   );
+  type ViewMode = 'drafts' | 'comments';
+  const [viewMode, setViewMode] = useState<ViewMode>('drafts');
+  const chatIdFromFormOrSelection = selectedChat?.chatId;
+  const commentsCount = useSelector((s: RootState) => {
+    const id = chatIdFromFormOrSelection;
+    if (!id) return 0;
+    return s.comments.byChatId[id]?.length ?? 0;
+  });
 
   const chatId = chatForm.chatId ?? selectedChat?.chatId ?? null;
 
@@ -104,12 +113,6 @@ const ChatInfo: React.FC = () => {
         setChatForm(updated);
       }
     }
-    /*
-    if (saveSingleChat.fulfilled.match(result)) {
-      setEditMode(false);
-      dispatch(setSelectedChat(result.payload));
-      setChatForm(result.payload);
-    }*/
   };
 
   const handlePublish = async () => {
@@ -145,12 +148,6 @@ const ChatInfo: React.FC = () => {
         setChatForm(updated);
       }
     }
-    /*
-    if (saveSingleChat.fulfilled.match(result)) {
-      setEditMode(false);
-      dispatch(setSelectedChat(result.payload));
-      setChatForm(result.payload);
-    }*/
   };
 
   const handleDelete = async () => {
@@ -227,7 +224,6 @@ const ChatInfo: React.FC = () => {
     dispatch(deleteReference({ chatId, refId }));
   };
 
-  // Im Nicht-Edit-Mode: klick auf Referenz öffnet diesen Chat
   const openReferencedChat = (chatId: number) => {
     const target = chats.find((c) => c.chatId === chatId);
     if (!target) return;
@@ -292,7 +288,6 @@ const ChatInfo: React.FC = () => {
           <p className="chatpara">{chatForm.tags ?? ''}</p>
         )}
       </div>
-      {/* REFERENZEN */}
       <div className="chatinfo">
         <p className="chatpara">Relations:</p>
 
@@ -313,7 +308,6 @@ const ChatInfo: React.FC = () => {
               ))}
             </select>
 
-            {/* Ausgewählte Referenzen als Chips mit Entfernen */}
             <div className="ref-chip-list">
               {currentRefIds.length === 0
                 ? null
@@ -436,6 +430,10 @@ const ChatInfo: React.FC = () => {
         <p className="chatpara">Download:</p>
         <a className="chatpara">Link</a>
       </div>
+      <div className="chatinfo">
+        <p className="chatpara">Comments:</p>
+        <p className="chatpara">{commentsCount}</p>
+      </div>
 
       <hr className="chatinfo-divider" />
 
@@ -492,10 +490,34 @@ const ChatInfo: React.FC = () => {
           </button>
         </div>
       ) : null}
-      <hr className="chatinfo-divider" />
-      <div className="chat-overview">
-        <DraftListTable chats={drafts} messages={messages} />
+
+      {/* === TOGGLE: Drafts <-> Comments === */}
+      <div className="chatinfo-toggle">
+        <button
+          className={`toggle-btn ${viewMode === 'drafts' ? 'active' : ''}`}
+          onClick={() => setViewMode('drafts')}
+        >
+          Drafts
+        </button>
+        <button
+          className={`toggle-btn ${viewMode === 'comments' ? 'active' : ''}`}
+          onClick={() => setViewMode('comments')}
+        >
+          Comments
+        </button>
       </div>
+      <hr className="chatinfo-divider" />
+
+      {/* === Inhalt je nach Toggle === */}
+      {viewMode === 'drafts' ? (
+        <div className="chat-overview">
+          <DraftListTable chats={drafts} messages={messages} />
+        </div>
+      ) : (
+        <div className="chat-overview">
+          <CommentBox />
+        </div>
+      )}
     </div>
   );
 };
