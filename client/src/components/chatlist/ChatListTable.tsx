@@ -82,15 +82,6 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
             >
               <Info size={18} strokeWidth={1.5} />
             </div>
-            <div
-              className="table-columns"
-              title="PDF Download"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            >
-              <FileText size={18} strokeWidth={1.5} />
-            </div>
             <div></div>
             {activeChatId === chat.chatId && (
               <div

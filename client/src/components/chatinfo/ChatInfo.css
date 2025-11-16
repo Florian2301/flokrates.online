@@ -173,10 +173,6 @@
   font-size: 1rem;
 }
 
-.table-drafts-columns:hover {
-  text-decoration: underline;
-}
-
 #table-drafts-columns-number {
   text-align: center;
 }

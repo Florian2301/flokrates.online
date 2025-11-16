@@ -4,6 +4,7 @@ import { AppDispatch, RootState } from '../../store/store';
 import {
   BookOpenCheck,
   BrushCleaning,
+  FileText,
   PencilLine,
   Save,
   SquarePen,
@@ -253,7 +254,7 @@ const ChatInfo: React.FC = () => {
 
   const handleRemoveReference = (refId: number) => {
     if (!chatId) return;
-    const ok = window.confirm('Delete this message?');
+    const ok = window.confirm('Delete this reference?');
     if (!ok) return;
     dispatch(deleteReference({ chatId, refId }));
   };
@@ -367,7 +368,7 @@ const ChatInfo: React.FC = () => {
           <div className="chatinfo-ref-view">
             {currentRefIds.length === 0 ? (
               <p className="chatpara" id="ref-view-placeholder">
-                –
+                -
               </p>
             ) : (
               currentRefIds.map((id) => {
@@ -475,7 +476,7 @@ const ChatInfo: React.FC = () => {
             fileName={`${selectedChat.chatNumber ? '#' + selectedChat.chatNumber + '_' + selectedChat.title : selectedChat.title}.pdf`}
             className="chatpara linklike"
           >
-            {({ loading }) => (loading ? 'Erstelle…' : 'PDF')}
+            <FileText size={18} strokeWidth={1.5} />
           </PDFDownloadLink>
         ) : (
           <span className="chatpara">–</span>

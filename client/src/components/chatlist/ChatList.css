@@ -4,7 +4,7 @@
 
 .table-rows-head {
   display: grid;
-  grid-template-columns: 8% 78% 6% 8%;
+  grid-template-columns: 10% 82% 8%;
   border-bottom-color: dodgerblue;
   border-bottom-width: thin;
   border-bottom-style: solid;
@@ -12,7 +12,7 @@
 
 .table-rows-data {
   display: grid;
-  grid-template-columns: 8% 78% 6% 8%;
+  grid-template-columns: 10% 82% 8%;
 }
 
 .table-rows-data:hover {
@@ -22,7 +22,7 @@
 }
 
 .thead {
-  padding: 0.5rem;
+  padding: 0.5rem 0.5rem 0.2rem 0.5rem;
   text-align: left;
   font-size: 1rem;
 }
@@ -36,10 +36,6 @@
   text-align: left;
   word-wrap: break-word;
   font-size: 1rem;
-}
-
-.table-columns:hover {
-  text-decoration: underline;
 }
 
 #table-columns-number {
