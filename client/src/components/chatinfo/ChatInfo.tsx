@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { Chat, Language, Status, statusMap } from '../../types/Chats';
 import { LanguageCode, languageMap } from '../../constants/language';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   createChat,
   deleteChatThunk,
@@ -30,8 +30,10 @@ import {
 import { fetchMessagesForChat, setMessages } from '../../store/messagesSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
+import ChatPdf from '../pdf/ChatPdf';
 import CommentBox from '../comments/CommentBox';
 import { DraftListTable } from './DraftListTable';
+import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useNavigate } from 'react-router-dom';
 
 const ChatInfo: React.FC = () => {
@@ -75,6 +77,26 @@ const ChatInfo: React.FC = () => {
   const currentRefs: number[] = Array.isArray(chatForm.referencedChatIds)
     ? chatForm.referencedChatIds!
     : [];
+
+  // Angereicherte Referenzen: {chatId, chatNumber, title}
+  const refsForPdf = useMemo(() => {
+    // primär: ids aus Networks-Slice; fallback: ids direkt aus selectedChat
+    const ids =
+      currentRefIds.length > 0
+        ? currentRefIds
+        : (selectedChat?.referencedChatIds ?? []);
+
+    if (!ids?.length) return [];
+    return ids
+      .map((id) => chats.find((c) => c.chatId === id))
+      .filter((c): c is Chat => Boolean(c))
+      .map((c) => ({
+        chatId: c.chatId,
+        chatNumber: c.chatNumber,
+        title: c.title,
+      }));
+    // 🔑 wichtig: auf currentRefIds reagieren!
+  }, [currentRefIds, selectedChat, chats]);
 
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
@@ -428,8 +450,26 @@ const ChatInfo: React.FC = () => {
       ) : null}
       <div className="chatinfo">
         <p className="chatpara">Download:</p>
-        <a className="chatpara">Link</a>
+        {selectedChat ? (
+          <PDFDownloadLink
+            key={`${selectedChat?.chatId}-${refsForPdf.length}-${messages.length}`}
+            document={
+              <ChatPdf
+                chat={selectedChat}
+                messages={messages}
+                references={refsForPdf}
+              />
+            }
+            fileName={`${selectedChat.chatNumber ? '#' + selectedChat.chatNumber + '_' + selectedChat.title : selectedChat.title}.pdf`}
+            className="chatpara linklike"
+          >
+            {({ loading }) => (loading ? 'Erstelle…' : 'PDF')}
+          </PDFDownloadLink>
+        ) : (
+          <span className="chatpara">–</span>
+        )}
       </div>
+
       <div className="chatinfo">
         <p className="chatpara">Comments:</p>
         <p className="chatpara">{commentsCount}</p>
