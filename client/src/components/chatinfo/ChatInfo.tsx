@@ -34,6 +34,7 @@ import ChatPdf from '../pdf/ChatPdf';
 import CommentBox from '../comments/CommentBox';
 import { DraftListTable } from './DraftListTable';
 import { PDFDownloadLink } from '@react-pdf/renderer';
+import { selectLanguage } from '../../store/languageSlice';
 import { useNavigate } from 'react-router-dom';
 
 const ChatInfo: React.FC = () => {
@@ -45,8 +46,12 @@ const ChatInfo: React.FC = () => {
   const messages = useSelector(
     (state: RootState) => state.messages.chatmessages
   );
-  const chats = useSelector((state: RootState) => state.chats.chats);
+  const lang = useSelector(selectLanguage);
+  //const chats = useSelector((state: RootState) => state.chats.chats);
+  const allChats = useSelector((state: RootState) => state.chats.chats);
+  const chats = allChats.filter((c) => c.language === lang);
   const drafts = chats.filter((c) => c.status !== 'PUB');
+
   const maxChatNumber = chats.reduce((max, c) => {
     return c.chatNumber !== null && c.chatNumber > max ? c.chatNumber : max;
   }, 0);
@@ -187,7 +192,7 @@ const ChatInfo: React.FC = () => {
       title: 'draft',
       description: '',
       tags: '',
-      language: 'DE' as Language,
+      language: lang,
       chatNumber: null,
       status: 'DRA' as Status,
       authorId: 1,
@@ -231,6 +236,13 @@ const ChatInfo: React.FC = () => {
       dispatch(fetchRefsByChat(chatId));
     }
   }, [dispatch, chatId]);
+
+  useEffect(() => {
+    if (selectedChat && selectedChat.language !== lang) {
+      dispatch(setSelectedChat(null));
+      dispatch(setMessages([]));
+    }
+  }, [lang, selectedChat, dispatch]);
 
   // References
   const handleAddReference = (refId: number) => {

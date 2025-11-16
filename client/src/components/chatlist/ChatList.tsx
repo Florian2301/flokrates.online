@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { ChatListTable } from './ChatListTable';
 import { fetchChats } from '../../store/chatsSclice';
+import { selectLanguage } from '../../store/languageSlice';
 
 export const ChatList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -12,7 +13,11 @@ export const ChatList: React.FC = () => {
     loading,
     error,
   } = useSelector((state: RootState) => state.chats);
-  const publishedChats = chats.filter((c) => c.status === 'PUB');
+  const lang = useSelector(selectLanguage);
+  const allChats = useSelector((state: RootState) => state.chats.chats);
+  const publishedChats = allChats.filter(
+    (c) => c.status === 'PUB' && c.language === lang
+  );
 
   useEffect(() => {
     dispatch(fetchChats());

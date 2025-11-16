@@ -2,6 +2,7 @@ import aboutsReducer from './aboutSlice';
 import chatsReducer from './chatsSclice';
 import commentsReducer from './commentsSlice';
 import { configureStore } from '@reduxjs/toolkit';
+import languageReducer from './languageSlice';
 import messagesReducer from './messagesSlice';
 import networksReducer from './networksSclice';
 
@@ -12,6 +13,7 @@ export const store = configureStore({
     comments: commentsReducer,
     networks: networksReducer,
     about: aboutsReducer,
+    language: languageReducer,
   },
 });
 

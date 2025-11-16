@@ -8,6 +8,7 @@ import ChatBox from './components/chatbox/ChatBox';
 import ChatInfo from './components/chatinfo/ChatInfo';
 import ChatList from './components/chatlist/ChatList';
 import MainWindow from './components/MainWindow';
+import Settings from './components/settings/Settings';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/chatbox" element={<ChatBox />} />
             <Route path="/chatinfo" element={<ChatInfo />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
         </MainWindow>
       </div>

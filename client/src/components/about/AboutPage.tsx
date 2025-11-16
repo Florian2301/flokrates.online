@@ -1,5 +1,6 @@
 import './About.css';
 
+import { AppDispatch, RootState } from '../../store/store';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   createAbout,
@@ -12,15 +13,21 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import type { About } from '../../types/About';
 import AboutText from './AboutText';
-import { AppDispatch } from '../../store/store';
 import { LanguageCode } from '../../constants/language';
 import { SquarePen } from 'lucide-react';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
+import { selectLanguage } from '../../store/languageSlice';
 
 export const AboutPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const lang = useSelector(selectLanguage);
   const items = useSelector(selectAllAbouts) ?? [];
+  const itemsLang = React.useMemo(
+    () => items.filter((a) => a.language === lang),
+    [items, lang]
+  );
+
   const [activeKey, setActiveKey] = useState<string>('project');
   const [draft, setDraft] = useState<{
     title: string;
@@ -39,7 +46,7 @@ export const AboutPage: React.FC = () => {
 
   // --- CRUD Handler ---
   const handleStartNew = () => {
-    setDraft({ title: '', text: '', language: 'DE' }); // zeigt unten einen AboutText im Editmodus
+    setDraft({ title: '', text: '', language: lang }); // zeigt unten einen AboutText im Editmodus
   };
 
   const handleSave = async (payload: {
@@ -85,10 +92,18 @@ export const AboutPage: React.FC = () => {
 
   const handleCancelDraft = () => setDraft(null);
 
+  useEffect(() => {
+    setDraft((d) => (d ? { ...d, language: lang } : d));
+  }, [lang]);
+
+  useEffect(() => {
+    dispatch(fetchAbouts(/* ggf. { language: lang } */));
+  }, [dispatch, lang]);
+
   const renderTab = (key: string, title: string) => (
     <Tab eventKey={key} title={title}>
       {/* vorhandene Elemente */}
-      {itemsForActive
+      {itemsLang
         .filter((a) => a.sectionKey === key)
         .map((item) => (
           <AboutText
