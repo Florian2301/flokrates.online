@@ -30,8 +30,6 @@ public class Chat {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 2, nullable = false)
     private Status status;
-    @Column(name = "author_id", columnDefinition = "INT")
-    private Integer authorId;
     @Column(name = "date_published")
     private LocalDateTime datePublished;
     @CreationTimestamp

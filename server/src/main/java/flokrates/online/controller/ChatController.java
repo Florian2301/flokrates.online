@@ -3,15 +3,10 @@ package flokrates.online.controller;
 import flokrates.online.mapper.ChatMapper;
 import flokrates.online.model.Chat;
 import flokrates.online.model.Language;
-import flokrates.online.model.Network;
 import flokrates.online.model.Status;
 import flokrates.online.model.dto.ChatDto;
 import flokrates.online.service.ChatService;
-import flokrates.online.service.NetworkService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +14,6 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -28,16 +22,12 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:8081")
 public class ChatController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
     private final ChatService chatService;
     private final ChatMapper chatMapper;
 
     @PostMapping
     public ResponseEntity<ChatDto> createChat(@RequestBody ChatDto dto) {
         Chat entity = chatMapper.toEntity(dto);
-        // (optional) Timestamps auch hier setzen; der Service setzt sie ebenfalls sicherheitshalber
-        if (entity.getDateCreated() == null) entity.setDateCreated(LocalDateTime.now());
-        entity.setDateModified(LocalDateTime.now());
 
         Chat created = chatService.saveChat(entity);
         ChatDto body = chatMapper.toDto(created);
@@ -110,7 +100,6 @@ public class ChatController {
                 }
             }
         });
-        existingChat.setDateModified(LocalDateTime.now());
 
         Chat updatedChat = chatService.saveChat(existingChat);
         ChatDto updatedDto = chatMapper.toDto(updatedChat);
@@ -131,6 +120,7 @@ public class ChatController {
                 .toList();
         return ResponseEntity.ok(refs);
     }
+
     @GetMapping("/{id}/messageCount")
     public ResponseEntity<Map<String, Object>> getMessageCount(@PathVariable Integer id) {
         return chatService.getChatById(id).isEmpty()

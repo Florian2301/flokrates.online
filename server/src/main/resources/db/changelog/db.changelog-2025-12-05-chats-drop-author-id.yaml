@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2025-12-05-chats-drop-author-id
+      author: floki
+      changes:
+        - dropColumn:
+            tableName: chats
+            columnName: author_id
+      rollback:
+        - addColumn:
+            tableName: chats
+            columns:
+              - column:
+                  name: author_id
+                  type: INT

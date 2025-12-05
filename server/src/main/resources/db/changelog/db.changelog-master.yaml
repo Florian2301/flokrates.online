@@ -25,3 +25,5 @@ databaseChangeLog:
       file: db/changelog/seed/0002-seed-admin.yaml
   - include:
       file: db/changelog/db.changelog-2025-12-05-rename-author-to-user.yaml
+  - include:
+      file: db/changelog/db.changelog-2025-12-05-chats-drop-author-id.yaml

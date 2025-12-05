@@ -203,7 +203,6 @@ const ChatInfo: React.FC = () => {
       language: lang,
       chatNumber: null,
       status: 'DRA' as Status,
-      authorId: 1,
       referencedChatIds: [],
       datePublished: null,
       dateCreated: new Date().toISOString(),
