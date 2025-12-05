@@ -10,6 +10,7 @@ import {
 
 import { Actor } from '../types/ActorStyles';
 import { Message } from '../types/Message';
+import { authedFetch } from '../api/authedFetch';
 
 type MessagesState = {
   chatmessages: Message[];
@@ -39,18 +40,16 @@ const initialState: MessagesState = {
   attachmentsByMessageId: {},
 };
 
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8080';
-
 // get messages for selected chat
 export const fetchMessagesForChat = createAsyncThunk<
   Message[],
   number,
-  { rejectValue: string }
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >(
   'chats/fetchMessagesForChat',
   async (chatId, { dispatch, rejectWithValue }) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/messages/chat/${chatId}`);
+      const res = await fetch(`/api/messages/chat/${chatId}`);
       if (!res.ok) throw new Error('Error loading messages');
       const data: Message[] = await res.json();
       dispatch(setMessages(data));
@@ -66,7 +65,7 @@ export const fetchMessagesForChat = createAsyncThunk<
 export const fetchMessages = createAsyncThunk<Message[]>(
   'messages/fetch',
   async () => {
-    const res = await fetch(`${API_BASE_URL}/api/messages`);
+    const res = await fetch(`/api/messages`);
     const data = await res.json();
     return data as Message[];
   }
@@ -76,32 +75,35 @@ export const fetchMessages = createAsyncThunk<Message[]>(
 export const createMessage = createAsyncThunk<
   Message,
   Omit<Message, 'messageId'>,
-  { rejectValue: string }
->('messages/createMessage', async (newMessage, { rejectWithValue }) => {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/messages`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newMessage),
-    });
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
+>(
+  'messages/createMessage',
+  async (newMessage, { dispatch, getState, rejectWithValue }) => {
+    try {
+      const res = await authedFetch(dispatch, getState, `/api/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newMessage),
+      });
 
-    if (!res.ok) throw new Error('Error creating message');
-    const created = await res.json();
-    return created as Message;
-  } catch (err) {
-    console.error(err);
-    return rejectWithValue('Error creating message');
+      if (!res.ok) throw new Error('Error creating message');
+      const created = await res.json();
+      return created as Message;
+    } catch (err) {
+      console.error(err);
+      return rejectWithValue('Error creating message');
+    }
   }
-});
+);
 
 // patch message
 export const patchMessage = createAsyncThunk<
   Message,
   { messageId: number; updates: Partial<Message> },
-  { rejectValue: string }
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >(
   'messages/patchMessage',
-  async ({ messageId, updates }, { rejectWithValue }) => {
+  async ({ messageId, updates }, { dispatch, getState, rejectWithValue }) => {
     try {
       const { messageNumber, respId, actor, messageText } = updates;
       const body: Partial<Message> = {
@@ -111,11 +113,16 @@ export const patchMessage = createAsyncThunk<
         ...(messageText !== undefined ? { messageText } : {}),
       };
 
-      const res = await fetch(`${API_BASE_URL}/api/messages/${messageId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+      const res = await authedFetch(
+        dispatch,
+        getState,
+        `/api/messages/${messageId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }
+      );
 
       if (!res.ok) throw new Error('Error patching message');
       return (await res.json()) as Message;
@@ -130,50 +137,65 @@ export const patchMessage = createAsyncThunk<
 export const deleteMessageThunk = createAsyncThunk<
   number,
   number,
-  { state: RootState }
->('messages/delete', async (messageId, { getState, dispatch }) => {
-  const state = getState();
-  const messages = state.messages.chatmessages;
-  const messageToDelete = messages.find((m) => m.messageId === messageId);
-  if (!messageToDelete) {
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
+>(
+  'messages/delete',
+  async (messageId, { dispatch, getState, rejectWithValue }) => {
+    const state = getState();
+    const messages = state.messages.chatmessages;
+    const messageToDelete = messages.find((m) => m.messageId === messageId);
+    if (!messageToDelete) {
+      return messageId;
+    }
+
+    await authedFetch(dispatch, getState, `/api/messages/${messageId}`, {
+      method: 'DELETE',
+    });
+
+    const updatedMessages = messages
+      .filter((m) => m.messageId !== messageId)
+      .map((m) =>
+        m.messageNumber > messageToDelete.messageNumber
+          ? { ...m, messageNumber: m.messageNumber - 1 }
+          : m
+      )
+      .sort((a, b) => a.messageNumber - b.messageNumber);
+
+    dispatch(setMessages(updatedMessages));
+    await dispatch(saveAllMessages(updatedMessages));
+
     return messageId;
   }
-
-  await fetch(`${API_BASE_URL}/api/messages/${messageId}`, {
-    method: 'DELETE',
-  });
-
-  const updatedMessages = messages
-    .filter((m) => m.messageId !== messageId)
-    .map((m) =>
-      m.messageNumber > messageToDelete.messageNumber
-        ? { ...m, messageNumber: m.messageNumber - 1 }
-        : m
-    )
-    .sort((a, b) => a.messageNumber - b.messageNumber);
-
-  dispatch(setMessages(updatedMessages));
-  await dispatch(saveAllMessages(updatedMessages));
-
-  return messageId;
-});
+);
 
 // save all messages
-export const saveAllMessages = createAsyncThunk(
-  'messages/saveAll',
-  async (msgs: Message[]) => {
+export const saveAllMessages = createAsyncThunk<
+  Message[],
+  Message[],
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
+>('messages/saveAll', async (msgs, { dispatch, getState, rejectWithValue }) => {
+  try {
     await Promise.all(
-      msgs.map((msg) =>
-        fetch(`${API_BASE_URL}/api/messages/${msg.messageId}`, {
+      msgs.map((m) =>
+        authedFetch(dispatch, getState, `/api/messages/${m.messageId}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(msg),
+          body: JSON.stringify({
+            messageText: m.messageText,
+            actor: m.actor,
+            messageNumber: m.messageNumber,
+            respId: m.respId,
+          }),
+        }).then((res) => {
+          if (!res.ok) throw new Error(`PATCH ${m.messageId} -> ${res.status}`);
         })
       )
     );
     return msgs;
+  } catch (e) {
+    console.error(e);
+    return rejectWithValue('Error saving messages');
   }
-);
+});
 
 // check if messages has changed and sort if messagenumber has changed
 export const changeMessage = createAsyncThunk<
@@ -186,7 +208,7 @@ export const changeMessage = createAsyncThunk<
     oldMessageNumber: number;
     responseId: number | null;
   },
-  { state: RootState }
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >(
   'messages/changeMessage',
   async (
@@ -282,7 +304,7 @@ export const changeMessage = createAsyncThunk<
             messageText: updatedText,
           },
         })
-      );
+      ).unwrap();
     }
   }
 );
@@ -316,19 +338,16 @@ async function readError(res: Response) {
 export const createAttachment = createAsyncThunk<
   void,
   { messageId: number; attachment: NewAttachment },
-  { rejectValue: string; state: RootState }
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >(
   'messages/createAttachment',
   async ({ messageId, attachment }, { rejectWithValue, dispatch }) => {
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/messages/${messageId}/attachments`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(attachment),
-        }
-      );
+      const res = await fetch(`/api/messages/${messageId}/attachments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(attachment),
+      });
       if (!res.ok) {
         const errText = await readError(res);
         return rejectWithValue(errText);
@@ -346,7 +365,7 @@ export const createAttachment = createAsyncThunk<
 export const createAttachmentsBulk = createAsyncThunk<
   void,
   { messageId: number; attachments: NewAttachment[] },
-  { state: RootState; rejectValue: string }
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >(
   'messages/createAttachmentsBulk',
   async ({ messageId, attachments }, { dispatch, rejectWithValue }) => {
@@ -365,7 +384,7 @@ export const createAttachmentsBulk = createAsyncThunk<
 export const createMessageWithAttachments = createAsyncThunk<
   Message,
   { message: Omit<Message, 'messageId'>; attachments?: NewAttachment[] },
-  { state: RootState; rejectValue: string }
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >(
   'messages/createMessageWithAttachments',
   async ({ message, attachments = [] }, { dispatch, rejectWithValue }) => {
@@ -395,7 +414,7 @@ export const createMessageWithAttachments = createAsyncThunk<
 export const addAttachmentsToExistingMessage = createAsyncThunk<
   void,
   { messageId: number; attachments: NewAttachment[] },
-  { state: RootState; rejectValue: string }
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >(
   'messages/addAttachmentsToExistingMessage',
   async ({ messageId, attachments }, { dispatch, rejectWithValue }) => {
@@ -414,14 +433,12 @@ export const addAttachmentsToExistingMessage = createAsyncThunk<
 export const fetchAttachmentsForMessage = createAsyncThunk<
   { messageId: number; attachments: MessageAttachment[] },
   number,
-  { rejectValue: string }
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >(
   'messages/fetchAttachmentsForMessage',
   async (messageId, { rejectWithValue }) => {
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/messages/${messageId}/attachments`
-      );
+      const res = await fetch(`/api/messages/${messageId}/attachments`);
       if (!res.ok) {
         const text = await res.text().catch(() => '');
         throw new Error(

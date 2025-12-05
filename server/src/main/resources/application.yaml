@@ -1,3 +1,15 @@
-spring:
-  liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
+app:
+  jwt:
+    secret: "replace-with-at-least-256-bit-random-string"
+    access-minutes: 30
+    refresh-days: 30
+server:
+  servlet:
+    session:
+      timeout: 0
+  spring:
+    liquibase:
+      change-log: classpath:db/changelog/db.changelog-master.yaml
+    jackson:
+      serialization:
+        WRITE_DATES_AS_TIMESTAMPS: false

@@ -33,10 +33,23 @@ const config = {
     },
     compress: true,
     port: 8081,
+    proxy: [
+      {
+        context: ['/api'], // alles unter /api weiterleiten
+        target: 'http://localhost:8080', // dein Spring-Backend
+        changeOrigin: true,
+        secure: false,
+        logLevel: 'debug', // Proxy-Logs im Terminal
+        // optional: pathRewrite: { '^/api': '/api' } // nicht nötig, nur Beispiel
+      },
+    ],
   },
   plugins: [
     new HtmlWebpackPlugin({ template: './public/index.html' }),
     new webpack.DefinePlugin(envKeys),
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+    }),
   ],
   module: {
     rules: [
@@ -60,6 +73,9 @@ const config = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.jsx', '.js', '...'],
+    alias: {
+      'process/browser': require.resolve('process/browser.js'),
+    },
   },
   ignoreWarnings: [
     // ignoriert alle fehlenden source map Warnungen in node_modules

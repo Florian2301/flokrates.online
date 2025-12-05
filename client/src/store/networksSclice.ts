@@ -19,11 +19,6 @@ const initialState: NetworksState = {
   error: null,
 };
 
-const API_BASE_URL =
-  (import.meta as any).env?.VITE_API_BASE_URL ??
-  process.env.API_BASE_URL ??
-  'http://localhost:8080';
-
 // --- Thunks ---
 
 export const fetchRefsByChat = createAsyncThunk<
@@ -32,7 +27,7 @@ export const fetchRefsByChat = createAsyncThunk<
   { rejectValue: string }
 >('networks/fetchRefsByChat', async (chatId, { rejectWithValue }) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/networks/by-chat/${chatId}`);
+    const res = await fetch(`/api/networks/by-chat/${chatId}`);
     if (!res.ok) throw new Error('Failed to load refs');
     const refs = (await res.json()) as Network[];
     return { chatId, refs };
@@ -47,7 +42,7 @@ export const fetchBackRefsForChat = createAsyncThunk<
   { rejectValue: string }
 >('networks/fetchBackRefsForChat', async (chatId, { rejectWithValue }) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/networks/by-ref/${chatId}`);
+    const res = await fetch(`/api/networks/by-ref/${chatId}`);
     if (!res.ok) throw new Error('Failed to load back-refs');
     const refs = (await res.json()) as Network[];
     return { chatId, refs };
@@ -65,7 +60,7 @@ export const upsertReference = createAsyncThunk<
   'networks/upsertReference',
   async ({ chatId, refId }, { rejectWithValue }) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/networks/references`, {
+      const res = await fetch(`/api/networks/references`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chatId, refId }),
@@ -88,7 +83,7 @@ export const deleteReference = createAsyncThunk<
   'networks/deleteReference',
   async ({ chatId, refId }, { rejectWithValue }) => {
     try {
-      const url = new URL(`${API_BASE_URL}/api/networks/references`);
+      const url = new URL(`/api/networks/references`);
       url.searchParams.set('chatId', String(chatId));
       url.searchParams.set('refId', String(refId));
       const res = await fetch(url.toString(), { method: 'DELETE' });

@@ -3,6 +3,7 @@ package flokrates.online.controller;
 import flokrates.online.mapper.AuthorMapper;
 import flokrates.online.model.Author;
 import flokrates.online.model.dto.AuthorDto;
+import flokrates.online.repository.RoleRepo;
 import flokrates.online.service.AuthorService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -12,10 +13,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,10 +25,11 @@ public class AuthorController {
     private static final Logger logger = LoggerFactory.getLogger(AuthorController.class);
     private final AuthorService authorService;
     private final AuthorMapper authorMapper;
+    private final RoleRepo roleRepo;
 
     @PostMapping
     public ResponseEntity<AuthorDto> createAuthor(@RequestBody AuthorDto dto) {
-        Author entity = authorMapper.toEntity(dto);
+        Author entity = authorMapper.toEntity(dto, roleRepo);
         Author created = authorService.saveAuthor(entity);
         AuthorDto body = authorMapper.toDto(created);
         return ResponseEntity

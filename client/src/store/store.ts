@@ -1,4 +1,5 @@
 import aboutsReducer from './aboutSlice';
+import authReducer from './authSlice';
 import chatsReducer from './chatsSclice';
 import commentsReducer from './commentsSlice';
 import { configureStore } from '@reduxjs/toolkit';
@@ -14,6 +15,7 @@ export const store = configureStore({
     networks: networksReducer,
     about: aboutsReducer,
     language: languageReducer,
+    auth: authReducer,
   },
 });
 

@@ -1,0 +1,21 @@
+databaseChangeLog:
+  - changeSet:
+      id: seed-admin-user
+      author: Floki
+      changes:
+        - sql:
+            sql: |
+              INSERT INTO authors (author_name, email, password, enabled, date_created)
+              VALUES ('Flokrates', 'bigsoul@gmx.de', '<$2a$12$FZVQMXodhqom/1L3zcIA0O38y7jo/KvY/lfvXmbX0itxhAX2hyOaC>', TRUE, NOW())
+
+  - changeSet:
+      id: seed-admin-grant-role
+      author: Floki
+      changes:
+        - sql:
+            sql: |
+              INSERT INTO authors_roles (author_id, role_id)
+              SELECT a.author_id, r.role_id
+              FROM authors a
+              JOIN roles r ON r.name='ROLE_ADMIN'
+              WHERE a.email='bigsoul@gmx.de'

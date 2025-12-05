@@ -1,0 +1,179 @@
+databaseChangeLog:
+  - changeSet:
+      id: authors-add-enabled
+      author: you
+      changes:
+        - addColumn:
+            tableName: authors
+            columns:
+              - column:
+                  name: enabled
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropColumn:
+            tableName: authors
+            columnName: enabled
+
+  - changeSet:
+      id: authors-email-unique
+      author: you
+      changes:
+        - addUniqueConstraint:
+            tableName: authors
+            columnNames: email
+            constraintName: uq_authors_email
+      rollback:
+        - dropUniqueConstraint:
+            tableName: authors
+            constraintName: uq_authors_email
+
+  - changeSet:
+      id: roles-create
+      author: you
+      changes:
+        - createTable:
+            tableName: roles
+            columns:
+              - column:
+                  name: role_id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_roles
+              - column:
+                  name: name
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uq_roles_name
+      rollback:
+        - dropTable:
+            tableName: roles
+
+  - changeSet:
+      id: authors_roles-create
+      author: you
+      changes:
+        - createTable:
+            tableName: authors_roles
+            columns:
+              - column:
+                  name: author_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role_id
+                  type: INT
+                  constraints:
+                    nullable: false
+
+        - addPrimaryKey:
+            tableName: authors_roles
+            columnNames: author_id, role_id
+            constraintName: pk_authors_roles
+
+        - addForeignKeyConstraint:
+            baseTableName: authors_roles
+            baseColumnNames: author_id
+            referencedTableName: authors
+            referencedColumnNames: author_id
+            constraintName: fk_ar_author
+            onDelete: CASCADE
+
+        - addForeignKeyConstraint:
+            baseTableName: authors_roles
+            baseColumnNames: role_id
+            referencedTableName: roles
+            referencedColumnNames: role_id
+            constraintName: fk_ar_role
+            onDelete: CASCADE
+
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: authors_roles
+            constraintName: fk_ar_role
+        - dropForeignKeyConstraint:
+            baseTableName: authors_roles
+            constraintName: fk_ar_author
+        - dropPrimaryKey:
+            tableName: authors_roles
+            constraintName: pk_authors_roles
+        - dropTable:
+            tableName: authors_roles
+
+  - changeSet:
+      id: refresh_tokens-create
+      author: you
+      changes:
+        - createTable:
+            tableName: refresh_tokens
+            columns:
+              - column:
+                  name: token_id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_refresh_tokens
+              - column:
+                  name: author_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: token_hash
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uq_rt_token_hash
+              - column:
+                  name: issued_at
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expires_at
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: revoked
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: device
+                  type: VARCHAR(100)
+
+        - addForeignKeyConstraint:
+            baseTableName: refresh_tokens
+            baseColumnNames: author_id
+            referencedTableName: authors
+            referencedColumnNames: author_id
+            constraintName: fk_rt_author
+            onDelete: CASCADE
+
+        - createIndex:
+            tableName: refresh_tokens
+            indexName: ix_rt_author_id
+            columns:
+              - column:
+                  name: author_id
+
+      rollback:
+        - dropIndex:
+            tableName: refresh_tokens
+            indexName: ix_rt_author_id
+        - dropForeignKeyConstraint:
+            baseTableName: refresh_tokens
+            constraintName: fk_rt_author
+        - dropTable:
+            tableName: refresh_tokens

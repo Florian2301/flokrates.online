@@ -2,9 +2,8 @@ import { AppDispatch, RootState } from './store';
 import { Chat, Status } from '../types/Chats';
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
+import { authedFetch } from '../api/authedFetch';
 import { setMessages } from './messagesSlice';
-
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8080';
 
 type ChatsState = {
   chats: Chat[];
@@ -39,7 +38,7 @@ export const fetchChats = createAsyncThunk<
   { rejectValue: string }
 >('chats/fetchChats', async (_, { rejectWithValue }) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/chats`);
+    const res = await fetch(`/api/chats`);
     if (!res.ok) throw new Error('Error loading chats');
     const data: Chat[] = await res.json();
     return data;
@@ -53,75 +52,100 @@ export const fetchChats = createAsyncThunk<
 export const createChat = createAsyncThunk<
   Chat,
   Omit<Chat, 'chatId'>,
-  { rejectValue: string }
->('chats/createChat', async (newChat, { rejectWithValue }) => {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/chats`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newChat),
-    });
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error('Error creating chat:', res.status, errorText);
-      throw new Error('Error creating chat');
-    }
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
+>(
+  'chats/createChat',
+  async (newChat, { dispatch, getState, rejectWithValue }) => {
+    try {
+      const res = await authedFetch(dispatch, getState, `/api/chats`, {
+        method: 'POST',
+        body: JSON.stringify(newChat),
+      });
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Error creating chat:', res.status, errorText);
+        throw new Error('Error creating chat');
+      }
 
-    const data: Chat =
-      res.status !== 204
-        ? await res.json()
-        : { ...newChat, chatId: Date.now() };
-    return data;
-  } catch (err) {
-    console.error(err);
-    return rejectWithValue('Error creating chat');
+      const data: Chat =
+        res.status !== 204
+          ? await res.json()
+          : { ...newChat, chatId: Date.now() };
+      return data;
+    } catch (err) {
+      console.error(err);
+      return rejectWithValue('Error creating chat');
+    }
   }
-});
+);
 
 // save single chat
 export const saveSingleChat = createAsyncThunk<
   Chat,
   { chatId: number; updates: Partial<Chat> },
-  { rejectValue: string }
->('chats/saveSingle', async ({ chatId, updates }, { rejectWithValue }) => {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/chats/${chatId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates),
-    });
-
-    if (!res.ok) throw new Error('Error saving chat');
-    const updated = await res.json();
-    return updated as Chat;
-  } catch (err) {
-    console.error(err);
-    return rejectWithValue('Error saving chat');
-  }
-});
-
-// save all chats
-export const saveAllChats = createAsyncThunk(
-  'chats/saveAll',
-  async (chats: Chat[]) => {
-    await Promise.all(
-      chats.map((chat) =>
-        fetch(`${API_BASE_URL}/api/chats/${chat.chatId}`, {
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
+>(
+  'chats/saveSingle',
+  async ({ chatId, updates }, { dispatch, getState, rejectWithValue }) => {
+    try {
+      const res = await authedFetch(
+        dispatch,
+        getState,
+        `/api/chats/${chatId}`,
+        {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(chat),
-        })
-      )
-    );
-    return chats;
+          body: JSON.stringify(updates),
+        }
+      );
+
+      if (!res.ok) throw new Error('Error saving chat');
+      const updated = await res.json();
+      return updated as Chat;
+    } catch (err) {
+      console.error(err);
+      return rejectWithValue('Error saving chat');
+    }
   }
 );
+
+// save all chats
+export const saveAllChats = createAsyncThunk<
+  Chat[],
+  Chat[],
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
+>('chats/saveAll', async (chats, { dispatch, getState, rejectWithValue }) => {
+  try {
+    await Promise.all(
+      chats.map(async (chat) => {
+        const res = await authedFetch(
+          dispatch,
+          getState,
+          `/api/chats/${chat.chatId}`,
+          {
+            method: 'PATCH',
+            body: JSON.stringify(chat),
+          }
+        );
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(
+            `Error saving chat ${chat.chatId}: ${res.status} ${text}`
+          );
+        }
+      })
+    );
+    return chats;
+  } catch (err) {
+    console.error(err);
+    return rejectWithValue('Error saving chats');
+  }
+});
 
 // delete chat (+ messages & network via backend)
 export const deleteChatThunk = createAsyncThunk<
   number, // Feedback from Server (could also be boolean)
   number, // chatId as parameter (dispatch(deleteChatThink(3)))
-  { state: RootState; rejectValue: string }
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >(
   'chats/deleteChat',
   async (chatId, { getState, dispatch, rejectWithValue }) => {
@@ -131,9 +155,14 @@ export const deleteChatThunk = createAsyncThunk<
       const chatToDelete = chats.find((c) => c.chatId === chatId);
       if (!chatToDelete) return chatId;
 
-      const res = await fetch(`${API_BASE_URL}/api/chats/${chatId}`, {
-        method: 'DELETE',
-      });
+      const res = await authedFetch(
+        dispatch,
+        getState,
+        `/api/chats/${chatId}`,
+        {
+          method: 'DELETE',
+        }
+      );
       if (!res.ok) throw new Error('Error deleting chat');
 
       // delete messages for chat in state
@@ -192,22 +221,30 @@ export const deleteChatThunk = createAsyncThunk<
 export const patchChat = createAsyncThunk<
   Chat,
   { chatId: number; updates: Partial<Chat> },
-  { rejectValue: string }
->('chats/patchChat', async ({ chatId, updates }, { rejectWithValue }) => {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/chats/${chatId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates),
-    });
-    if (!res.ok) throw new Error('Error patching chat');
-    const updatedChat: Chat = await res.json();
-    return updatedChat;
-  } catch (err) {
-    console.error(err);
-    return rejectWithValue('Error patching chat');
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
+>(
+  'chats/patchChat',
+  async ({ chatId, updates }, { dispatch, getState, rejectWithValue }) => {
+    try {
+      const res = await authedFetch(
+        dispatch,
+        getState,
+        `/api/chats/${chatId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updates),
+        }
+      );
+      if (!res.ok) throw new Error('Error patching chat');
+      const updatedChat: Chat = await res.json();
+      return updatedChat;
+    } catch (err) {
+      console.error(err);
+      return rejectWithValue('Error patching chat');
+    }
   }
-});
+);
 
 // get referenced chats for selectedchat
 export const fetchChatReferences = createAsyncThunk<
@@ -216,7 +253,7 @@ export const fetchChatReferences = createAsyncThunk<
   { rejectValue: string }
 >('chats/fetchChatReferences', async (chatId, { rejectWithValue }) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/chats/${chatId}/references`);
+    const res = await fetch(`/api/chats/${chatId}/references`);
     if (!res.ok) throw new Error('Error loading references');
     const data: Chat[] = await res.json();
     return data;
@@ -235,8 +272,8 @@ export const fetchMessageCounts = createAsyncThunk<
   try {
     const url =
       ids && ids.length
-        ? `${API_BASE_URL}/api/chats/counts?ids=${encodeURIComponent(ids.join(','))}`
-        : `${API_BASE_URL}/api/chats/counts`;
+        ? `/api/chats/counts?ids=${encodeURIComponent(ids.join(','))}`
+        : `/api/chats/counts`;
 
     const res = await fetch(url);
     if (!res.ok) throw new Error('Error loading message counts');

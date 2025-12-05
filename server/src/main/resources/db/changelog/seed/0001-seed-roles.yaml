@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: seed-role-user
+      author: Floki
+      changes:
+        - insert:
+            tableName: roles
+            columns:
+              - column: { name: name, value: ROLE_USER }
+
+  - changeSet:
+      id: seed-role-admin
+      author: Floki
+      changes:
+        - insert:
+            tableName: roles
+            columns:
+              - column: { name: name, value: ROLE_ADMIN }

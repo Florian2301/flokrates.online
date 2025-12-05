@@ -1,9 +1,8 @@
-// src/store/commentsSlice.ts
-
+import type { AppDispatch, RootState } from './store';
 import type { Comment, NewCommentPayload } from '../types/Comment';
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import type { RootState } from './store';
+import { authedFetch } from '../api/authedFetch';
 
 type CommentsState = {
   byChatId: Record<number, Comment[]>;
@@ -23,8 +22,6 @@ const initialState: CommentsState = {
   error: null,
   pageInfoByChatId: {},
 };
-
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8080';
 
 // ---------- Helpers ----------
 async function readError(res: Response) {
@@ -48,7 +45,7 @@ export const fetchCommentsForChat = createAsyncThunk<
   { rejectValue: string }
 >('comments/fetchForChat', async (chatId, { rejectWithValue }) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/comments/by-chat/${chatId}`);
+    const res = await fetch(`/api/comments/by-chat/${chatId}`);
     if (!res.ok) return rejectWithValue(await readError(res));
     const data = (await res.json()) as Comment[];
     return { chatId, comments: sortByDateCreatedAsc(data) };
@@ -85,7 +82,7 @@ export const fetchCommentsForChatPaged = createAsyncThunk<
     mode = 'replace',
   } = args;
   try {
-    const url = `${API_BASE_URL}/api/comments/by-chat/${chatId}/paged?page=${page}&size=${size}&sort=${encodeURIComponent(
+    const url = `/api/comments/by-chat/${chatId}/paged?page=${page}&size=${size}&sort=${encodeURIComponent(
       sort
     )}`;
     const res = await fetch(url);
@@ -118,7 +115,7 @@ export const fetchAllComments = createAsyncThunk<
   { rejectValue: string }
 >('comments/fetchAll', async (_, { rejectWithValue }) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/comments`);
+    const res = await fetch(`/api/comments`);
     if (!res.ok) return rejectWithValue(await readError(res));
     return (await res.json()) as Comment[];
   } catch (err: any) {
@@ -130,20 +127,23 @@ export const fetchAllComments = createAsyncThunk<
 export const createComment = createAsyncThunk<
   Comment,
   NewCommentPayload,
-  { rejectValue: string }
->('comments/create', async (newComment, { rejectWithValue }) => {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/comments`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newComment),
-    });
-    if (!res.ok) return rejectWithValue(await readError(res));
-    return (await res.json()) as Comment;
-  } catch (err: any) {
-    return rejectWithValue(err?.message || 'Error creating comment');
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
+>(
+  'comments/create',
+  async (newComment, { dispatch, getState, rejectWithValue }) => {
+    try {
+      const res = await authedFetch(dispatch, getState, `/api/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newComment),
+      });
+      if (!res.ok) return rejectWithValue(await readError(res));
+      return (await res.json()) as Comment;
+    } catch (err: any) {
+      return rejectWithValue(err?.message || 'Error creating comment');
+    }
   }
-});
+);
 
 // Kommentar patchen
 export const patchComment = createAsyncThunk<
@@ -152,65 +152,89 @@ export const patchComment = createAsyncThunk<
     commentId: number;
     updates: Partial<Pick<Comment, 'chatId' | 'sender' | 'commentText'>>;
   },
-  { rejectValue: string }
->('comments/patch', async ({ commentId, updates }, { rejectWithValue }) => {
-  try {
-    const body: Record<string, unknown> = {};
-    if (updates.chatId !== undefined) body.chatId = updates.chatId;
-    if (updates.sender !== undefined) body.sender = updates.sender;
-    if (updates.commentText !== undefined)
-      body.commentText = updates.commentText;
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
+>(
+  'comments/patch',
+  async ({ commentId, updates }, { dispatch, getState, rejectWithValue }) => {
+    try {
+      const body: Record<string, unknown> = {};
+      if (updates.chatId !== undefined) body.chatId = updates.chatId;
+      if (updates.sender !== undefined) body.sender = updates.sender;
+      if (updates.commentText !== undefined)
+        body.commentText = updates.commentText;
 
-    const res = await fetch(`${API_BASE_URL}/api/comments/${commentId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) return rejectWithValue(await readError(res));
-    return (await res.json()) as Comment;
-  } catch (err: any) {
-    return rejectWithValue(err?.message || 'Error patching comment');
+      const res = await authedFetch(
+        dispatch,
+        getState,
+        `/api/comments/${commentId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }
+      );
+      if (!res.ok) return rejectWithValue(await readError(res));
+      return (await res.json()) as Comment;
+    } catch (err: any) {
+      return rejectWithValue(err?.message || 'Error patching comment');
+    }
   }
-});
+);
 
 // Kommentar löschen
 export const deleteCommentThunk = createAsyncThunk<
   { commentId: number; chatId: number },
   { commentId: number; chatId: number },
-  { rejectValue: string }
->('comments/delete', async ({ commentId, chatId }, { rejectWithValue }) => {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/comments/${commentId}`, {
-      method: 'DELETE',
-    });
-    if (!res.ok && res.status !== 204) {
-      const text = await res.text().catch(() => '');
-      throw new Error(
-        `HTTP ${res.status} ${res.statusText}${text ? ` — ${text}` : ''}`
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
+>(
+  'comments/delete',
+  async ({ commentId, chatId }, { dispatch, getState, rejectWithValue }) => {
+    try {
+      const res = await authedFetch(
+        dispatch,
+        getState,
+        `/api/comments/${commentId}`,
+        {
+          method: 'DELETE',
+        }
       );
+      if (!res.ok && res.status !== 204) {
+        const text = await res.text().catch(() => '');
+        throw new Error(
+          `HTTP ${res.status} ${res.statusText}${text ? ` — ${text}` : ''}`
+        );
+      }
+      return { commentId, chatId };
+    } catch (err: any) {
+      return rejectWithValue(err?.message || 'Error deleting comment');
     }
-    return { commentId, chatId };
-  } catch (err: any) {
-    return rejectWithValue(err?.message || 'Error deleting comment');
   }
-});
+);
 
 // Alle Kommentare eines Chats löschen
 export const deleteCommentsByChat = createAsyncThunk<
   number,
   number,
-  { rejectValue: string }
->('comments/deleteByChat', async (chatId, { rejectWithValue }) => {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/comments/by-chat/${chatId}`, {
-      method: 'DELETE',
-    });
-    if (!res.ok) return rejectWithValue(await readError(res));
-    return chatId;
-  } catch (err: any) {
-    return rejectWithValue(err?.message || 'Error deleting comments by chat');
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
+>(
+  'comments/deleteByChat',
+  async (chatId, { dispatch, getState, rejectWithValue }) => {
+    try {
+      const res = await authedFetch(
+        dispatch,
+        getState,
+        `/api/comments/by-chat/${chatId}`,
+        {
+          method: 'DELETE',
+        }
+      );
+      if (!res.ok) return rejectWithValue(await readError(res));
+      return chatId;
+    } catch (err: any) {
+      return rejectWithValue(err?.message || 'Error deleting comments by chat');
+    }
   }
-});
+);
 
 // ---------- Slice ----------
 const commentsSlice = createSlice({
