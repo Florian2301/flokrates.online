@@ -28,12 +28,16 @@ public class JwtService {
         this.accessMinutes = accessMinutes;
     }
 
-    public String generateAccessToken(String subjectEmail, Set<String> roles) {
+    public String generateAccessToken(String subjectEmail, Set<String> roles, Integer authorId, String authorName) {
         Instant now = Instant.now();
         Instant exp = now.plusSeconds(accessMinutes * 60);
         return Jwts.builder()
                 .setSubject(subjectEmail)
-                .addClaims(Map.of("roles", roles))
+                .addClaims(Map.of(
+                        "roles", roles,
+                        "authorId", authorId,
+                        "name", authorName   // 👈 wichtig für Frontend
+                ))
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(exp))
                 .signWith(key, SignatureAlgorithm.HS256)

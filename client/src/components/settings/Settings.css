@@ -5,6 +5,8 @@
   width: 100%;
   color: silver;
   font-size: 16px;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding-bottom: 2rem;
 }
 
 .settings-item {

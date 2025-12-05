@@ -75,7 +75,8 @@ public class AuthController {
         var author = authorRepo.findByEmail(req.email().toLowerCase()).orElseThrow();
         var roles = author.getRoles().stream().map(r -> r.getName()).collect(java.util.stream.Collectors.toSet());
 
-        var access = jwt.generateAccessToken(author.getEmail(), roles);
+        var access = jwt.generateAccessToken(author.getEmail(), roles, author.getAuthorId(),
+                author.getAuthorName());
         var exp = jwt.extractExpiration(access);
 
         // refresh token rotieren & speichern (als SHA-256 Hash)
@@ -124,7 +125,8 @@ public class AuthController {
         newRt.setDevice(req.device());
         rtRepo.save(newRt);
 
-        var access = jwt.generateAccessToken(author.getEmail(), roles);
+        var access = jwt.generateAccessToken(author.getEmail(), roles, author.getAuthorId(),
+                author.getAuthorName());
         var exp = jwt.extractExpiration(access);
 
         return ResponseEntity.ok(new AuthResponse("Bearer", access, exp, newRaw));

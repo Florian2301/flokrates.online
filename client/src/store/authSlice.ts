@@ -79,7 +79,9 @@ export const login = createAsyncThunk<
         authorName: payload?.name ?? null,
       };
     }
+
     if (!json.accessToken || !user) throw new Error('Malformed login response');
+
     return {
       accessToken: json.accessToken,
       refreshToken: json.refreshToken,

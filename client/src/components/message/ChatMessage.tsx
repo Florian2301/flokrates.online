@@ -15,6 +15,7 @@ import ReactModal from 'react-modal';
 import { RootState } from '../../store/store';
 import { actorStyles } from '../../types/ActorStyles';
 import data from '@emoji-mart/data';
+import { selectIsAuthenticated } from '../../store/authSlice';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
 
@@ -53,7 +54,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
   const { colorClass, alignClass, actorName } =
     actorStyles[actor as keyof typeof actorStyles];
-
+  const isAuth = useSelector(selectIsAuthenticated);
   const [edit, setEdit] = useState(isEditing);
   const [editedText, setEditedText] = useState(messageText);
   const [fullEdit, setFullEdit] = useState(false);
@@ -137,6 +138,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   };
 
   const handleSaveEdit = () => {
+    if (!isAuth) return;
     dispatch(
       patchMessage({
         messageId,
@@ -154,6 +156,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   }, [edit, editedText]);
 
   useEffect(() => {
+    if (!isAuth) return;
     function handleSaveEvent(e: CustomEvent<{ id: number }>) {
       if (e.detail.id === messageId && edit) {
         handleSaveEdit();
@@ -230,7 +233,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             <span id="message-span"># {messageNumber}</span>
             <span className={colorClass}>{actorName}</span>
           </div>
-          {!previewMode ? (
+          {!previewMode && isAuth ? (
             <div className="message-header-block">
               {edit && (
                 <div className="emoji-section">
@@ -319,21 +322,25 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             </div>
           ) : (
             <div className="message-header-block">
-              <span
-                className="message-button-edit"
-                id="message-button-popup"
-                onClick={handleClosePreviewClick}
-              >
-                <X size={18} strokeWidth={1.5} />
-              </span>
-              <span
-                className="message-button-edit"
-                id="message-button-popup"
-                title="Jump to original message"
-                onClick={handleJumpToMessage}
-              >
-                <ChevronsUp size={18} strokeWidth={1.5} />
-              </span>
+              {isAuth && (
+                <span
+                  className="message-button-edit"
+                  id="message-button-popup"
+                  onClick={handleClosePreviewClick}
+                >
+                  <X size={18} strokeWidth={1.5} />
+                </span>
+              )}
+              {previewMode && (
+                <span
+                  className="message-button-edit"
+                  id="message-button-popup"
+                  title="Jump to original message"
+                  onClick={handleJumpToMessage}
+                >
+                  <ChevronsUp size={18} strokeWidth={1.5} />
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -407,7 +414,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         </ReactModal>
       </div>
 
-      {fullEdit && (
+      {fullEdit && isAuth && (
         <NewMessage
           messageId={messageId}
           isNew={false}

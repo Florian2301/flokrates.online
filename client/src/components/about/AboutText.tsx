@@ -26,20 +26,23 @@ const AboutText: React.FC<Props> = ({
   text,
   language,
   imageUrl,
-  isAdmin = true,
+  isAdmin = false,
   isEditing = false,
   onSave,
   onDelete,
   onCancel,
 }) => {
-  const [editing, setEditing] = useState(isEditing);
+  const [editing, setEditing] = useState(isEditing && isAdmin);
   const [editTitle, setEditTitle] = useState(title);
   const [editText, setEditText] = useState(text);
   const [editLanguage, setEditLanguage] = useState<LanguageCode>(
     language ?? 'DE'
   );
 
-  const handleEdit = () => setEditing(true);
+  const handleEdit = () => {
+    if (!isAdmin) return;
+    setEditing(true);
+  };
 
   const handleCancel = () => {
     setEditing(false);
@@ -50,6 +53,7 @@ const AboutText: React.FC<Props> = ({
   };
 
   const handleSave = () => {
+    if (!isAdmin) return;
     onSave?.({
       id,
       title: editTitle.trim(),
@@ -60,6 +64,7 @@ const AboutText: React.FC<Props> = ({
   };
 
   const handleDelete = () => {
+    if (!isAdmin) return;
     if (id != null) onDelete?.(id);
   };
 
@@ -72,6 +77,10 @@ const AboutText: React.FC<Props> = ({
     setEditText(text);
     setEditLanguage(language ?? 'DE');
   }, [title, text, language]);
+
+  useEffect(() => {
+    if (!isAdmin && editing) setEditing(false);
+  }, [isAdmin, editing]);
 
   return (
     <section className="about-text-block">

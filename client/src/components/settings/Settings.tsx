@@ -14,7 +14,7 @@ const Settings: React.FC = () => {
   return (
     <div className="settings-wrapper">
       <label className="settings-item">
-        Sprache:&nbsp;
+        Language:&nbsp;
         <select
           value={lang}
           onChange={(e) =>

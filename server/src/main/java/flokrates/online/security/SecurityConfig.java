@@ -44,11 +44,14 @@ public class SecurityConfig {
                                 "/api/chats", "/api/chats/**",
                                 "/api/messages", "/api/messages/**",
                                 "/api/networks", "/api/networks/**",
-                                "/api/about", "/api/about/**"
+                                "/api/about", "/api/about/**",
+                                "/api/comments", "/api/comments/**"
                         ).permitAll()
 
                         // 3) Preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/comments", "/api/comments/**").permitAll()
 
                         // 4) Schreiben nur ADMIN
                         .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")

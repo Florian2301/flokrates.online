@@ -17,6 +17,7 @@ import { LanguageCode } from '../../constants/language';
 import { SquarePen } from 'lucide-react';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
+import { selectIsAuthenticated } from '../../store/authSlice';
 import { selectLanguage } from '../../store/languageSlice';
 
 export const AboutPage: React.FC = () => {
@@ -27,7 +28,7 @@ export const AboutPage: React.FC = () => {
     () => items.filter((a) => a.language === lang),
     [items, lang]
   );
-
+  const isAuth = useSelector(selectIsAuthenticated);
   const [activeKey, setActiveKey] = useState<string>('project');
   const [draft, setDraft] = useState<{
     title: string;
@@ -46,6 +47,7 @@ export const AboutPage: React.FC = () => {
 
   // --- CRUD Handler ---
   const handleStartNew = () => {
+    if (!isAuth) return;
     setDraft({ title: '', text: '', language: lang }); // zeigt unten einen AboutText im Editmodus
   };
 
@@ -55,6 +57,7 @@ export const AboutPage: React.FC = () => {
     text: string;
     language: LanguageCode;
   }) => {
+    if (!isAuth) return;
     if (!payload.title.trim() && !payload.text.trim()) return;
 
     if (payload.id == null) {
@@ -87,6 +90,7 @@ export const AboutPage: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
+    if (!isAuth) return;
     await dispatch(deleteAboutThunk(id));
   };
 
@@ -113,19 +117,19 @@ export const AboutPage: React.FC = () => {
             text={item.text}
             language={item.language as 'DE' | 'EN'}
             imageUrl={item.imageUrl}
-            isAdmin={true}
+            isAdmin={isAuth}
             onSave={handleSave}
             onDelete={handleDelete}
           />
         ))}
 
       {/* Draft nur im aktiven Tab anzeigen */}
-      {activeKey === key && draft && (
+      {activeKey === key && draft && isAuth && (
         <AboutText
           title={draft.title}
           text={draft.text}
           language={draft.language}
-          isAdmin={true}
+          isAdmin={isAuth}
           isEditing={true}
           onSave={handleSave} // führt create aus
           onCancel={handleCancelDraft} // Draft verwerfen
@@ -133,7 +137,7 @@ export const AboutPage: React.FC = () => {
       )}
 
       {/* Neuer Eintrag-Button nur im aktiven Tab */}
-      {activeKey === key && (
+      {activeKey === key && isAuth && (
         <div>
           <button
             className="about-edit-btn"

@@ -3,12 +3,13 @@ import './CommentItem.css';
 import { PencilLine, Save, Trash2, X } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { deleteCommentThunk, patchComment } from '../../store/commentsSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 import type { AppDispatch } from '../../store/store';
 import { Comment } from '../../types/Comment';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
-import { useDispatch } from 'react-redux';
+import { selectIsAuthenticated } from '../../store/authSlice';
 
 type Props = {
   comment: Comment;
@@ -30,7 +31,7 @@ const CommentItem: React.FC<Props> = ({
   const [text, setText] = useState(comment.commentText);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
+  const isAuth = useSelector(selectIsAuthenticated);
   const created = useMemo(() => {
     const d = new Date(comment.dateCreated);
     if (Number.isNaN(d.getTime())) return comment.dateCreated;
@@ -135,7 +136,7 @@ const CommentItem: React.FC<Props> = ({
           </div>
 
           <div className="comment-header-block">
-            {edit && (
+            {edit && isAuth && (
               <button
                 className="comment-emoji-btn"
                 type="button"
@@ -158,33 +159,34 @@ const CommentItem: React.FC<Props> = ({
               </div>
             )}
 
-            <span
-              className="comment-button-edit"
-              title={edit ? 'Save' : 'Edit'}
-              onClick={() => {
-                if (edit) {
-                  handleSave();
-                } else {
-                  if (activeEditId && activeEditId !== comment.commentId) {
-                    const ev = new CustomEvent('save-comment', {
-                      detail: { id: activeEditId },
-                    });
-                    window.dispatchEvent(ev);
+            {isAuth && (
+              <span
+                className="comment-button-edit"
+                title={edit ? 'Save' : 'Edit'}
+                onClick={() => {
+                  if (edit) {
+                    handleSave();
+                  } else {
+                    if (activeEditId && activeEditId !== comment.commentId) {
+                      const ev = new CustomEvent('save-comment', {
+                        detail: { id: activeEditId },
+                      });
+                      window.dispatchEvent(ev);
+                    }
+                    setActiveEditId(comment.commentId);
+                    setEdit(true);
                   }
-                  setActiveEditId(comment.commentId);
-                  setEdit(true);
-                }
-              }}
-            >
-              {edit ? (
-                <Save size={18} strokeWidth={1.5} />
-              ) : (
-                <PencilLine size={18} strokeWidth={1.5} />
-              )}
-            </span>
+                }}
+              >
+                {edit ? (
+                  <Save size={18} strokeWidth={1.5} />
+                ) : (
+                  <PencilLine size={18} strokeWidth={1.5} />
+                )}
+              </span>
+            )}
 
-            {/** Cancel */}
-            {edit && (
+            {edit && isAuth && (
               <span
                 className="comment-button-edit"
                 title="Cancel"
@@ -198,13 +200,15 @@ const CommentItem: React.FC<Props> = ({
                 <X size={18} strokeWidth={1.5} />
               </span>
             )}
-            <span
-              className="comment-button-edit"
-              title="Delete"
-              onClick={handleDelete}
-            >
-              <Trash2 size={18} strokeWidth={1.5} />
-            </span>
+            {isAuth && (
+              <span
+                className="comment-button-edit"
+                title="Delete"
+                onClick={handleDelete}
+              >
+                <Trash2 size={18} strokeWidth={1.5} />
+              </span>
+            )}
 
             <span className="comment-date">{created}</span>
           </div>

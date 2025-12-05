@@ -35,6 +35,7 @@ import ChatPdf from '../pdf/ChatPdf';
 import CommentBox from '../comments/CommentBox';
 import { DraftListTable } from './DraftListTable';
 import { PDFDownloadLink } from '@react-pdf/renderer';
+import { selectIsAuthenticated } from '../../store/authSlice';
 import { selectLanguage } from '../../store/languageSlice';
 import { useNavigate } from 'react-router-dom';
 
@@ -52,6 +53,7 @@ const ChatInfo: React.FC = () => {
   const allChats = useSelector((state: RootState) => state.chats.chats);
   const chats = allChats.filter((c) => c.language === lang);
   const drafts = chats.filter((c) => c.status !== 'PUB');
+  const isAuth = useSelector(selectIsAuthenticated);
 
   const maxChatNumber = chats.reduce((max, c) => {
     return c.chatNumber !== null && c.chatNumber > max ? c.chatNumber : max;
@@ -110,10 +112,12 @@ const ChatInfo: React.FC = () => {
   };
 
   const handleChange = (field: keyof Chat, value: any) => {
+    if (!isAuth) return;
     setChatForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSave = async () => {
+    if (!isAuth) return;
     if (!chatForm.chatId) return;
     const payloadRefs = Array.isArray(chatForm.referencedChatIds)
       ? chatForm.referencedChatIds
@@ -144,6 +148,7 @@ const ChatInfo: React.FC = () => {
   };
 
   const handlePublish = async () => {
+    if (!isAuth) return;
     if (!chatForm.chatId) return;
     const ok = window.confirm('Publish this chat?');
     if (!ok) return;
@@ -179,6 +184,7 @@ const ChatInfo: React.FC = () => {
   };
 
   const handleDelete = async () => {
+    if (!isAuth) return;
     if (!chatForm?.chatId) return;
     const ok = window.confirm('Delete this chat?');
     if (!ok) return;
@@ -189,6 +195,7 @@ const ChatInfo: React.FC = () => {
   };
 
   const handleCreate = async () => {
+    if (!isAuth) return;
     const newChatData: Omit<Chat, 'chatId'> = {
       title: 'draft',
       description: '',
@@ -247,12 +254,14 @@ const ChatInfo: React.FC = () => {
 
   // References
   const handleAddReference = (refId: number) => {
+    if (!isAuth) return;
     if (!chatId || !refId) return;
     if (currentRefIds.includes(refId)) return;
     dispatch(upsertReference({ chatId, refId }));
   };
 
   const handleRemoveReference = (refId: number) => {
+    if (!isAuth) return;
     if (!chatId) return;
     const ok = window.confirm('Delete this reference?');
     if (!ok) return;
@@ -271,7 +280,7 @@ const ChatInfo: React.FC = () => {
     <div>
       <div className="chatinfo">
         <p className="chatpara">Chatnumber:</p>
-        {editMode ? (
+        {editMode && isAuth ? (
           <input
             className="chatinfo-input"
             type="text"
@@ -286,7 +295,7 @@ const ChatInfo: React.FC = () => {
       </div>
       <div className="chatinfo">
         <p className="chatpara">Title:</p>
-        {editMode ? (
+        {editMode && isAuth ? (
           <input
             className="chatinfo-input"
             type="text"
@@ -299,7 +308,7 @@ const ChatInfo: React.FC = () => {
       </div>
       <div className="chatinfo">
         <p className="chatpara">Description:</p>
-        {editMode ? (
+        {editMode && isAuth ? (
           <input
             className="chatinfo-input"
             type="text"
@@ -312,7 +321,7 @@ const ChatInfo: React.FC = () => {
       </div>
       <div className="chatinfo">
         <p className="chatpara">Tags:</p>
-        {editMode ? (
+        {editMode && isAuth ? (
           <input
             className="chatinfo-input"
             type="text"
@@ -326,7 +335,7 @@ const ChatInfo: React.FC = () => {
       <div className="chatinfo">
         <p className="chatpara">Relations:</p>
 
-        {editMode ? (
+        {editMode && isAuth ? (
           <div className="chatinfo-ref-editor">
             <select
               className="chatinfo-input"
@@ -396,7 +405,7 @@ const ChatInfo: React.FC = () => {
       </div>
       <div className="chatinfo">
         <p className="chatpara">Status:</p>
-        {editMode ? (
+        {editMode && isAuth ? (
           <select
             className="chatinfo-input"
             value={chatForm.status ?? ''}
@@ -417,7 +426,7 @@ const ChatInfo: React.FC = () => {
       </div>
       <div className="chatinfo">
         <p className="chatpara">Language:</p>
-        {editMode ? (
+        {editMode && isAuth ? (
           <select
             className="chatinfo-input"
             value={chatForm.language ?? 'DE'}
@@ -437,7 +446,7 @@ const ChatInfo: React.FC = () => {
           </p>
         )}
       </div>
-      {editMode ? (
+      {editMode && isAuth ? (
         <div className="chatinfo">
           <p className="chatpara">Created:</p>
           <p className="chatpara">
@@ -445,7 +454,7 @@ const ChatInfo: React.FC = () => {
           </p>
         </div>
       ) : null}
-      {editMode ? (
+      {editMode && isAuth ? (
         <div className="chatinfo">
           <p className="chatpara">Modified:</p>
           <p className="chatpara">
@@ -490,35 +499,37 @@ const ChatInfo: React.FC = () => {
 
       <hr className="chatinfo-divider" />
 
-      <div className="chatinfo-actions">
-        <button
-          className="chatinfo-buttons"
-          onClick={() => setEditMode((prev) => !prev)}
-          title="Edit/Cancel"
-        >
-          {editMode ? (
-            <X size={18} strokeWidth={1.5} />
-          ) : (
-            <PencilLine size={18} strokeWidth={1.5} />
-          )}
-        </button>
-        <button
-          className="chatinfo-buttons"
-          onClick={handleClear}
-          title="Clear"
-        >
-          <BrushCleaning size={18} strokeWidth={1.5} />
-        </button>
-        <button
-          className="chatinfo-buttons"
-          onClick={handleCreate}
-          disabled={editMode}
-          title="New Chat"
-        >
-          <SquarePen size={18} strokeWidth={1.5} />
-        </button>
-      </div>
-      {editMode ? (
+      {isAuth ? (
+        <div className="chatinfo-actions">
+          <button
+            className="chatinfo-buttons"
+            onClick={() => setEditMode((prev) => !prev)}
+            title="Edit/Cancel"
+          >
+            {editMode ? (
+              <X size={18} strokeWidth={1.5} />
+            ) : (
+              <PencilLine size={18} strokeWidth={1.5} />
+            )}
+          </button>
+          <button
+            className="chatinfo-buttons"
+            onClick={handleClear}
+            title="Clear"
+          >
+            <BrushCleaning size={18} strokeWidth={1.5} />
+          </button>
+          <button
+            className="chatinfo-buttons"
+            onClick={handleCreate}
+            disabled={editMode}
+            title="New Chat"
+          >
+            <SquarePen size={18} strokeWidth={1.5} />
+          </button>
+        </div>
+      ) : null}
+      {editMode && isAuth ? (
         <div className="chatinfo-actions">
           <button
             className="chatinfo-buttons"
@@ -545,24 +556,29 @@ const ChatInfo: React.FC = () => {
       ) : null}
 
       {/* === TOGGLE: Drafts <-> Comments === */}
-      <div className="chatinfo-toggle">
-        <button
-          className={`toggle-btn ${viewMode === 'drafts' ? 'active' : ''}`}
-          onClick={() => setViewMode('drafts')}
-        >
-          Drafts
-        </button>
-        <button
-          className={`toggle-btn ${viewMode === 'comments' ? 'active' : ''}`}
-          onClick={() => setViewMode('comments')}
-        >
-          Comments
-        </button>
-      </div>
-      <hr className="chatinfo-divider" />
+      {isAuth ? (
+        <div className="chatinfo-toggle">
+          <button
+            className={`toggle-btn ${viewMode === 'drafts' ? 'active' : ''}`}
+            onClick={() => setViewMode('drafts')}
+          >
+            Drafts
+          </button>
+          <button
+            className={`toggle-btn ${viewMode === 'comments' ? 'active' : ''}`}
+            onClick={() => setViewMode('comments')}
+          >
+            Comments
+          </button>
+        </div>
+      ) : null}
+      {isAuth ? (
+        <hr className="chatinfo-divider" />
+      ) : (
+        <p className="para-comment">Comments</p>
+      )}
 
-      {/* === Inhalt je nach Toggle === */}
-      {viewMode === 'drafts' ? (
+      {viewMode === 'drafts' && isAuth ? (
         <div className="chat-overview">
           <DraftListTable chats={drafts} messages={messages} />
         </div>

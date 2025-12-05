@@ -4,8 +4,11 @@ import { Nav, NavDropdown } from 'react-bootstrap';
 
 import { Menu } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
+import { selectIsAuthenticated } from '../../store/authSlice';
+import { useSelector } from 'react-redux';
 
 const NavBar = () => {
+  const isAuth = useSelector(selectIsAuthenticated);
   const handleSelect = (eventKey: string | null) =>
     alert(`selected ${eventKey}`);
 
@@ -43,14 +46,14 @@ const NavBar = () => {
           as={NavLink}
           to="/settings"
         >
-          Settings
+          Language
         </NavDropdown.Item>
         <NavDropdown.Item
           className="nav-dropdown-item"
           as={NavLink}
           to="/login"
         >
-          Login
+          {!isAuth ? 'Login' : 'Logout'}
         </NavDropdown.Item>
       </NavDropdown>
     </Nav>

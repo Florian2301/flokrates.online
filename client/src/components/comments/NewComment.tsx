@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Picker from '@emoji-mart/react';
 import { createComment } from '../../store/commentsSlice';
 import data from '@emoji-mart/data';
+import { selectIsAuthenticated } from '../../store/authSlice';
 
 type Props = {
   onCancel: () => void;
@@ -17,7 +18,7 @@ const NewComment: React.FC<Props> = ({ onCancel }) => {
   const dispatch = useDispatch<AppDispatch>();
   const selectedChat = useSelector((s: RootState) => s.chats.selectedChat);
   const chatId = selectedChat?.chatId ?? null;
-
+  const isAuth = useSelector(selectIsAuthenticated);
   const [sender, setSender] = useState('');
   const [text, setText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);

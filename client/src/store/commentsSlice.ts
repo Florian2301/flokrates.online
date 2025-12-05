@@ -132,7 +132,7 @@ export const createComment = createAsyncThunk<
   'comments/create',
   async (newComment, { dispatch, getState, rejectWithValue }) => {
     try {
-      const res = await authedFetch(dispatch, getState, `/api/comments`, {
+      const res = await fetch(`/api/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newComment),

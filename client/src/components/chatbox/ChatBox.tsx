@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ChatMessage } from '../message/ChatMessage';
 import NewMessage from '../message/NewMessage';
 import { fetchMessagesForChat } from '../../store/messagesSlice';
+import { selectIsAuthenticated } from '../../store/authSlice';
 
 export const ChatBox: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -18,6 +19,7 @@ export const ChatBox: React.FC = () => {
     (state: RootState) => state.chats.selectedChat
   );
   const [newMessageId, setNewMessageId] = useState<number | null>(null);
+  const isAuth = useSelector(selectIsAuthenticated);
 
   useEffect(() => {
     if (selectedChat) {
@@ -26,7 +28,7 @@ export const ChatBox: React.FC = () => {
   }, [selectedChat, dispatch]);
 
   const handleNewMessageClick = async () => {
-    if (!selectedChat) return;
+    if (!selectedChat && isAuth) return;
 
     if (activeEditId) {
       const event = new CustomEvent('save-message', {
@@ -58,7 +60,7 @@ export const ChatBox: React.FC = () => {
           );
         })}
 
-      {selectedChat ? (
+      {selectedChat && isAuth ? (
         <div className="chatbox-header">
           <button
             className="new-message-button"
@@ -69,7 +71,7 @@ export const ChatBox: React.FC = () => {
         </div>
       ) : null}
 
-      {newMessageId && (
+      {newMessageId && isAuth && (
         <NewMessage
           messageId={newMessageId}
           isNew={true}
