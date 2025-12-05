@@ -1,15 +1,14 @@
 .auth-wrapper {
-  min-height: 100dvh;
   display: grid;
-  justify-items: center; /* horizontal zentriert */
-  align-content: start; /* vertikal nach oben schieben */
+  justify-items: center;
+  align-content: start;
   padding: 24px;
 }
 
 .auth-card {
   width: 100%;
   max-width: 380px;
-  margin-top: clamp(16px, 8vh, 72px); /* Abstand vom oberen Rand */
+  margin-top: clamp(16px, 8vh, 72px);
   background-color: rgba(0, 0, 0, 0.3);
   color: silver;
   border: 1px solid rgba(255, 255, 255, 0.08);
