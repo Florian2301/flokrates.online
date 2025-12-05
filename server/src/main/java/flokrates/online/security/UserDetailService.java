@@ -1,6 +1,6 @@
 package flokrates.online.security;
 
-import flokrates.online.repository.AuthorRepo;
+import flokrates.online.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AuthorDetailService implements UserDetailsService {
+public class UserDetailService implements UserDetailsService {
 
-    private final AuthorRepo repo;
+    private final UserRepo repo;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

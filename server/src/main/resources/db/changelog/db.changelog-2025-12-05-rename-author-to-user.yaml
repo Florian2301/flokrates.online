@@ -1,0 +1,88 @@
+databaseChangeLog:
+  - changeSet:
+      id: rename-author-to-user
+      author: flokrates
+      changes:
+        - renameTable:
+            oldTableName: authors
+            newTableName: user
+      rollback:
+        - renameTable:
+            oldTableName: user
+            newTableName: authors
+
+  - changeSet:
+      id: authors_roles-table-rename-to-user_roles
+      author: flokrates
+      changes:
+        - renameTable:
+            oldTableName: authors_roles
+            newTableName: user_roles
+      rollback:
+        - renameTable:
+            oldTableName: user_roles
+            newTableName: authors_roles
+
+  - changeSet:
+      id: users-column-author_id-to-user_id
+      author: flokrates
+      changes:
+        - renameColumn:
+            tableName: user
+            oldColumnName: author_id
+            newColumnName: user_id
+            columnDataType: INT
+      rollback:
+        - renameColumn:
+            tableName: user
+            oldColumnName: user_id
+            newColumnName: author_id
+            columnDataType: INT
+
+  - changeSet:
+      id: users-column-author_name-to-username
+      author: flokrates
+      changes:
+        - renameColumn:
+            tableName: user
+            oldColumnName: author_name
+            newColumnName: username
+            columnDataType: VARCHAR(255)
+      rollback:
+        - renameColumn:
+            tableName: user
+            oldColumnName: username
+            newColumnName: author_name
+            columnDataType: VARCHAR(255)
+
+  - changeSet:
+      id: users_roles-column-author_id-to-user_id
+      author: flokrates
+      changes:
+        - renameColumn:
+            tableName: user_roles
+            oldColumnName: author_id
+            newColumnName: user_id
+            columnDataType: INT
+      rollback:
+        - renameColumn:
+            tableName: user_roles
+            oldColumnName: user_id
+            newColumnName: author_id
+            columnDataType: INT
+
+  - changeSet:
+      id: refresh_tokens-column-author_id-to-user_id
+      author: flokrates
+      changes:
+        - renameColumn:
+            tableName: refresh_tokens
+            oldColumnName: author_id
+            newColumnName: user_id
+            columnDataType: INT
+      rollback:
+        - renameColumn:
+            tableName: refresh_tokens
+            oldColumnName: user_id
+            newColumnName: author_id
+            columnDataType: INT

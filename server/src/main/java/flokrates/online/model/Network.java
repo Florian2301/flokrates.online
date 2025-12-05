@@ -1,6 +1,8 @@
 package flokrates.online.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -8,6 +10,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "networks")
+@Getter
+@Setter
 public class Network {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,54 +26,16 @@ public class Network {
     @UpdateTimestamp
     @Column(name = "date_modified")
     private LocalDateTime dateModified;
+
     @PrePersist
     public void prePersist() {
         dateCreated = LocalDateTime.now();
         dateModified = dateCreated;
     }
+
     @PreUpdate
     public void preUpdate() {
         dateModified = LocalDateTime.now();
     }
 
-    // Getter and Setter
-    public Integer getNetId() {
-        return netId;
-    }
-
-    public void setNetId(Integer netId) {
-        this.netId = netId;
-    }
-
-    public Integer getChatId() {
-        return chatId;
-    }
-
-    public void setChatId(Integer chatId) {
-        this.chatId = chatId;
-    }
-
-    public Integer getRefId() {
-        return refId;
-    }
-
-    public void setRefId(Integer refId) {
-        this.refId = refId;
-    }
-
-    public LocalDateTime getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(LocalDateTime dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    public LocalDateTime getDateModified() {
-        return dateModified;
-    }
-
-    public void setDateModified(LocalDateTime dateModified) {
-        this.dateModified = dateModified;
-    }
 }

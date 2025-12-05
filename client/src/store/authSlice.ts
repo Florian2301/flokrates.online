@@ -3,10 +3,10 @@ import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { RootState } from './store';
 
 type User = {
-  authorId: number;
+  userId: number;
   email: string;
   roles: string[]; // z.B. ["ROLE_USER","ROLE_ADMIN"]
-  authorName?: string | null;
+  userName?: string | null;
 };
 
 type AuthState = {
@@ -71,12 +71,12 @@ export const login = createAsyncThunk<
 
     if (!user && json.accessToken) {
       const payload = decodeJwt(json.accessToken);
-      // -> passe Claims an deine Backend-Payload an (sub, roles, authorId, name…)
+      // -> passe Claims an deine Backend-Payload an (sub, roles, userId, name…)
       user = {
-        authorId: payload?.authorId ?? 0,
+        userId: payload?.userId ?? 0,
         email: payload?.sub ?? '',
         roles: payload?.roles ?? [],
-        authorName: payload?.name ?? null,
+        userName: payload?.name ?? null,
       };
     }
 
@@ -165,10 +165,10 @@ const authSlice = createSlice({
         const p = decodeJwt(state.accessToken);
         if (p) {
           state.user = {
-            authorId: p?.authorId ?? 0,
+            userId: p?.userId ?? 0,
             email: p?.sub ?? '',
             roles: p?.roles ?? [],
-            authorName: p?.name ?? null,
+            userName: p?.name ?? null,
           };
           localStorage.setItem('authUser', JSON.stringify(state.user));
         }

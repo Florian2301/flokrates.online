@@ -1,6 +1,8 @@
 package flokrates.online.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -8,6 +10,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "message_attachments")
+@Getter
+@Setter
 public class MessageAttachment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -66,64 +70,4 @@ public class MessageAttachment {
         dateModified = LocalDateTime.now();
     }
 
-    // Getters/Setters
-    public Integer getAttachmentId() { return attachmentId; }
-    public void setAttachmentId(Integer attachmentId) { this.attachmentId = attachmentId; }
-
-    public Integer getMessageId() { return messageId; }
-    public void setMessageId(Integer messageId) { this.messageId = messageId; }
-
-    public String getKind() { return kind; }
-    public void setKind(String kind) { this.kind = kind; }
-
-    public String getStorageKey() { return storageKey; }
-    public void setStorageKey(String storageKey) { this.storageKey = storageKey; }
-
-    public String getHref() { return href; }
-    public void setHref(String href) { this.href = href; }
-
-    public String getContentType() { return contentType; }
-    public void setContentType(String contentType) { this.contentType = contentType; }
-
-    public String getFileName() { return fileName; }
-    public void setFileName(String fileName) { this.fileName = fileName; }
-
-    public Long getFileSizeBytes() { return fileSizeBytes; }
-    public void setFileSizeBytes(Long fileSizeBytes) { this.fileSizeBytes = fileSizeBytes; }
-
-    public Integer getWidthPx() { return widthPx; }
-    public void setWidthPx(Integer widthPx) { this.widthPx = widthPx; }
-
-    public Integer getHeightPx() { return heightPx; }
-    public void setHeightPx(Integer heightPx) { this.heightPx = heightPx; }
-
-    public Integer getDurationMs() { return durationMs; }
-    public void setDurationMs(Integer durationMs) { this.durationMs = durationMs; }
-
-    public Integer getPageCount() { return pageCount; }
-    public void setPageCount(Integer pageCount) { this.pageCount = pageCount; }
-
-    public byte[] getChecksumSha256() { return checksumSha256; }
-    public void setChecksumSha256(byte[] checksumSha256) { this.checksumSha256 = checksumSha256; }
-
-    public String getPreviewHref() { return previewHref; }
-    public void setPreviewHref(String previewHref) { this.previewHref = previewHref; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public Integer getSortOrder() { return sortOrder; }
-    public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
-
-    public boolean isDeleted() { return deleted; }
-    public void setDeleted(boolean deleted) { this.deleted = deleted; }
-
-    public LocalDateTime getDateCreated() { return dateCreated; }
-    public void setDateCreated(LocalDateTime dateCreated) { this.dateCreated = dateCreated; }
-
-    public LocalDateTime getDateModified() { return dateModified; }
-    public void setDateModified(LocalDateTime dateModified) { this.dateModified = dateModified; }
 }

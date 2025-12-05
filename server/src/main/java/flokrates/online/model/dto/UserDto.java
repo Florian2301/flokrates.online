@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
-public class AuthorDto {
-    private Integer authorId;
-    private String authorName;
+public class UserDto {
+    private Integer userId;
+    private String username;
     private String email;
     private String password;
     Boolean enabled;

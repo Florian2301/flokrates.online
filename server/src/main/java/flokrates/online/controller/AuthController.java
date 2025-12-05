@@ -1,12 +1,12 @@
 package flokrates.online.controller;
 
-import flokrates.online.mapper.AuthorMapper;
-import flokrates.online.model.Author;
+import flokrates.online.mapper.UserMapper;
 import flokrates.online.model.RefreshToken;
+import flokrates.online.model.User;
 import flokrates.online.model.dto.*;
-import flokrates.online.repository.AuthorRepo;
 import flokrates.online.repository.RefreshTokenRepo;
 import flokrates.online.repository.RoleRepo;
+import flokrates.online.repository.UserRepo;
 import flokrates.online.security.JwtService;
 import flokrates.online.security.TokenHash;
 import jakarta.validation.Valid;
@@ -31,31 +31,31 @@ import java.util.UUID;
 public class AuthController {
     private final AuthenticationManager authManager;
     private final PasswordEncoder encoder;
-    private final AuthorRepo authorRepo;
+    private final UserRepo userRepo;
     private final RoleRepo roleRepo;
     private final RefreshTokenRepo rtRepo;
     private final JwtService jwt;
-    private final AuthorMapper mapper;
+    private final UserMapper mapper;
 
     // Refresh-Gültigkeit (Days) – gleiche Zahl wie in application.yml verwenden
     private final long refreshDays = 30;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthorDto> register(@Valid @RequestBody AuthorCreateDto dto) {
-        if (authorRepo.existsByEmail(dto.email())) {
+    public ResponseEntity<UserDto> register(@Valid @RequestBody UserCreateDto dto) {
+        if (userRepo.existsByEmail(dto.email())) {
             return ResponseEntity.badRequest().build();
         }
         var userRole = roleRepo.findByName("ROLE_USER")
                 .orElseThrow(() -> new IllegalStateException("ROLE_USER not seeded"));
 
-        var a = new Author();
-        a.setAuthorName(dto.authorName());
+        var a = new User();
+        a.setUsername(dto.userName());
         a.setEmail(dto.email().toLowerCase());
         a.setPassword(encoder.encode(dto.password()));
         a.setEnabled(true);
         a.getRoles().add(userRole);
 
-        var saved = authorRepo.save(a);
+        var saved = userRepo.save(a);
         return ResponseEntity.ok(mapper().toDto(saved));
     }
 
@@ -72,17 +72,17 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("error", "user_not_found"));
         }
 
-        var author = authorRepo.findByEmail(req.email().toLowerCase()).orElseThrow();
-        var roles = author.getRoles().stream().map(r -> r.getName()).collect(java.util.stream.Collectors.toSet());
+        var user = userRepo.findByEmail(req.email().toLowerCase()).orElseThrow();
+        var roles = user.getRoles().stream().map(r -> r.getName()).collect(java.util.stream.Collectors.toSet());
 
-        var access = jwt.generateAccessToken(author.getEmail(), roles, author.getAuthorId(),
-                author.getAuthorName());
+        var access = jwt.generateAccessToken(user.getEmail(), roles, user.getId(),
+                user.getUsername());
         var exp = jwt.extractExpiration(access);
 
         // refresh token rotieren & speichern (als SHA-256 Hash)
         var rawRefresh = UUID.randomUUID().toString() + "." + UUID.randomUUID();
         var rt = new RefreshToken();
-        rt.setAuthor(author);
+        rt.setUser(user);
         rt.setTokenHash(TokenHash.sha256(rawRefresh));
         rt.setIssuedAt(Instant.now());
         rt.setExpiresAt(Instant.now().plus(refreshDays, ChronoUnit.DAYS));
@@ -107,8 +107,8 @@ public class AuthController {
             return ResponseEntity.status(401).build();
         }
 
-        var author = stored.getAuthor();
-        var roles = author.getRoles().stream().map(r -> r.getName()).collect(java.util.stream.Collectors.toSet());
+        var user = stored.getUser();
+        var roles = user.getRoles().stream().map(r -> r.getName()).collect(java.util.stream.Collectors.toSet());
 
         // altes Refresh-Token widerrufen (Rotation)
         stored.setRevoked(true);
@@ -117,7 +117,7 @@ public class AuthController {
         // neues Refresh-Token ausgeben
         var newRaw = UUID.randomUUID().toString() + "." + UUID.randomUUID();
         var newRt = new RefreshToken();
-        newRt.setAuthor(author);
+        newRt.setUser(user);
         newRt.setTokenHash(TokenHash.sha256(newRaw));
         newRt.setIssuedAt(Instant.now());
         newRt.setExpiresAt(Instant.now().plus(refreshDays, ChronoUnit.DAYS));
@@ -125,8 +125,8 @@ public class AuthController {
         newRt.setDevice(req.device());
         rtRepo.save(newRt);
 
-        var access = jwt.generateAccessToken(author.getEmail(), roles, author.getAuthorId(),
-                author.getAuthorName());
+        var access = jwt.generateAccessToken(user.getEmail(), roles, user.getId(),
+                user.getUsername());
         var exp = jwt.extractExpiration(access);
 
         return ResponseEntity.ok(new AuthResponse("Bearer", access, exp, newRaw));
@@ -145,19 +145,19 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<AuthorDto> me(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<UserDto> me(@RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) return ResponseEntity.status(401).build();
         var token = authHeader.substring(7);
         if (!jwt.isValid(token)) return ResponseEntity.status(401).build();
 
         var email = jwt.extractSubject(token);
-        var author = authorRepo.findByEmail(email).orElse(null);
-        if (author == null) return ResponseEntity.status(404).build();
+        var user = userRepo.findByEmail(email).orElse(null);
+        if (user == null) return ResponseEntity.status(404).build();
 
-        return ResponseEntity.ok(mapper().toDto(author));
+        return ResponseEntity.ok(mapper().toDto(user));
     }
 
-    private AuthorMapper mapper() {
+    private UserMapper mapper() {
         return mapper;
     }
 }

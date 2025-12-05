@@ -1,9 +1,13 @@
 package flokrates.online.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "roles")
+@Getter
+@Setter
 public class Role {
 
     @Id
@@ -12,20 +16,4 @@ public class Role {
 
     @Column(name = "name", nullable = false, unique = true, length = 50)
     private String name;
-
-    public Integer getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(Integer roleId) {
-        this.roleId = roleId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }

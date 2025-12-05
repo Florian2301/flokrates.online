@@ -1,6 +1,6 @@
 package flokrates.online.security;
 
-import flokrates.online.repository.AuthorRepo;
+import flokrates.online.repository.UserRepo;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
-    private final AuthorRepo authorRepo;
+    private final UserRepo userRepo;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
@@ -44,7 +44,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (jwtService.isValid(token)) {
                 String email = jwtService.extractSubject(token);
 
-                var authorOpt = authorRepo.findByEmail(email);
+                var authorOpt = userRepo.findByEmail(email);
                 if (authorOpt.isPresent() && Boolean.TRUE.equals(authorOpt.get().isEnabled())) {
 
                     // Rollen aus dem Token holen und für hasRole(...) mit ROLE_-Prefix ausstatten

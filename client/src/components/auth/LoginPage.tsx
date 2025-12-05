@@ -36,8 +36,8 @@ const LoginPage: React.FC = () => {
       <div className="auth-wrapper">
         <div className="auth-card">
           <h3 className="auth-title">
-            {user?.authorName
-              ? `Hallo, ${user.authorName}`
+            {user?.userName
+              ? `Hallo, ${user.userName}`
               : user?.email
                 ? `Hallo, ${user.email}`
                 : 'Bereits eingeloggt'}
