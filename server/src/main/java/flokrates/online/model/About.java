@@ -1,6 +1,8 @@
 package flokrates.online.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -8,6 +10,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "about")
+@Getter
+@Setter
 public class About {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,26 +32,4 @@ public class About {
     @UpdateTimestamp
     @Column(name = "date_modified")
     private LocalDateTime dateModified;
-
-    // Getters & Setters
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
-
-    public String getSectionKey() { return sectionKey; }
-    public void setSectionKey(String sectionKey) { this.sectionKey = sectionKey; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getText() { return text; }
-    public void setText(String text) { this.text = text; }
-
-    public Language getLanguage() { return language; }
-    public void setLanguage(Language language) { this.language = language; }
-
-    public LocalDateTime getDateCreated() { return dateCreated; }
-    public void setDateCreated(LocalDateTime dateCreated) { this.dateCreated = dateCreated; }
-
-    public LocalDateTime getDateModified() { return dateModified; }
-    public void setDateModified(LocalDateTime dateModified) { this.dateModified = dateModified; }
 }

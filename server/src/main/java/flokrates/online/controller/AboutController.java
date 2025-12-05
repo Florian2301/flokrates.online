@@ -6,13 +6,10 @@ import flokrates.online.model.Language;
 import flokrates.online.model.dto.AboutDto;
 import flokrates.online.service.AboutService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,7 +19,6 @@ import java.util.Optional;
 @RequestMapping("/api/abouts")
 @CrossOrigin(origins = "http://localhost:8081")
 public class AboutController {
-    private static final Logger logger = LoggerFactory.getLogger(AboutController.class);
 
     private final AboutService aboutService;
     private final AboutMapper aboutMapper;
@@ -30,11 +26,6 @@ public class AboutController {
     @PostMapping
     public ResponseEntity<AboutDto> createAbout(@RequestBody AboutDto dto) {
         About entity = aboutMapper.toEntity(dto);
-        if (entity.getDateCreated() == null) {
-            entity.setDateCreated(LocalDateTime.now());
-        }
-        entity.setDateModified(LocalDateTime.now());
-
         About created = aboutService.save(entity);
         AboutDto body = aboutMapper.toDto(created);
         return ResponseEntity
@@ -77,7 +68,6 @@ public class AboutController {
         existing.setSectionKey(dto.getSectionKey());
         existing.setText(dto.getText());
         existing.setLanguage(dto.getLanguage());
-        existing.setDateModified(LocalDateTime.now());
 
         About updated = aboutService.save(existing);
         return ResponseEntity.ok(aboutMapper.toDto(updated));
@@ -97,10 +87,8 @@ public class AboutController {
                 case "language" -> {
                     if (value != null) existing.setLanguage(Language.valueOf(value.toString()));
                 }
-                // dateCreated/dateModified werden nicht direkt gepatcht
             }
         });
-        existing.setDateModified(LocalDateTime.now());
 
         About updated = aboutService.save(existing);
         return ResponseEntity.ok(aboutMapper.toDto(updated));
