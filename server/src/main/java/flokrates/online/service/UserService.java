@@ -15,7 +15,7 @@ import java.util.Optional;
 @Transactional
 @RequiredArgsConstructor
 public class UserService {
-    private UserRepo userRepo;
+    private final UserRepo userRepo;
 
     public User saveUser(User user) {
         return userRepo.save(user);
@@ -33,8 +33,11 @@ public class UserService {
         return userRepo.findById(id).map(existing -> {
             existing.setUsername(dto.getUsername());
             existing.setEmail(dto.getEmail());
-            if (dto.getPassword() != null) {
+            if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
                 existing.setPassword(dto.getPassword());
+            }
+            if (dto.getEnabled() != null) {
+                existing.setEnabled(dto.getEnabled());
             }
             return userRepo.save(existing);
         });
@@ -44,9 +47,10 @@ public class UserService {
         return userRepo.findById(id).map(existing -> {
             updates.forEach((k, v) -> {
                 switch (k) {
-                    case "userName" -> existing.setUsername((String) v);
+                    case "username" -> existing.setUsername((String) v);
                     case "email" -> existing.setEmail((String) v);
                     case "password" -> existing.setPassword((String) v);
+                    case "enabled" -> existing.setEnabled((Boolean) v);
                     default -> {
                     }
                 }

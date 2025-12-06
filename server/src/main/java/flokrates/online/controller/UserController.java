@@ -16,7 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/authors")
+@RequestMapping("/api/user")
 @CrossOrigin(origins = "http://localhost:8081")
 @Validated
 public class UserController {
@@ -30,7 +30,7 @@ public class UserController {
         User created = userService.saveUser(entity);
         UserDto body = userMapper.toDto(created);
         return ResponseEntity
-                .created(URI.create("/api/authors/" + created.getId()))
+                .created(URI.create("/api/user/" + created.getId()))
                 .body(body);
     }
 

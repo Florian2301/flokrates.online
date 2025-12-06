@@ -1,4 +1,4 @@
-package flokrates.online.security;
+package flokrates.online.service;
 
 import flokrates.online.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
