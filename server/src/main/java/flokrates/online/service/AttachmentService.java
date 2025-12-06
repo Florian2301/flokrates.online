@@ -1,14 +1,18 @@
 package flokrates.online.service;
 
-import flokrates.online.model.MessageAttachment;
-import flokrates.online.model.dto.MessageAttachmentDto;
-import flokrates.online.repository.MessageAttachmentRepo;
+import flokrates.online.model.Attachment;
+import flokrates.online.model.dto.AttachmentDto;
+import flokrates.online.repository.AttachmentRepo;
 import flokrates.online.repository.MessageRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -17,12 +21,11 @@ import java.util.Optional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class MessageAttachmentService {
+public class AttachmentService {
 
-    @Autowired
-    private MessageAttachmentRepo repo;
-    @Autowired
-    private MessageRepo messageRepo;
+    private final AttachmentRepo repo;
+    private final MessageRepo messageRepo;
+    private final Path uploadRoot = Paths.get("uploads");
 
     private void ensureMessageExists(Integer messageId) {
         if (!messageRepo.existsById(messageId)) {
@@ -30,7 +33,33 @@ public class MessageAttachmentService {
         }
     }
 
-    private void validateKindAndFields(MessageAttachment a) {
+    public Attachment uploadFileAttachment(Integer messageId, MultipartFile file) throws IOException {
+        ensureMessageExists(messageId);
+
+        if (!Files.exists(uploadRoot)) {
+            Files.createDirectories(uploadRoot);
+        }
+
+        String originalName = file.getOriginalFilename();
+        String storageKey = java.util.UUID.randomUUID() + "-" + (originalName != null ? originalName : "file");
+        Path target = uploadRoot.resolve(storageKey);
+
+        Files.copy(file.getInputStream(), target);
+
+        Attachment a = new Attachment();
+        a.setMessageId(messageId);
+        a.setKind("file");
+        a.setStorageKey(storageKey);
+        a.setFileName(originalName);
+        a.setFileSizeBytes(file.getSize());
+        a.setContentType(file.getContentType());
+        // Sehr wichtig: href auf einen Download-Endpunkt setzen
+        a.setHref("/api/attachments/" + storageKey);
+
+        return repo.save(a);
+    }
+
+    private void validateKindAndFields(Attachment a) {
         if (a.getKind() == null) throw new IllegalArgumentException("kind ist erforderlich (file|external_url)");
         switch (a.getKind()) {
             case "file" -> {
@@ -46,28 +75,25 @@ public class MessageAttachmentService {
     }
 
 
-    public List<MessageAttachment> list(Integer messageId) {
+    public List<Attachment> list(Integer messageId) {
         ensureMessageExists(messageId);
-        return repo.findByMessageIdAndDeletedFalseOrderBySortOrderAscAttachmentIdAsc(messageId);
+        return repo.findByMessageIdOrderBySortOrderAscAttachmentIdAsc(messageId);
     }
 
-    public Optional<MessageAttachment> get(Integer messageId, Integer attachmentId) {
+    public Optional<Attachment> get(Integer messageId, Integer attachmentId) {
         ensureMessageExists(messageId);
         return repo.findById(attachmentId)
                 .filter(a -> a.getMessageId().equals(messageId));
     }
 
-    public MessageAttachment create(Integer messageId, MessageAttachment a) {
+    public Attachment create(Integer messageId, Attachment a) {
         ensureMessageExists(messageId);
         a.setMessageId(messageId);
         validateKindAndFields(a);
-//        var now = LocalDateTime.now();
-//        if (a.getDateCreated() == null) a.setDateCreated(now);
-//        a.setDateModified(now);
         return repo.save(a);
     }
 
-    public Optional<MessageAttachment> update(Integer messageId, Integer attachmentId, MessageAttachmentDto dto) {
+    public Optional<Attachment> update(Integer messageId, Integer attachmentId, AttachmentDto dto) {
         ensureMessageExists(messageId);
         return repo.findById(attachmentId)
                 .filter(a -> a.getMessageId().equals(messageId))
@@ -87,13 +113,12 @@ public class MessageAttachmentService {
                     if (dto.getHeightPx() != null) a.setHeightPx(dto.getHeightPx());
                     if (dto.getDurationMs() != null) a.setDurationMs(dto.getDurationMs());
                     if (dto.getPageCount() != null) a.setPageCount(dto.getPageCount());
-//                    a.setDateModified(LocalDateTime.now());
                     validateKindAndFields(a);
                     return repo.save(a);
                 });
     }
 
-    public Optional<MessageAttachment> patch(Integer messageId, Integer attachmentId, Map<String, Object> updates) {
+    public Optional<Attachment> patch(Integer messageId, Integer attachmentId, Map<String, Object> updates) {
         ensureMessageExists(messageId);
         return repo.findById(attachmentId)
                 .filter(a -> a.getMessageId().equals(messageId))
@@ -114,8 +139,8 @@ public class MessageAttachmentService {
                             case "heightPx" -> a.setHeightPx(v == null ? null : ((Number) v).intValue());
                             case "durationMs" -> a.setDurationMs(v == null ? null : ((Number) v).intValue());
                             case "pageCount" -> a.setPageCount(v == null ? null : ((Number) v).intValue());
-                            case "deleted" -> a.setDeleted(v instanceof Boolean b ? b : Integer.parseInt(v.toString()) != 0);
-                            default -> {/* unbekannte Keys ignorieren oder validieren */}
+                            default -> {
+                            }
                         }
                     });
                     a.setDateModified(LocalDateTime.now());

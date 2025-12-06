@@ -1,10 +1,11 @@
 package flokrates.online.model.dto;
 
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 @Data
-public class MessageAttachmentDto {
+public class AttachmentDto {
     private Integer attachmentId;
     private Integer messageId;
     private String kind;            // "file" | "external_url"
@@ -25,7 +26,6 @@ public class MessageAttachmentDto {
     private String description;
 
     private Integer sortOrder;
-    private boolean deleted;
 
     private LocalDateTime dateCreated;
     private LocalDateTime dateModified;

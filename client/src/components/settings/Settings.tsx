@@ -6,10 +6,12 @@ import { selectLanguage, setLanguage } from '../../store/languageSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Settings: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const lang = useSelector(selectLanguage);
+  const nav = useNavigate();
 
   return (
     <div className="settings-wrapper">
@@ -17,9 +19,10 @@ const Settings: React.FC = () => {
         Language:&nbsp;
         <select
           value={lang}
-          onChange={(e) =>
-            dispatch(setLanguage(e.target.value as LanguageCode))
-          }
+          onChange={(e) => {
+            dispatch(setLanguage(e.target.value as LanguageCode));
+            nav('/chatlist');
+          }}
         >
           {Object.entries(languageMap).map(([code, label]) => (
             <option key={code} value={code}>

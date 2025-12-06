@@ -68,7 +68,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     : null;
   const [showResponsePopup, setShowResponsePopup] = useState(false);
   const isImage = (ct?: string | null) => !!ct && ct.startsWith('image/');
-  const isPdf = (ct?: string | null) => ct === 'application/pdf';
+  const isPdf = (ct?: string | null) =>
+    !!ct && ct.toLowerCase().startsWith('application/pdf');
   const attachments = useSelector(
     (s: RootState) => s.messages.attachmentsByMessageId[messageId] || []
   );
@@ -79,7 +80,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const toAbsoluteUrl = (u?: string | null) => {
     if (!u) return null;
     if (/^https?:\/\//i.test(u)) return u;
-    return `https://${u}`;
+    return u;
   };
 
   useEffect(() => {
@@ -104,11 +105,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         return;
       }
       if (isPdf(att.contentType)) {
-        setViewerSrc(direct);
-        setViewerType('pdf');
-        setViewerOpen(true);
+        window.open(direct, '_blank', 'noopener,noreferrer');
         return;
       }
+
       window.open(direct, '_blank', 'noopener,noreferrer');
       return;
     }
@@ -408,7 +408,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           {viewerSrc && viewerType === 'image' && (
             <img className="att-modal-content" src={viewerSrc} alt="" />
           )}
-          {viewerSrc && viewerType === 'pdf' && (
+          {viewerSrc && (
             <iframe className="att-modal-content" src={viewerSrc} title="PDF" />
           )}
         </ReactModal>

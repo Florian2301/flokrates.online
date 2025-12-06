@@ -554,7 +554,6 @@ const ChatInfo: React.FC = () => {
         </div>
       ) : null}
 
-      {/* === TOGGLE: Drafts <-> Comments === */}
       {isAuth ? (
         <div className="chatinfo-toggle">
           <button

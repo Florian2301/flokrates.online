@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "message_attachments")
 @Getter
 @Setter
-public class MessageAttachment {
+public class Attachment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "attachment_id")
@@ -49,8 +49,6 @@ public class MessageAttachment {
     private String description;
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder = 0;
-    @Column(name = "is_deleted", nullable = false, columnDefinition = "TINYINT(1)")
-    private boolean deleted = false;
     @CreationTimestamp
     @Column(name = "date_created", nullable = false)
     private LocalDateTime dateCreated;

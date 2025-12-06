@@ -37,10 +37,6 @@ const CommentBox: React.FC = () => {
     setShowNew(true);
   };
 
-  if (!chatId) {
-    return <div className="commentbox-main">Wähle zuerst einen Chat.</div>;
-  }
-
   return (
     <div className="commentbox-main">
       {comments.map((c) => (

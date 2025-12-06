@@ -1,25 +1,26 @@
 package flokrates.online.mapper;
 
-import flokrates.online.model.MessageAttachment;
-import flokrates.online.model.dto.MessageAttachmentDto;
+import flokrates.online.model.Attachment;
+import flokrates.online.model.dto.AttachmentDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring")
-public interface MessageAttachmentMapper {
+public interface AttachmentMapper {
 
     // ---- Einzelobjekte ----
     @Mapping(target = "checksumSha256Hex", expression = "java(toHex(entity.getChecksumSha256()))")
-    MessageAttachmentDto toDto(MessageAttachment entity);
+    AttachmentDto toDto(Attachment entity);
 
     @Mapping(target = "checksumSha256", expression = "java(fromHex(dto.getChecksumSha256Hex()))")
-    MessageAttachment toEntity(MessageAttachmentDto dto);
+    Attachment toEntity(AttachmentDto dto);
 
     // ---- Listen ----
-    List<MessageAttachmentDto> toDtoList(List<MessageAttachment> entities);
-    List<MessageAttachment> toEntityList(List<MessageAttachmentDto> dtos);
+    List<AttachmentDto> toDtoList(List<Attachment> entities);
+
+    List<Attachment> toEntityList(List<AttachmentDto> dtos);
 
     // ---- Hilfsfunktionen für Hex-Konvertierung ----
     default String toHex(byte[] bytes) {

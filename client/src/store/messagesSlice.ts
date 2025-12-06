@@ -319,11 +319,7 @@ export type NewAttachment =
     }
   | {
       kind: 'file';
-      storageKey: string; // später: echter Key (z.B. von Upload)
-      href?: string | null;
-      fileName?: string | null;
-      contentType?: string | null;
-      fileSizeBytes?: number | null;
+      file: File;
       title?: string | null;
       sortOrder?: number;
     };
@@ -341,18 +337,55 @@ export const createAttachment = createAsyncThunk<
   { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >(
   'messages/createAttachment',
-  async ({ messageId, attachment }, { rejectWithValue, dispatch }) => {
+  async (
+    { messageId, attachment },
+    { rejectWithValue, dispatch, getState }
+  ) => {
     try {
-      const res = await fetch(`/api/messages/${messageId}/attachments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(attachment),
-      });
+      let res: Response;
+
+      if (attachment.kind === 'external_url') {
+        // JSON-POST wie bisher
+        const body = {
+          kind: 'external_url',
+          href: attachment.href,
+          title: attachment.title,
+          sortOrder: attachment.sortOrder,
+        };
+
+        res = await authedFetch(
+          dispatch,
+          getState,
+          `/api/messages/${messageId}/attachments`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          }
+        );
+      } else {
+        // FILE-Upload via multipart/form-data
+        const formData = new FormData();
+        formData.append('file', attachment.file);
+
+        // Titel etc. könntest du später über PATCH setzen, wenn du willst.
+        res = await authedFetch(
+          dispatch,
+          getState,
+          `/api/messages/${messageId}/attachments/upload`,
+          {
+            method: 'POST',
+            body: formData, // KEINE Content-Type-Header setzen, Browser macht das
+          }
+        );
+      }
+
       if (!res.ok) {
         const errText = await readError(res);
         return rejectWithValue(errText);
       }
-      // <-- NEU
+
+      // Attachments nachladen, damit die UI aktualisiert ist
       await dispatch(fetchAttachmentsForMessage(messageId));
     } catch (err: any) {
       const msg = err?.message || String(err);
@@ -375,6 +408,7 @@ export const createAttachmentsBulk = createAsyncThunk<
         await dispatch(createAttachment({ messageId, attachment: a })).unwrap();
       }
     } catch (err: any) {
+      console.error('createAttachmentsBulk failed:', err);
       return rejectWithValue(err?.message || 'Error adding attachments');
     }
   }
@@ -436,9 +470,13 @@ export const fetchAttachmentsForMessage = createAsyncThunk<
   { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >(
   'messages/fetchAttachmentsForMessage',
-  async (messageId, { rejectWithValue }) => {
+  async (messageId, { rejectWithValue, dispatch, getState }) => {
     try {
-      const res = await fetch(`/api/messages/${messageId}/attachments`);
+      const res = await authedFetch(
+        dispatch,
+        getState,
+        `/api/messages/${messageId}/attachments`
+      );
       if (!res.ok) {
         const text = await res.text().catch(() => '');
         throw new Error(
@@ -541,21 +579,3 @@ const messagesSlice = createSlice({
 export const { setMessages, addMessage, updateMessage, removeMessage } =
   messagesSlice.actions;
 export default messagesSlice.reducer;
-function dispatch(
-  arg0: AsyncThunkAction<
-    { messageId: number; attachments: MessageAttachment[] },
-    number,
-    {
-      rejectValue: string;
-      state?: unknown;
-      dispatch?: ThunkDispatch<unknown, unknown, UnknownAction> | undefined;
-      extra?: unknown;
-      serializedErrorType?: unknown;
-      pendingMeta?: unknown;
-      fulfilledMeta?: unknown;
-      rejectedMeta?: unknown;
-    }
-  >
-) {
-  throw new Error('Function not implemented.');
-}

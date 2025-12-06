@@ -43,7 +43,7 @@ type BackendAttachment = {
   contentType?: string | null;
   fileName?: string | null;
   previewHref?: string | null;
-  isDeleted?: boolean;
+  deleted?: boolean;
 };
 
 type PendingAttachment =
@@ -267,25 +267,22 @@ const NewMessage: React.FC<NewMessageProps> = ({
   function mapPendingToNewAttachments(
     pending: PendingAttachment[]
   ): NewAttachment[] {
-    return pending.map((p) => {
+    return pending.map((p, index) => {
       if (p.kind === 'external_url') {
         return {
           kind: 'external_url',
           href: p.href,
           title: p.title ?? null,
-          sortOrder: 0,
+          sortOrder: index,
         };
       }
-      // Datei: bis du einen echten Upload hast, nimm file.name als Dummy-storageKey
+
+      // Datei-Anhang → File-Objekt direkt an den Slice
       return {
         kind: 'file',
-        storageKey: p.file.name,
-        href: null,
-        fileName: p.file.name,
-        contentType: p.file.type,
-        fileSizeBytes: p.file.size,
+        file: p.file,
         title: p.title ?? null,
-        sortOrder: 0,
+        sortOrder: index,
       };
     });
   }
@@ -489,7 +486,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
             <>
               <div className="attachments-list">
                 {savedAttachments
-                  .filter((a) => !a.isDeleted)
+                  .filter((a) => !a.deleted)
                   .map((att) => {
                     const label =
                       att.title ||

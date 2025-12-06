@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: drop-deleted-message-att
+      author: florian
+      changes:
+        - dropColumn:
+            tableName: message_attachments
+            columnName: is_deleted
+      rollback:
+        - addColumn:
+            tableName: message_attachments
+            columns:
+              - column:
+                  name: is_deleted
+                  type: TINYINT(1)
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
