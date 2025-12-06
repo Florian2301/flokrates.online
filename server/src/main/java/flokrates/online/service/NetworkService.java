@@ -1,16 +1,13 @@
 package flokrates.online.service;
 
-import flokrates.online.mapper.NetworkMapper;
 import flokrates.online.model.Network;
 import flokrates.online.model.dto.NetworkDto;
 import flokrates.online.repository.NetworkRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +26,7 @@ public class NetworkService {
 //        network.setDateModified(LocalDateTime.now());
         return networkRepo.save(network);
     }
+
     public List<Network> getAllNetworks() {
         return networkRepo.findAll();
     }
@@ -57,7 +55,7 @@ public class NetworkService {
             updates.forEach((k, v) -> {
                 switch (k) {
                     case "chatId" -> n.setChatId((Integer) v);
-                    case "refId"  -> n.setRefId((Integer) v);
+                    case "refId" -> n.setRefId((Integer) v);
                     // weitere erlaubte Keys hier whitelisten
                 }
             });
@@ -74,6 +72,7 @@ public class NetworkService {
     public List<Network> getBackReferencesForChat(Integer chatId) {
         return networkRepo.findByRefId(chatId);
     }
+
     public boolean referenceExists(Integer chatId, Integer refId) {
         return networkRepo.existsByChatIdAndRefId(chatId, refId);
     }

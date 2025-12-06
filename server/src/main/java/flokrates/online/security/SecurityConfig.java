@@ -36,10 +36,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 1) Auth FIRST, alles frei
+
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // 2) Öffentliche Leserouten
+                        // Read public
                         .requestMatchers(HttpMethod.GET,
                                 "/api/chats", "/api/chats/**",
                                 "/api/messages", "/api/messages/**",
@@ -48,18 +48,17 @@ public class SecurityConfig {
                                 "/api/comments", "/api/comments/**"
                         ).permitAll()
 
-                        // 3) Preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/api/comments", "/api/comments/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/comments/**").permitAll()
 
-                        // 4) Schreiben nur ADMIN
+                        // Write only ADMIN
                         .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
 
-                        // 5) Rest erlauben
                         .anyRequest().permitAll()
                 )
                 .authenticationProvider(daoAuthProvider(userDetailsService, passwordEncoder())) // dein Provider mit UserDetailsService + PasswordEncoder

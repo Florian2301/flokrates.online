@@ -11,9 +11,8 @@ import java.util.List;
 @Repository
 public interface CommentRepo extends JpaRepository<Comment, Integer> {
     List<Comment> findByChatId(Integer chatId);
-    Page<Comment> findByChatId(Integer chatId, Pageable pageable);
-    List<Comment> findByChatIdOrderByDateCreatedDesc(Integer chatId);
-    void deleteByChatId(Integer chatId);
-    Page<Comment> findByChatIdAndSenderIgnoreCase(Integer chatId, String sender, Pageable pageable);
 
+    Page<Comment> findByChatId(Integer chatId, Pageable pageable);
+
+    void deleteByChatId(Integer chatId);
 }

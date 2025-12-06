@@ -19,11 +19,6 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer commentId;
-    //    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-//    @JoinColumn(name = "chat_id", nullable = false,
-//            foreignKey = @ForeignKey(name = "fk_comments_chat"))
-//    private Chat chat;
-    // ALT: read-only Spiegel – bleibt für Repos/Mapper/DTOs erstmal erhalten
     @Column(name = "chat_id", nullable = false)
     private Integer chatId;
     @Column(name = "sender", length = 25, nullable = false)

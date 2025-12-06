@@ -5,8 +5,6 @@ import flokrates.online.model.Comment;
 import flokrates.online.model.dto.CommentDto;
 import flokrates.online.service.CommentService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -14,17 +12,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/comments")
 @CrossOrigin(origins = "http://localhost:8081")
 public class CommentController {
-    private static final Logger logger = LoggerFactory.getLogger(CommentController.class);
     private final CommentService commentService;
     private final CommentMapper commentMapper;
 
@@ -58,11 +53,10 @@ public class CommentController {
 
     @GetMapping("/by-chat/{chatId}")
     public ResponseEntity<List<CommentDto>> getByChat(@PathVariable Integer chatId) {
-        return ResponseEntity.ok(
-                commentService.getCommentsByChat(chatId).stream()
-                        .map(commentMapper::toDto)
-                        .toList()
-        );
+        List<CommentDto> list = commentService.getCommentsByChat(chatId).stream()
+                .map(commentMapper::toDto)
+                .toList();
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/by-chat/{chatId}/paged")
@@ -103,46 +97,4 @@ public class CommentController {
         commentService.deleteByChat(chatId);
         return ResponseEntity.noContent().build();
     }
-
-
-
-//    @PutMapping("/{id}")
-//    public ResponseEntity<CommentDto> updateComment(@PathVariable Integer id, @RequestBody CommentDto commentDto) {
-//        Optional<Comment> existingCommentOpt = commentService.getCommentById(id);
-//
-//        if (existingCommentOpt.isEmpty())
-//            return ResponseEntity.notFound().build();
-//
-//        Comment existingComment = existingCommentOpt.get();
-//        existingComment.setChatId(commentDto.getChatId());
-//        existingComment.setSender(commentDto.getSender());
-//        existingComment.setCommentText(commentDto.getCommentText());
-//        existingComment.setDateModified(LocalDateTime.now());
-//
-//        Comment updatedComment = commentService.saveComment(existingComment);
-//        CommentDto updatedDto = commentMapper.toDto(updatedComment);
-//        return ResponseEntity.ok(updatedDto);
-//    }
-//
-//    @PatchMapping("/{id}")
-//    public ResponseEntity<CommentDto> patchComment(@PathVariable Integer id, @RequestBody Map<String, Object> updates) {
-//        Optional<Comment> existingCommentOpt = commentService.getCommentById(id);
-//
-//        if (existingCommentOpt.isEmpty())
-//            return ResponseEntity.notFound().build();
-//
-//        Comment existingComment = existingCommentOpt.get();
-//        updates.forEach((key, value) -> {
-//            switch (key) {
-//                case "chatId" -> existingComment.setChatId((Integer) value);
-//                case "sender" -> existingComment.setSender((String) value);
-//                case "commentText" -> existingComment.setCommentText((String) value);
-//            }
-//        });
-//        existingComment.setDateModified(LocalDateTime.now());
-//
-//        Comment updatedComment = commentService.saveComment(existingComment);
-//        CommentDto updatedDto = commentMapper.toDto(updatedComment);
-//        return ResponseEntity.ok(updatedDto);
-//    }
 }

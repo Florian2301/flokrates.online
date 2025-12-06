@@ -1,10 +1,8 @@
 package flokrates.online.controller;
 
 import flokrates.online.mapper.MessageMapper;
-import flokrates.online.model.Actor;
 import flokrates.online.model.Message;
 import flokrates.online.model.dto.MessageDto;
-import flokrates.online.repository.MessageRepo;
 import flokrates.online.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -16,10 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
