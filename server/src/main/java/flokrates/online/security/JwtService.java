@@ -28,15 +28,15 @@ public class JwtService {
         this.accessMinutes = accessMinutes;
     }
 
-    public String generateAccessToken(String subjectEmail, Set<String> roles, Integer authorId, String authorName) {
+    public String generateAccessToken(String subjectEmail, Set<String> roles, Integer userId, String authorName) {
         Instant now = Instant.now();
         Instant exp = now.plusSeconds(accessMinutes * 60);
         return Jwts.builder()
                 .setSubject(subjectEmail)
                 .addClaims(Map.of(
                         "roles", roles,
-                        "authorId", authorId,
-                        "name", authorName   // 👈 wichtig für Frontend
+                        "userId", userId,
+                        "name", authorName
                 ))
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(exp))
@@ -74,7 +74,6 @@ public class JwtService {
     }
 
     private static String toBase64(String s) {
-        // akzeptiere plain & base64 – wenn nicht base64, konvertieren
         try {
             Decoders.BASE64.decode(s);
             return s; // already base64

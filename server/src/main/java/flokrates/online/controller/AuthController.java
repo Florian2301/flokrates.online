@@ -20,6 +20,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
@@ -49,21 +50,23 @@ public class AuthController {
                 .orElseThrow(() -> new IllegalStateException("ROLE_USER not seeded"));
 
         var a = new User();
-        a.setUsername(dto.userName());
+        a.setUsername(dto.username());
         a.setEmail(dto.email().toLowerCase());
         a.setPassword(encoder.encode(dto.password()));
         a.setEnabled(true);
         a.getRoles().add(userRole);
 
         var saved = userRepo.save(a);
-        return ResponseEntity.ok(mapper().toDto(saved));
+        return ResponseEntity
+                .created(URI.create("/api/users/" + saved.getId()))
+                .body(mapper.toDto(saved));
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest req) {
         var token = new UsernamePasswordAuthenticationToken(req.email().toLowerCase(), req.password());
         try {
-            authManager.authenticate(token); // wirft bei Fehler
+            authManager.authenticate(token);
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(401).body(Map.of("error", "bad_credentials"));
         } catch (DisabledException e) {
@@ -154,10 +157,6 @@ public class AuthController {
         var user = userRepo.findByEmail(email).orElse(null);
         if (user == null) return ResponseEntity.status(404).build();
 
-        return ResponseEntity.ok(mapper().toDto(user));
-    }
-
-    private UserMapper mapper() {
-        return mapper;
+        return ResponseEntity.ok(mapper.toDto(user));
     }
 }

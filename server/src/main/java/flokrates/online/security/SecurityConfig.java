@@ -70,6 +70,7 @@ public class SecurityConfig {
                         // Alles andere erlauben
                         .anyRequest().permitAll()
                 )
+                .authenticationProvider(daoAuthProvider(userDetailsService, passwordEncoder()))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
