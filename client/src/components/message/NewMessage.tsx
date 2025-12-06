@@ -15,6 +15,7 @@ import {
   addAttachmentsToExistingMessage,
   changeMessage,
   createMessageWithAttachments,
+  deleteAttachment,
   deleteMessageThunk,
   fetchAttachmentsForMessage,
 } from '../../store/messagesSlice';
@@ -118,16 +119,30 @@ const NewMessage: React.FC<NewMessageProps> = ({
   const isImage = (ct?: string | null) => !!ct && ct.startsWith('image/');
   const isPdf = (ct?: string | null) => ct === 'application/pdf';
 
+  const toAbsoluteUrl = (u?: string | null) => {
+    if (!u) return null;
+    // Backend-Routen wie /api/attachments/...
+    if (u.startsWith('/')) return u;
+    // schon absolute URL
+    if (/^https?:\/\//i.test(u)) return u;
+    // ansonsten: https davorhängen
+    return `https://${u}`;
+  };
+
   const openBackendAttachment = (att: BackendAttachment) => {
     if (att.kind === 'external_url' && att.href) {
-      window.open(att.href, '_blank', 'noopener,noreferrer');
+      const url = toAbsoluteUrl(att.href);
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
       return;
     }
-    const direct = att.href || att.previewHref;
+    const direct = toAbsoluteUrl(att.href || att.previewHref);
     if (direct) {
       window.open(direct, '_blank', 'noopener,noreferrer');
       return;
     }
+
     console.warn('Kein href/previewHref für Attachment vorhanden:', att);
   };
 
@@ -231,7 +246,10 @@ const NewMessage: React.FC<NewMessageProps> = ({
 
   const addLinkAttachment = () => {
     if (!linkInput.trim()) return;
-    const url = linkInput.trim();
+    let url = linkInput.trim();
+    if (!/^https?:\/\//i.test(url)) {
+      url = `https://${url}`;
+    }
     setPendingAttachments((prev) => [
       ...prev,
       {
@@ -291,6 +309,17 @@ const NewMessage: React.FC<NewMessageProps> = ({
     setPendingAttachments((prev) => prev.filter((a) => a.id !== id));
   };
 
+  const handleDeleteSavedAttachment = (att: BackendAttachment) => {
+    const ok = window.confirm('Delete this attachment?');
+    if (!ok) return;
+    dispatch(
+      deleteAttachment({
+        messageId: att.messageId,
+        attachmentId: att.attachmentId,
+      })
+    );
+  };
+
   useEffect(() => {
     adjustHeight();
   }, [editedText]);
@@ -347,6 +376,13 @@ const NewMessage: React.FC<NewMessageProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showEmojiPicker]);
+
+  const savedLinks = savedAttachments.filter(
+    (a) => !a.deleted && a.kind === 'external_url'
+  );
+  const savedFiles = savedAttachments.filter(
+    (a) => !a.deleted && a.kind === 'file'
+  );
 
   return (
     <div
@@ -482,39 +518,97 @@ const NewMessage: React.FC<NewMessageProps> = ({
       {showAttachmentsBar && (
         <div className="attachments-bar">
           {/* Gespeicherte Attachments */}
-          {!isNew && savedAttachments.length > 0 && (
+          {!isNew && (savedLinks.length > 0 || savedFiles.length > 0) && (
             <>
-              <div className="attachments-list">
-                {savedAttachments
-                  .filter((a) => !a.deleted)
-                  .map((att) => {
-                    const label =
-                      att.title ||
-                      att.fileName ||
-                      att.href ||
-                      `#${att.attachmentId}`;
-                    const thumb =
-                      isImage(att.contentType) && (att.previewHref || att.href)
-                        ? (att.previewHref || att.href)!
-                        : null;
-                    const isLink = att.kind === 'external_url';
+              {/* Links */}
+              {savedLinks.length > 0 && (
+                <div className="attachments-list-row">
+                  <div className="attachments-list">
+                    {savedLinks.map((att) => {
+                      const label =
+                        att.title ||
+                        att.href ||
+                        att.fileName ||
+                        `#${att.attachmentId}`;
 
-                    return (
-                      <div
-                        key={`saved-${att.attachmentId}`}
-                        className="attachment-chip saved"
-                        role="button"
-                        title={label}
-                        onClick={() => openBackendAttachment(att)}
-                      >
-                        <span className="chip-text">{label}</span>
-                      </div>
-                    );
-                  })}
-              </div>
+                      return (
+                        <div
+                          key={`saved-link-${att.attachmentId}`}
+                          className="attachment-chip saved"
+                          title={label}
+                        >
+                          <span
+                            className="chip-text"
+                            onClick={() => openBackendAttachment(att)}
+                          >
+                            {label}
+                          </span>
+                          <button
+                            className="chip-remove"
+                            onClick={() => handleDeleteSavedAttachment(att)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Dateien */}
+              {savedFiles.length > 0 && (
+                <div className="attachments-list-row">
+                  <div className="attachments-list">
+                    {savedFiles.map((att) => {
+                      const label =
+                        att.title ||
+                        att.fileName ||
+                        att.href ||
+                        `#${att.attachmentId}`;
+                      const thumb =
+                        isImage(att.contentType) &&
+                        (att.previewHref || att.href)
+                          ? (att.previewHref || att.href)!
+                          : null;
+
+                      return (
+                        <div
+                          key={`saved-file-${att.attachmentId}`}
+                          className="attachment-chip saved"
+                          title={label}
+                        >
+                          {thumb && (
+                            <img
+                              src={thumb}
+                              alt=""
+                              className="chip-thumb"
+                              onClick={() => openBackendAttachment(att)}
+                            />
+                          )}
+                          <span
+                            className="chip-text"
+                            onClick={() => openBackendAttachment(att)}
+                          >
+                            {label}
+                          </span>
+                          <button
+                            className="chip-remove"
+                            onClick={() => handleDeleteSavedAttachment(att)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <hr className="attachments-sep" />
             </>
           )}
+
           {/* Eingabezeile für neue Attachments */}
           <div className="attachments-input-row">
             <div className="attachment-mode">

@@ -493,6 +493,42 @@ export const fetchAttachmentsForMessage = createAsyncThunk<
   }
 );
 
+export const deleteAttachment = createAsyncThunk<
+  { messageId: number; attachmentId: number },
+  { messageId: number; attachmentId: number },
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
+>(
+  'messages/deleteAttachment',
+  async (
+    { messageId, attachmentId },
+    { dispatch, getState, rejectWithValue }
+  ) => {
+    try {
+      const res = await authedFetch(
+        dispatch,
+        getState,
+        `/api/messages/${messageId}/attachments/${attachmentId}`,
+        {
+          method: 'DELETE',
+        }
+      );
+
+      if (!res.ok && res.status !== 404) {
+        const text = await res.text().catch(() => '');
+        throw new Error(
+          `HTTP ${res.status} ${res.statusText}${text ? ` — ${text}` : ''}`
+        );
+      }
+
+      // danach einfach neu laden
+      await dispatch(fetchAttachmentsForMessage(messageId));
+      return { messageId, attachmentId };
+    } catch (err: any) {
+      return rejectWithValue(err?.message || 'Error deleting attachment');
+    }
+  }
+);
+
 const messagesSlice = createSlice({
   name: 'messages',
   initialState,
@@ -572,6 +608,15 @@ const messagesSlice = createSlice({
       .addCase(fetchAttachmentsForMessage.fulfilled, (state, action) => {
         const { messageId, attachments } = action.payload;
         state.attachmentsByMessageId[messageId] = attachments;
+      })
+      .addCase(deleteAttachment.fulfilled, (state, action) => {
+        const { messageId, attachmentId } = action.payload;
+        const list = state.attachmentsByMessageId[messageId];
+        if (list) {
+          state.attachmentsByMessageId[messageId] = list.filter(
+            (a) => a.attachmentId !== attachmentId
+          );
+        }
       });
   },
 });

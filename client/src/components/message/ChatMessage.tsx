@@ -79,8 +79,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
   const toAbsoluteUrl = (u?: string | null) => {
     if (!u) return null;
-    if (/^https?:\/\//i.test(u)) return u;
-    return u;
+    if (u.startsWith('/')) return u; // interne API-Route
+    if (/^https?:\/\//i.test(u)) return u; // schon absolute URL
+    return `https://${u}`; // nackte Domains
   };
 
   useEffect(() => {
