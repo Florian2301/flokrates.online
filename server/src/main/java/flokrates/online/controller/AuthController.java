@@ -11,6 +11,7 @@ import flokrates.online.security.JwtService;
 import flokrates.online.security.TokenHash;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -38,8 +39,9 @@ public class AuthController {
     private final JwtService jwt;
     private final UserMapper mapper;
 
-    // Refresh-Gültigkeit (Days) – gleiche Zahl wie in application.yml verwenden
-    private final long refreshDays = 30;
+    @Value("${app.jwt.refresh-days}")
+    private long refreshDays;
+
 
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@Valid @RequestBody UserCreateDto dto) {

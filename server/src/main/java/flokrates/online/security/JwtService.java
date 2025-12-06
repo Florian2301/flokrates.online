@@ -4,11 +4,11 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
@@ -24,7 +24,13 @@ public class JwtService {
             @Value("${app.jwt.secret}") String secret,
             @Value("${app.jwt.access-minutes}") long accessMinutes
     ) {
-        this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(toBase64(secret)));
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) { // 32 bytes = 256 bit
+            throw new IllegalArgumentException(
+                    "app.jwt.secret must be at least 32 bytes, but is " + keyBytes.length
+            );
+        }
+        this.key = Keys.hmacShaKeyFor(keyBytes);
         this.accessMinutes = accessMinutes;
     }
 
@@ -71,14 +77,5 @@ public class JwtService {
 
     private JwtParser parser() {
         return Jwts.parserBuilder().setSigningKey(key).build();
-    }
-
-    private static String toBase64(String s) {
-        try {
-            Decoders.BASE64.decode(s);
-            return s; // already base64
-        } catch (Exception ignore) {
-            return java.util.Base64.getEncoder().encodeToString(s.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        }
     }
 }

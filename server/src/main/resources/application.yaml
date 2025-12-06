@@ -1,15 +1,15 @@
 app:
   jwt:
-    secret: "replace-with-at-least-256-bit-random-string"
+    secret: "YWRkbWF5YmVjcm9zc2hhbGxyZWNlaXZlY291cnRib3dvbGRzZXR0bGVyc3JhY2VhcnQ="
     access-minutes: 30
     refresh-days: 30
 server:
   servlet:
     session:
       timeout: 0
-  spring:
-    liquibase:
-      change-log: classpath:db/changelog/db.changelog-master.yaml
-    jackson:
-      serialization:
-        WRITE_DATES_AS_TIMESTAMPS: false
+spring:
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
