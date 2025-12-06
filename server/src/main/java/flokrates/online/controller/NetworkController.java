@@ -63,8 +63,6 @@ public class NetworkController {
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
-    // ===== References (Subresource) =====
-
     @GetMapping("/by-chat/{chatId}")
     public ResponseEntity<List<NetworkDto>> getByChat(@PathVariable Integer chatId) {
         return ResponseEntity.ok(

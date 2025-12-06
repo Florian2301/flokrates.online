@@ -352,47 +352,43 @@ const ChatInfo: React.FC = () => {
             </select>
 
             <div className="ref-chip-list">
-              {currentRefIds.length === 0
-                ? null
-                : currentRefIds.map((id) => {
-                    const ref = chatById(id);
-                    if (!ref) return null;
-                    return (
-                      <span key={id} className="ref-chip">
-                        #{ref.chatNumber ?? '—'}
-                        <button
-                          className="ref-chip-remove"
-                          onClick={() => handleRemoveReference(id)}
-                          title="Entfernen"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    );
-                  })}
+              {refsForPdf.length === 0 ? (
+                <p className="chatpara" id="ref-view-placeholder">
+                  -
+                </p>
+              ) : (
+                refsForPdf.map((ref) => (
+                  <span key={ref.chatId} className="ref-chip">
+                    #{ref.chatNumber ?? '—'}
+                    <button
+                      className="ref-chip-remove"
+                      onClick={() => handleRemoveReference(ref.chatId)}
+                      title="Delete"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))
+              )}
             </div>
           </div>
         ) : (
           <div className="chatinfo-ref-view">
-            {currentRefIds.length === 0 ? (
+            {refsForPdf.length === 0 ? (
               <p className="chatpara" id="ref-view-placeholder">
                 -
               </p>
             ) : (
-              currentRefIds.map((id) => {
-                const ref = chatById(id);
-                if (!ref) return null;
-                return (
-                  <button
-                    key={id}
-                    className="linklike"
-                    onClick={() => openReferencedChat(id)}
-                    title={ref.title}
-                  >
-                    #{ref.chatNumber ?? '—'}
-                  </button>
-                );
-              })
+              refsForPdf.map((ref) => (
+                <button
+                  key={ref.chatId}
+                  className="linklike"
+                  onClick={() => openReferencedChat(ref.chatId)}
+                  title={ref.title}
+                >
+                  #{ref.chatNumber ?? '—'}
+                </button>
+              ))
             )}
           </div>
         )}

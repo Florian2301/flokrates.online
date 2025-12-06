@@ -1,7 +1,8 @@
+import type { AppDispatch, RootState } from './store';
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { Network } from '../types/Network';
-import { RootState } from './store';
+import { authedFetch } from '../api/authedFetch';
 
 type NetworksState = {
   refsByChatId: Record<number, Network[]>; // outgoing references (chatId -> list of refs)
@@ -55,20 +56,25 @@ export const fetchBackRefsForChat = createAsyncThunk<
 export const upsertReference = createAsyncThunk<
   { chatId: number; network: Network },
   { chatId: number; refId: number },
-  { rejectValue: string }
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >(
   'networks/upsertReference',
-  async ({ chatId, refId }, { rejectWithValue }) => {
+  async ({ chatId, refId }, { dispatch, getState, rejectWithValue }) => {
     try {
-      const res = await fetch(`/api/networks/references`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chatId, refId }),
-      });
+      const res = await authedFetch(
+        dispatch,
+        getState,
+        `/api/networks/references`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ chatId, refId }),
+        }
+      );
       if (!res.ok) throw new Error('Failed to upsert reference');
       const saved = (await res.json()) as Network;
       return { chatId: saved.chatId, network: saved };
-    } catch {
+    } catch (err) {
+      console.error(err);
       return rejectWithValue('Error creating reference');
     }
   }
@@ -78,19 +84,20 @@ export const upsertReference = createAsyncThunk<
 export const deleteReference = createAsyncThunk<
   { chatId: number; refId: number },
   { chatId: number; refId: number },
-  { rejectValue: string }
+  { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >(
   'networks/deleteReference',
-  async ({ chatId, refId }, { rejectWithValue }) => {
+  async ({ chatId, refId }, { dispatch, getState, rejectWithValue }) => {
     try {
-      const url = new URL(`/api/networks/references`);
-      url.searchParams.set('chatId', String(chatId));
-      url.searchParams.set('refId', String(refId));
-      const res = await fetch(url.toString(), { method: 'DELETE' });
+      const url = `/api/networks/references?chatId=${chatId}&refId=${refId}`;
+      const res = await authedFetch(dispatch, getState, url, {
+        method: 'DELETE',
+      });
       if (!res.ok && res.status !== 204)
         throw new Error('Failed to delete reference');
       return { chatId, refId };
-    } catch {
+    } catch (err) {
+      console.error(err);
       return rejectWithValue('Error deleting reference');
     }
   }

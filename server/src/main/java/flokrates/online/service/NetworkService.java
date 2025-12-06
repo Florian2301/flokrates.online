@@ -5,7 +5,6 @@ import flokrates.online.model.dto.NetworkDto;
 import flokrates.online.repository.NetworkRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,14 +15,10 @@ import java.util.Optional;
 @Transactional
 @RequiredArgsConstructor
 public class NetworkService {
-    @Autowired
-    private NetworkRepo networkRepo;
+
+    private final NetworkRepo networkRepo;
 
     public Network saveNetwork(Network network) {
-//        if (network.getDateCreated() == null) {
-//            network.setDateCreated(LocalDateTime.now());
-//        }
-//        network.setDateModified(LocalDateTime.now());
         return networkRepo.save(network);
     }
 
@@ -39,7 +34,6 @@ public class NetworkService {
         return networkRepo.findById(id).map(n -> {
             n.setChatId(dto.getChatId());
             n.setRefId(dto.getRefId());
-//            n.setDateModified(LocalDateTime.now());
             return networkRepo.save(n);
         });
     }
@@ -56,10 +50,8 @@ public class NetworkService {
                 switch (k) {
                     case "chatId" -> n.setChatId((Integer) v);
                     case "refId" -> n.setRefId((Integer) v);
-                    // weitere erlaubte Keys hier whitelisten
                 }
             });
-//            n.setDateModified(LocalDateTime.now());
             return networkRepo.save(n);
         });
     }
@@ -78,27 +70,18 @@ public class NetworkService {
     }
 
     public Network upsertReference(Integer chatId, Integer refId) {
-
         if (chatId.equals(refId)) {
             throw new IllegalArgumentException("chatId und refId dürfen nicht identisch sein.");
         }
 
-        Optional<Network> existing = networkRepo.findByChatId(chatId).stream()
-                .filter(n -> n.getRefId().equals(refId))
-                .findFirst();
-
-        if (existing.isPresent()) {
-            Network n = existing.get();
-//            n.setDateModified(LocalDateTime.now());
-            return networkRepo.save(n);
-        }
-
-        Network n = new Network();
-        n.setChatId(chatId);
-        n.setRefId(refId);
-//        n.setDateCreated(LocalDateTime.now());
-//        n.setDateModified(LocalDateTime.now());
-        return networkRepo.save(n);
+        // hier gleich das Repo sinnvoll nutzen (siehe Punkt 3)
+        return networkRepo.findByChatIdAndRefId(chatId, refId)
+                .orElseGet(() -> {
+                    Network n = new Network();
+                    n.setChatId(chatId);
+                    n.setRefId(refId);
+                    return networkRepo.save(n);
+                });
     }
 
     public void deleteReference(Integer chatId, Integer refId) {

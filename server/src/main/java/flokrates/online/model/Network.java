@@ -16,26 +16,14 @@ public class Network {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer netId;
-    @Column(name = "chat_id", columnDefinition = "INT", nullable = false)
+    @Column(name = "chat_id", nullable = false)
     private Integer chatId;
-    @Column(name = "ref_id", columnDefinition = "INT", nullable = false)
+    @Column(name = "ref_id", nullable = false)
     private Integer refId;
     @CreationTimestamp
-    @Column(name = "date_created", nullable = false)
+    @Column(name = "date_created", nullable = false, updatable = false)
     private LocalDateTime dateCreated;
     @UpdateTimestamp
     @Column(name = "date_modified")
     private LocalDateTime dateModified;
-
-    @PrePersist
-    public void prePersist() {
-        dateCreated = LocalDateTime.now();
-        dateModified = dateCreated;
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        dateModified = LocalDateTime.now();
-    }
-
 }
