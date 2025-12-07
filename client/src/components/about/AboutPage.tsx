@@ -30,7 +30,7 @@ export const AboutPage: React.FC = () => {
   );
   const isAuth = useSelector(selectIsAuthenticated);
   const [activeKey, setActiveKey] = useState<string>('project');
-  const [draft, setDraft] = useState<{
+  const [aboutText, setAboutText] = useState<{
     title: string;
     text: string;
     language: LanguageCode;
@@ -48,7 +48,7 @@ export const AboutPage: React.FC = () => {
   // --- CRUD Handler ---
   const handleStartNew = () => {
     if (!isAuth) return;
-    setDraft({ title: '', text: '', language: lang }); // zeigt unten einen AboutText im Editmodus
+    setAboutText({ title: '', text: '', language: lang }); // zeigt unten einen AboutText im Editmodus
   };
 
   const handleSave = async (payload: {
@@ -73,7 +73,7 @@ export const AboutPage: React.FC = () => {
           dateModified: null,
         } as Omit<About, 'id'>) // falls dein Typ das so erwartet
       );
-      setDraft(null);
+      setAboutText(null);
     } else {
       // Update bestehend
       await dispatch(
@@ -94,10 +94,10 @@ export const AboutPage: React.FC = () => {
     await dispatch(deleteAboutThunk(id));
   };
 
-  const handleCancelDraft = () => setDraft(null);
+  const handleCancelDraft = () => setAboutText(null);
 
   useEffect(() => {
-    setDraft((d) => (d ? { ...d, language: lang } : d));
+    setAboutText((d) => (d ? { ...d, language: lang } : d));
   }, [lang]);
 
   useEffect(() => {
@@ -106,7 +106,6 @@ export const AboutPage: React.FC = () => {
 
   const renderTab = (key: string, title: string) => (
     <Tab eventKey={key} title={title}>
-      {/* vorhandene Elemente */}
       {itemsLang
         .filter((a) => a.sectionKey === key)
         .map((item) => (
@@ -124,11 +123,11 @@ export const AboutPage: React.FC = () => {
         ))}
 
       {/* Draft nur im aktiven Tab anzeigen */}
-      {activeKey === key && draft && isAuth && (
+      {activeKey === key && aboutText && isAuth && (
         <AboutText
-          title={draft.title}
-          text={draft.text}
-          language={draft.language}
+          title={aboutText.title}
+          text={aboutText.text}
+          language={aboutText.language}
           isAdmin={isAuth}
           isEditing={true}
           onSave={handleSave} // führt create aus
@@ -153,7 +152,7 @@ export const AboutPage: React.FC = () => {
   );
 
   return (
-    <div className="about-wrapper">
+    <div className="about-wrapper fade-in">
       <Tabs
         id="about-tabs"
         className="mb-3"

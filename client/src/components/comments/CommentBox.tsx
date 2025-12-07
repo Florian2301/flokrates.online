@@ -38,7 +38,7 @@ const CommentBox: React.FC = () => {
   };
 
   return (
-    <div className="commentbox-main">
+    <div className="commentbox-main fade-in">
       {comments.map((c) => (
         <CommentItem
           key={c.commentId}

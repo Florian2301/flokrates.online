@@ -48,7 +48,7 @@ export const DraftListTable: React.FC<Props> = ({ chats, messages }) => {
         {chats.map((chat) => (
           <div
             key={chat.chatId}
-            className="table-drafts-rows-data"
+            className="table-drafts-rows-data fade-in"
             onClick={() => handleClick(chat)}
           >
             <div

@@ -44,7 +44,7 @@ export const ChatBox: React.FC = () => {
   };
 
   return (
-    <div className="chatbox-main">
+    <div className="chatbox-main fade-in">
       {messages
         .slice()
         .sort((a, b) => a.messageNumber - b.messageNumber)

@@ -25,3 +25,18 @@
   background-color: dodgerblue;
   opacity: 0.8;
 }
+
+.fade-in {
+  animation: fadeInUp 0.25s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

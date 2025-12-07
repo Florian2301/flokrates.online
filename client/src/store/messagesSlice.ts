@@ -30,7 +30,7 @@ export type MessageAttachment = {
   contentType?: string | null;
   fileName?: string | null;
   previewHref?: string | null;
-  deleted?: boolean; // Achtung: Backend liefert "deleted", nicht "isDeleted"
+  deleted?: boolean;
 };
 
 const initialState: MessagesState = {

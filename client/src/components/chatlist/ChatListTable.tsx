@@ -59,7 +59,7 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
         {chats.map((chat: Chat) => (
           <div
             key={chat.chatId}
-            className="table-rows-data"
+            className="table-rows-data fade-in"
             onClick={(e) => {
               activeChatId === chat.chatId
                 ? (e.stopPropagation(), setActiveChatId(null))
