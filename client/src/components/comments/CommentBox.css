@@ -1,7 +1,6 @@
 .commentbox-main {
   display: flex;
   flex-direction: column;
-  overflow: auto;
 }
 
 .commentbox-header {

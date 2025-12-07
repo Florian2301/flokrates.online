@@ -1,23 +1,11 @@
+// src/store/messagesSlice.ts
+
 import { AppDispatch, RootState } from './store';
-import {
-  AsyncThunkAction,
-  PayloadAction,
-  ThunkDispatch,
-  UnknownAction,
-  createAsyncThunk,
-  createSlice,
-} from '@reduxjs/toolkit';
+import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { Actor } from '../types/ActorStyles';
 import { Message } from '../types/Message';
 import { authedFetch } from '../api/authedFetch';
-
-type MessagesState = {
-  chatmessages: Message[];
-  loading: boolean;
-  error?: string | null;
-  attachmentsByMessageId: Record<number, MessageAttachment[]>;
-};
 
 // === Attachment-Response vom Backend ===
 export type MessageAttachment = {
@@ -33,35 +21,44 @@ export type MessageAttachment = {
   deleted?: boolean;
 };
 
+type MessagesState = {
+  byChatId: Record<number, Message[]>; // statt chatmessages
+  loading: boolean;
+  loadingByChatId: Record<number, boolean>;
+  error?: string | null;
+  attachmentsByMessageId: Record<number, MessageAttachment[]>;
+};
+
 const initialState: MessagesState = {
-  chatmessages: [],
+  byChatId: {},
   loading: false,
+  loadingByChatId: {},
   error: null,
   attachmentsByMessageId: {},
 };
 
-// get messages for selected chat
+// kleiner Helper
+const sortByMessageNumber = (list: Message[]) =>
+  [...list].sort((a, b) => a.messageNumber - b.messageNumber);
+
+// get messages for selected chat (mit chatId im Result)
 export const fetchMessagesForChat = createAsyncThunk<
-  Message[],
+  { chatId: number; messages: Message[] },
   number,
   { state: RootState; dispatch: AppDispatch; rejectValue: string }
->(
-  'chats/fetchMessagesForChat',
-  async (chatId, { dispatch, rejectWithValue }) => {
-    try {
-      const res = await fetch(`/api/messages/chat/${chatId}`);
-      if (!res.ok) throw new Error('Error loading messages');
-      const data: Message[] = await res.json();
-      dispatch(setMessages(data));
-      return data;
-    } catch (err) {
-      console.error(err);
-      return rejectWithValue('Error loading messages');
-    }
+>('messages/fetchMessagesForChat', async (chatId, { rejectWithValue }) => {
+  try {
+    const res = await fetch(`/api/messages/chat/${chatId}`);
+    if (!res.ok) throw new Error('Error loading messages');
+    const data: Message[] = await res.json();
+    return { chatId, messages: data };
+  } catch (err) {
+    console.error(err);
+    return rejectWithValue('Error loading messages');
   }
-);
+});
 
-// get all messages
+// get all messages (falls du das irgendwo nutzt)
 export const fetchMessages = createAsyncThunk<Message[]>(
   'messages/fetch',
   async () => {
@@ -133,24 +130,50 @@ export const patchMessage = createAsyncThunk<
   }
 );
 
-// delete message
+// delete message – jetzt pro Chat
 export const deleteMessageThunk = createAsyncThunk<
-  number,
+  { chatId: number; messageId: number },
   number,
   { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >(
   'messages/delete',
   async (messageId, { dispatch, getState, rejectWithValue }) => {
     const state = getState();
-    const messages = state.messages.chatmessages;
-    const messageToDelete = messages.find((m) => m.messageId === messageId);
-    if (!messageToDelete) {
-      return messageId;
+
+    // Chat + Liste finden, zu der die Message gehört
+    let chatId: number | null = null;
+    let messages: Message[] = [];
+    for (const [key, list] of Object.entries(state.messages.byChatId)) {
+      const found = list.find((m) => m.messageId === messageId);
+      if (found) {
+        chatId = Number(key);
+        messages = list;
+        break;
+      }
+    }
+    if (chatId == null) {
+      return rejectWithValue('Message not found in state');
     }
 
-    await authedFetch(dispatch, getState, `/api/messages/${messageId}`, {
-      method: 'DELETE',
-    });
+    const messageToDelete = messages.find((m) => m.messageId === messageId);
+    if (!messageToDelete) {
+      return { chatId, messageId };
+    }
+
+    const res = await authedFetch(
+      dispatch,
+      getState,
+      `/api/messages/${messageId}`,
+      {
+        method: 'DELETE',
+      }
+    );
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(
+        `HTTP ${res.status} ${res.statusText}${text ? ` — ${text}` : ''}`
+      );
+    }
 
     const updatedMessages = messages
       .filter((m) => m.messageId !== messageId)
@@ -161,10 +184,15 @@ export const deleteMessageThunk = createAsyncThunk<
       )
       .sort((a, b) => a.messageNumber - b.messageNumber);
 
-    dispatch(setMessages(updatedMessages));
+    dispatch(
+      setMessagesForChat({
+        chatId,
+        messages: updatedMessages,
+      })
+    );
     await dispatch(saveAllMessages(updatedMessages));
 
-    return messageId;
+    return { chatId, messageId };
   }
 );
 
@@ -197,7 +225,7 @@ export const saveAllMessages = createAsyncThunk<
   }
 });
 
-// check if messages has changed and sort if messagenumber has changed
+// check if messages has changed and sort if messagenumber has changed (jetzt pro Chat)
 export const changeMessage = createAsyncThunk<
   void,
   {
@@ -223,12 +251,22 @@ export const changeMessage = createAsyncThunk<
     { dispatch, getState }
   ) => {
     const state = getState();
-    const messages: Message[] = state.messages.chatmessages;
+
+    // Chat + Messages finden
+    let chatId: number | null = null;
+    let messages: Message[] = [];
+    for (const [key, list] of Object.entries(state.messages.byChatId)) {
+      if (list.some((m) => m.messageId === messageId)) {
+        chatId = Number(key);
+        messages = list;
+        break;
+      }
+    }
+    if (chatId == null) return;
 
     let messagesChanged = false;
 
     const updatedMessages = messages.map((msg) => {
-      // check if property has changed
       if (msg.messageId === messageId) {
         const messageChanged =
           msg.messageText !== updatedText ||
@@ -236,7 +274,6 @@ export const changeMessage = createAsyncThunk<
           msg.respId !== responseId ||
           msg.messageNumber !== newMessageNumber;
 
-        // if it has changed update all properties except messagenumber
         if (messageChanged) {
           messagesChanged = true;
           return {
@@ -253,16 +290,9 @@ export const changeMessage = createAsyncThunk<
 
     if (!messagesChanged) return;
 
-    // if messagenumber has changed
     if (oldMessageNumber !== newMessageNumber) {
       const sorted = updatedMessages
         .map((msg) => {
-          // if oldnumber is bigger than newnumber check if number of iterated message is bigger or even newnumber
-          // and number is smaller than oldnumber
-          // e.g. change from number 7 to 3, iterate through messages and find the messages that go from 3 to max
-          // 7, numbers below 3 or higher than 7 should not be sorted new, it is not necessary
-          // but the numbers in between 3 to 7 should be sorted new and get new numbers
-          // if 7 will be 3, than original 3 should become 4 and so on until message number 6 will become 7
           if (oldMessageNumber > newMessageNumber) {
             if (
               msg.messageNumber >= newMessageNumber &&
@@ -287,13 +317,22 @@ export const changeMessage = createAsyncThunk<
             ? { ...msg, messageNumber: newMessageNumber }
             : msg
         )
-        // in database they are not sorted by messagenumber, so they have to be sorted before providing
         .sort((a, b) => a.messageNumber - b.messageNumber);
 
-      dispatch(setMessages(sorted));
+      dispatch(
+        setMessagesForChat({
+          chatId,
+          messages: sorted,
+        })
+      );
       await dispatch(saveAllMessages(sorted));
     } else {
-      dispatch(setMessages(updatedMessages));
+      dispatch(
+        setMessagesForChat({
+          chatId,
+          messages: updatedMessages,
+        })
+      );
       await dispatch(
         patchMessage({
           messageId,
@@ -345,7 +384,6 @@ export const createAttachment = createAsyncThunk<
       let res: Response;
 
       if (attachment.kind === 'external_url') {
-        // JSON-POST wie bisher
         const body = {
           kind: 'external_url',
           href: attachment.href,
@@ -364,18 +402,16 @@ export const createAttachment = createAsyncThunk<
           }
         );
       } else {
-        // FILE-Upload via multipart/form-data
         const formData = new FormData();
         formData.append('file', attachment.file);
 
-        // Titel etc. könntest du später über PATCH setzen, wenn du willst.
         res = await authedFetch(
           dispatch,
           getState,
           `/api/messages/${messageId}/attachments/upload`,
           {
             method: 'POST',
-            body: formData, // KEINE Content-Type-Header setzen, Browser macht das
+            body: formData,
           }
         );
       }
@@ -385,7 +421,6 @@ export const createAttachment = createAsyncThunk<
         return rejectWithValue(errText);
       }
 
-      // Attachments nachladen, damit die UI aktualisiert ist
       await dispatch(fetchAttachmentsForMessage(messageId));
     } catch (err: any) {
       const msg = err?.message || String(err);
@@ -404,7 +439,6 @@ export const createAttachmentsBulk = createAsyncThunk<
   async ({ messageId, attachments }, { dispatch, rejectWithValue }) => {
     try {
       for (const a of attachments) {
-        // unwrap() wirft bei Fehler -> catch greift
         await dispatch(createAttachment({ messageId, attachment: a })).unwrap();
       }
     } catch (err: any) {
@@ -423,15 +457,12 @@ export const createMessageWithAttachments = createAsyncThunk<
   'messages/createMessageWithAttachments',
   async ({ message, attachments = [] }, { dispatch, rejectWithValue }) => {
     try {
-      // 1) Message anlegen
       const created = await dispatch(createMessage(message)).unwrap();
 
-      // 2) Attachments (optional)
       if (attachments.length > 0) {
         await dispatch(
           createAttachmentsBulk({ messageId: created.messageId, attachments })
         ).unwrap();
-        // Sicherheitshalber neu laden (wird schon im createAttachment gemacht, aber tut nicht weh):
         await dispatch(fetchAttachmentsForMessage(created.messageId));
       }
 
@@ -484,7 +515,6 @@ export const fetchAttachmentsForMessage = createAsyncThunk<
         );
       }
       const data = (await res.json()) as MessageAttachment[];
-      // nur nicht-gelöschte
       const filtered = data.filter((a) => !a.deleted);
       return { messageId, attachments: filtered };
     } catch (err: any) {
@@ -520,7 +550,6 @@ export const deleteAttachment = createAsyncThunk<
         );
       }
 
-      // danach einfach neu laden
       await dispatch(fetchAttachmentsForMessage(messageId));
       return { messageId, attachmentId };
     } catch (err: any) {
@@ -533,78 +562,139 @@ const messagesSlice = createSlice({
   name: 'messages',
   initialState,
   reducers: {
-    setMessages(state, action: PayloadAction<Message[]>) {
-      state.chatmessages = action.payload;
+    setMessagesForChat(
+      state,
+      action: PayloadAction<{ chatId: number; messages: Message[] }>
+    ) {
+      const { chatId, messages } = action.payload;
+      state.byChatId[chatId] = sortByMessageNumber(messages);
     },
     addMessage(state, action: PayloadAction<Message>) {
-      state.chatmessages.push(action.payload);
+      const m = action.payload;
+      if (m.chatId == null) return;
+      const list = state.byChatId[m.chatId] ?? [];
+      state.byChatId[m.chatId] = sortByMessageNumber([...list, m]);
     },
     updateMessage(
       state,
       action: PayloadAction<{ messageId: number; changes: Partial<Message> }>
     ) {
-      const idx = state.chatmessages.findIndex(
-        (m) => m.messageId === action.payload.messageId
-      );
-      if (idx !== -1)
-        state.chatmessages[idx] = {
-          ...state.chatmessages[idx],
-          ...action.payload.changes,
-        };
+      const { messageId, changes } = action.payload;
+      for (const [key, list] of Object.entries(state.byChatId)) {
+        const idx = list.findIndex((m) => m.messageId === messageId);
+        if (idx !== -1) {
+          list[idx] = { ...list[idx], ...changes };
+          state.byChatId[Number(key)] = sortByMessageNumber(list);
+          break;
+        }
+      }
     },
     removeMessage(state, action: PayloadAction<number>) {
-      state.chatmessages = state.chatmessages.filter(
-        (m) => m.messageId !== action.payload
-      );
+      const messageId = action.payload;
+      for (const [key, list] of Object.entries(state.byChatId)) {
+        if (list.some((m) => m.messageId === messageId)) {
+          state.byChatId[Number(key)] = list.filter(
+            (m) => m.messageId !== messageId
+          );
+          break;
+        }
+      }
+    },
+    clearMessagesForChat(state, action: PayloadAction<number>) {
+      const chatId = action.payload;
+      delete state.byChatId[chatId];
+      delete state.loadingByChatId[chatId];
+    },
+    clearAllMessages(state) {
+      state.byChatId = {};
+      state.loadingByChatId = {};
+      state.attachmentsByMessageId = {};
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
+      // alle Messages in Gruppen pro Chat verteilen
       .addCase(fetchMessages.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchMessages.fulfilled, (state, action) => {
         state.loading = false;
-        state.chatmessages = action.payload;
+        const grouped: Record<number, Message[]> = {};
+        action.payload.forEach((m) => {
+          if (m.chatId == null) return;
+          if (!grouped[m.chatId]) grouped[m.chatId] = [];
+          grouped[m.chatId].push(m);
+        });
+        Object.entries(grouped).forEach(([chatIdStr, list]) => {
+          const chatId = Number(chatIdStr);
+          state.byChatId[chatId] = sortByMessageNumber(list);
+        });
       })
       .addCase(fetchMessages.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message ?? 'Error loading messages';
       })
-      .addCase(fetchMessagesForChat.pending, (state) => {
-        state.loading = true;
+
+      // Messages für einen Chat
+      .addCase(fetchMessagesForChat.pending, (state, action) => {
+        const chatId = action.meta.arg;
+        state.loadingByChatId[chatId] = true;
         state.error = null;
       })
-      .addCase(fetchMessagesForChat.fulfilled, (state) => {
-        state.loading = false;
+      .addCase(fetchMessagesForChat.fulfilled, (state, action) => {
+        const { chatId, messages } = action.payload;
+        state.loadingByChatId[chatId] = false;
+        state.byChatId[chatId] = sortByMessageNumber(messages);
       })
       .addCase(fetchMessagesForChat.rejected, (state, action) => {
-        state.loading = false;
+        const chatId = action.meta.arg;
+        state.loadingByChatId[chatId] = false;
         state.error = action.payload || 'Error loading messages';
       })
+
+      // create
       .addCase(createMessage.fulfilled, (state, action) => {
-        state.chatmessages.push(action.payload);
+        const m = action.payload;
+        if (m.chatId == null) return;
+        const list = state.byChatId[m.chatId] ?? [];
+        state.byChatId[m.chatId] = sortByMessageNumber([...list, m]);
       })
-      .addCase(deleteMessageThunk.fulfilled, (s, a) => {
-        s.chatmessages = s.chatmessages.filter(
-          (m) => m.messageId !== a.payload
-        );
+
+      // delete: Attachments-Cache aufräumen
+      .addCase(deleteMessageThunk.fulfilled, (state, action) => {
+        const { messageId } = action.payload;
+        delete state.attachmentsByMessageId[messageId];
       })
-      .addCase(saveAllMessages.fulfilled, (s, a) => {
-        s.chatmessages = a.payload;
+
+      // saveAllMessages: State aktualisieren
+      .addCase(saveAllMessages.fulfilled, (state, action) => {
+        const grouped: Record<number, Message[]> = {};
+        action.payload.forEach((m) => {
+          if (m.chatId == null) return;
+          if (!grouped[m.chatId]) grouped[m.chatId] = [];
+          grouped[m.chatId].push(m);
+        });
+        Object.entries(grouped).forEach(([chatIdStr, list]) => {
+          const chatId = Number(chatIdStr);
+          state.byChatId[chatId] = sortByMessageNumber(list);
+        });
       })
+
+      // patch
       .addCase(patchMessage.fulfilled, (state, action) => {
-        const idx = state.chatmessages.findIndex(
-          (m) => m.messageId === action.payload.messageId
-        );
+        const updated = action.payload;
+        if (updated.chatId == null) return;
+        const list = state.byChatId[updated.chatId] ?? [];
+        const idx = list.findIndex((m) => m.messageId === updated.messageId);
         if (idx !== -1) {
-          state.chatmessages[idx] = {
-            ...state.chatmessages[idx],
-            ...action.payload,
-          };
+          list[idx] = { ...list[idx], ...updated };
+          state.byChatId[updated.chatId] = sortByMessageNumber(list);
         }
       })
+
+      // Attachments
       .addCase(fetchAttachmentsForMessage.fulfilled, (state, action) => {
         const { messageId, attachments } = action.payload;
         state.attachmentsByMessageId[messageId] = attachments;
@@ -621,6 +711,24 @@ const messagesSlice = createSlice({
   },
 });
 
-export const { setMessages, addMessage, updateMessage, removeMessage } =
-  messagesSlice.actions;
+export const {
+  setMessagesForChat,
+  addMessage,
+  updateMessage,
+  removeMessage,
+  clearMessagesForChat,
+  clearAllMessages,
+} = messagesSlice.actions;
+
 export default messagesSlice.reducer;
+
+// Selektoren
+export const selectMessagesForChat = (
+  state: RootState,
+  chatId: number | null
+) => (chatId != null ? (state.messages.byChatId[chatId] ?? []) : []);
+
+export const selectAttachmentsForMessage = (
+  state: RootState,
+  messageId: number
+) => state.messages.attachmentsByMessageId[messageId] ?? [];

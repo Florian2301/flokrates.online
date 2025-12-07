@@ -18,6 +18,9 @@ import {
   deleteAttachment,
   deleteMessageThunk,
   fetchAttachmentsForMessage,
+  selectMessagesForChat,
+  selectAttachmentsForMessage,
+  type MessageAttachment,
 } from '../../store/messagesSlice';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -32,19 +35,6 @@ type NewMessageProps = {
   messageId: number;
   isNew?: boolean;
   onCancel: () => void;
-};
-
-type BackendAttachment = {
-  attachmentId: number;
-  messageId: number;
-  kind: 'file' | 'external_url';
-  href?: string | null;
-  storageKey?: string | null;
-  title?: string | null;
-  contentType?: string | null;
-  fileName?: string | null;
-  previewHref?: string | null;
-  deleted?: boolean;
 };
 
 type PendingAttachment =
@@ -66,13 +56,12 @@ const NewMessage: React.FC<NewMessageProps> = ({
   const selectedChat = useSelector(
     (state: RootState) => state.chats.selectedChat
   );
-  const messages = useSelector(
-    (state: RootState) => state.messages.chatmessages
+  const messages = useSelector((state: RootState) =>
+    selectedChat ? selectMessagesForChat(state, selectedChat.chatId) : []
   );
-  const savedAttachments: BackendAttachment[] =
-    useSelector(
-      (s: RootState) => s.messages.attachmentsByMessageId?.[messageId]
-    ) || [];
+  const savedAttachments: MessageAttachment[] =
+    useSelector((s: RootState) => selectAttachmentsForMessage(s, messageId)) ||
+    [];
   const tempMessage: Message = {
     messageId: messageId,
     messageText: '',
@@ -129,7 +118,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
     return `https://${u}`;
   };
 
-  const openBackendAttachment = (att: BackendAttachment) => {
+  const openBackendAttachment = (att: MessageAttachment) => {
     if (att.kind === 'external_url' && att.href) {
       const url = toAbsoluteUrl(att.href);
       if (url) {
@@ -309,7 +298,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
     setPendingAttachments((prev) => prev.filter((a) => a.id !== id));
   };
 
-  const handleDeleteSavedAttachment = (att: BackendAttachment) => {
+  const handleDeleteSavedAttachment = (att: MessageAttachment) => {
     const ok = window.confirm('Delete this attachment?');
     if (!ok) return;
     dispatch(

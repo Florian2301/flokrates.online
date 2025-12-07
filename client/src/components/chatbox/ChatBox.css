@@ -1,7 +1,6 @@
 .chatbox-main {
   display: flex;
   flex-direction: column;
-  overflow: auto;
 }
 
 .chatbox-header {
@@ -28,7 +27,7 @@
 }
 
 .fade-in {
-  animation: fadeInUp 0.25s ease-out;
+  animation: fadeInUp 0.5s ease-out;
 }
 
 @keyframes fadeInUp {

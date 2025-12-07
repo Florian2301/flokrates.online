@@ -20,6 +20,8 @@ import {
   fetchChats,
   fetchChatsWithCounts,
   saveSingleChat,
+  selectChatsLoaded,
+  selectDraftsByLanguage,
   setSelectedChat,
 } from '../../store/chatsSclice';
 import {
@@ -28,7 +30,10 @@ import {
   selectRefsByChat,
   upsertReference,
 } from '../../store/networksSclice';
-import { fetchMessagesForChat, setMessages } from '../../store/messagesSlice';
+import {
+  fetchMessagesForChat,
+  selectMessagesForChat,
+} from '../../store/messagesSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
 import ChatPdf from '../pdf/ChatPdf';
@@ -45,24 +50,28 @@ const ChatInfo: React.FC = () => {
   const selectedChat = useSelector(
     (state: RootState) => state.chats.selectedChat
   );
-  const messages = useSelector(
-    (state: RootState) => state.messages.chatmessages
+
+  const messages = useSelector((state: RootState) =>
+    selectedChat ? selectMessagesForChat(state, selectedChat.chatId) : []
   );
+
   const lang = useSelector(selectLanguage);
-  //const chats = useSelector((state: RootState) => state.chats.chats);
   const allChats = useSelector((state: RootState) => state.chats.chats);
   const chats = allChats.filter((c) => c.language === lang);
+  const chatsLoaded = useSelector(selectChatsLoaded); // 🆕
+
   const drafts = chats.filter((c) => c.status !== 'PUB');
+  const [chatForm, setChatForm] = useState<Partial<Chat>>({});
+  const publishedChats = chats.filter(
+    (c) => c.status === 'PUB' && c.chatId !== chatForm?.chatId
+  );
   const isAuth = useSelector(selectIsAuthenticated);
 
   const maxChatNumber = chats.reduce((max, c) => {
     return c.chatNumber !== null && c.chatNumber > max ? c.chatNumber : max;
   }, 0);
   const [editMode, setEditMode] = useState(false);
-  const [chatForm, setChatForm] = useState<Partial<Chat>>({});
-  const publishedChats = chats.filter(
-    (c) => c.status === 'PUB' && c.chatId !== chatForm?.chatId
-  );
+
   type ViewMode = 'drafts' | 'comments';
   const [viewMode, setViewMode] = useState<ViewMode>('drafts');
   const chatIdFromFormOrSelection = selectedChat?.chatId;
@@ -86,9 +95,7 @@ const ChatInfo: React.FC = () => {
     ? chatForm.referencedChatIds!
     : [];
 
-  // Angereicherte Referenzen: {chatId, chatNumber, title}
   const refsForPdf = useMemo(() => {
-    // primär: ids aus Networks-Slice; fallback: ids direkt aus selectedChat
     const ids =
       currentRefIds.length > 0
         ? currentRefIds
@@ -103,7 +110,6 @@ const ChatInfo: React.FC = () => {
         chatNumber: c.chatNumber,
         title: c.title,
       }));
-    // 🔑 wichtig: auf currentRefIds reagieren!
   }, [currentRefIds, selectedChat, chats]);
 
   const formatDate = (isoString: string) => {
@@ -220,7 +226,6 @@ const ChatInfo: React.FC = () => {
 
   const handleClear = () => {
     setChatForm({});
-    dispatch(setMessages([]));
     dispatch(setSelectedChat(null));
     setEditMode(false);
   };
@@ -235,8 +240,10 @@ const ChatInfo: React.FC = () => {
   }, [selectedChat, dispatch]);
 
   useEffect(() => {
-    dispatch(fetchChatsWithCounts());
-  }, [dispatch]);
+    if (!chatsLoaded) {
+      dispatch(fetchChatsWithCounts());
+    }
+  }, [chatsLoaded, dispatch]);
 
   useEffect(() => {
     if (chatId) {
@@ -247,7 +254,6 @@ const ChatInfo: React.FC = () => {
   useEffect(() => {
     if (selectedChat && selectedChat.language !== lang) {
       dispatch(setSelectedChat(null));
-      dispatch(setMessages([]));
     }
   }, [lang, selectedChat, dispatch]);
 

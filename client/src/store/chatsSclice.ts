@@ -2,8 +2,9 @@ import { AppDispatch, RootState } from './store';
 import { Chat, Status } from '../types/Chats';
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
+import { LanguageCode } from '../constants/language';
 import { authedFetch } from '../api/authedFetch';
-import { setMessages } from './messagesSlice';
+import { clearMessagesForChat } from './messagesSlice';
 
 type ChatsState = {
   chats: Chat[];
@@ -15,6 +16,7 @@ type ChatsState = {
   messageCountsByChatId: Record<number, number>;
   messageCountsLoading: boolean;
   messageCountsError: string | null;
+  loaded: boolean;
 };
 
 const initialState: ChatsState = {
@@ -29,6 +31,7 @@ const initialState: ChatsState = {
   messageCountsByChatId: {},
   messageCountsLoading: false,
   messageCountsError: null,
+  loaded: false,
 };
 
 // get all chats
@@ -166,11 +169,7 @@ export const deleteChatThunk = createAsyncThunk<
       if (!res.ok) throw new Error('Error deleting chat');
 
       // delete messages for chat in state
-      const currentMsgs = state.messages.chatmessages;
-      if (currentMsgs.length) {
-        const left = currentMsgs.filter((m) => m.chatId !== chatId);
-        dispatch(setMessages(left));
-      }
+      dispatch(clearMessagesForChat(chatId));
 
       // delete referenced chats
       delete state.chats.referencesByChatId[chatId];
@@ -303,11 +302,19 @@ export const fetchChatsWithCounts = createAsyncThunk<
   void,
   { state: RootState; dispatch: AppDispatch }
 >('chats/fetchChatsWithCounts', async (_, { dispatch, getState }) => {
-  await dispatch(fetchChats());
+  const { loaded, chats } = getState().chats;
+
+  if (!loaded || chats.length === 0) {
+    await dispatch(fetchChats());
+  }
+
   const ids = getState()
     .chats.chats.map((c) => c.chatId)
     .filter((x): x is number => x != null);
-  if (ids.length) await dispatch(fetchMessageCounts(ids));
+
+  if (ids.length) {
+    await dispatch(fetchMessageCounts(ids));
+  }
 });
 
 export const chatsSlice = createSlice({
@@ -355,13 +362,16 @@ export const chatsSlice = createSlice({
       .addCase(fetchChats.fulfilled, (state, action) => {
         state.loading = false;
         state.chats = action.payload;
+        state.loaded = true;
       })
       .addCase(fetchChats.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Unknown error';
+        state.loaded = false;
       })
       .addCase(createChat.fulfilled, (state, action) => {
         state.chats.push(action.payload);
+        state.loaded = true;
       })
       .addCase(deleteChatThunk.fulfilled, (state, action) => {
         const deletedId = action.payload;
@@ -390,6 +400,7 @@ export const chatsSlice = createSlice({
       })
       .addCase(saveAllChats.fulfilled, (state, action) => {
         state.chats = action.payload;
+        state.loaded = true;
       })
       .addCase(fetchChatReferences.pending, (state, action) => {
         const chatId = action.meta.arg;
@@ -448,5 +459,14 @@ export const selectMessageCountLoading = (state: RootState) =>
 
 export const selectMessageCountFor = (chatId: number) => (state: RootState) =>
   state.chats.messageCountsByChatId[chatId] ?? 0;
+
+export const selectChatsLoaded = (state: RootState) => state.chats.loaded;
+export const selectPublishedChatsByLanguage = (
+  state: RootState,
+  lang: LanguageCode
+) => state.chats.chats.filter((c) => c.status === 'PUB' && c.language === lang);
+
+export const selectDraftsByLanguage = (state: RootState, lang: LanguageCode) =>
+  state.chats.chats.filter((c) => c.status !== 'PUB' && c.language === lang);
 
 export default chatsSlice.reducer;

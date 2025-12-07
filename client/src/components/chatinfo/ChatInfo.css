@@ -1,7 +1,6 @@
 .chatinfo {
   display: grid;
   grid-template-columns: 25% 75%;
-  overflow: auto;
   align-items: center;
 }
 
@@ -175,14 +174,6 @@
 
 #table-drafts-columns-number {
   text-align: center;
-}
-
-.chatlist-drafts-scroll {
-  overflow: auto;
-}
-
-.chatlist-drafts-scroll-mobile {
-  overflow: auto;
 }
 
 /* Toggle zwischen Drafts/Comments */

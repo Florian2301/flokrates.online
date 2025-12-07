@@ -2,30 +2,37 @@ import './ChatBox.css';
 
 import { AppDispatch, RootState } from '../../store/store';
 import React, { useEffect, useState } from 'react';
+import {
+  fetchMessagesForChat,
+  selectMessagesForChat,
+} from '../../store/messagesSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { ChatMessage } from '../message/ChatMessage';
 import NewMessage from '../message/NewMessage';
-import { fetchMessagesForChat } from '../../store/messagesSlice';
 import { selectIsAuthenticated } from '../../store/authSlice';
 
 export const ChatBox: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const messages = useSelector(
-    (state: RootState) => state.messages.chatmessages
-  );
-  const [activeEditId, setActiveEditId] = useState<number | null>(null);
+
   const selectedChat = useSelector(
     (state: RootState) => state.chats.selectedChat
   );
-  const [newMessageId, setNewMessageId] = useState<number | null>(null);
   const isAuth = useSelector(selectIsAuthenticated);
 
+  const messagesForChat = useSelector((s: RootState) =>
+    selectedChat ? selectMessagesForChat(s, selectedChat.chatId) : []
+  );
+
+  const [activeEditId, setActiveEditId] = useState<number | null>(null);
+  const [newMessageId, setNewMessageId] = useState<number | null>(null);
+
   useEffect(() => {
-    if (selectedChat) {
+    if (!selectedChat) return;
+    if (messagesForChat.length === 0) {
       dispatch(fetchMessagesForChat(selectedChat.chatId));
     }
-  }, [selectedChat, dispatch]);
+  }, [selectedChat?.chatId, messagesForChat.length, dispatch]);
 
   const handleNewMessageClick = async () => {
     if (!selectedChat && isAuth) return;
@@ -45,7 +52,7 @@ export const ChatBox: React.FC = () => {
 
   return (
     <div className="chatbox-main fade-in">
-      {messages
+      {messagesForChat
         .slice()
         .sort((a, b) => a.messageNumber - b.messageNumber)
         .map((msg) => {

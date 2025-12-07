@@ -5,6 +5,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   fetchAttachmentsForMessage,
   patchMessage,
+  selectMessagesForChat,
+  selectAttachmentsForMessage,
+  type MessageAttachment,
 } from '../../store/messagesSlice';
 
 import { AppDispatch } from '../../store/store';
@@ -18,19 +21,6 @@ import data from '@emoji-mart/data';
 import { selectIsAuthenticated } from '../../store/authSlice';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
-
-type MessageAttachment = {
-  attachmentId: number;
-  messageId: number;
-  kind: 'file' | 'external_url';
-  href?: string | null;
-  storageKey?: string | null;
-  title?: string | null;
-  contentType?: string | null;
-  fileName?: string | null;
-  previewHref?: string | null;
-  isDeleted?: boolean;
-};
 
 type ChatMessageProps = {
   message: Message;
@@ -61,7 +51,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesInChat = useSelector((state: RootState) =>
-    state.messages.chatmessages.filter((m) => m.chatId === message.chatId)
+    selectMessagesForChat(state, message.chatId)
   );
   const responseMessage = respId
     ? messagesInChat.find((m) => m.messageId === respId)
@@ -70,8 +60,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const isImage = (ct?: string | null) => !!ct && ct.startsWith('image/');
   const isPdf = (ct?: string | null) =>
     !!ct && ct.toLowerCase().startsWith('application/pdf');
-  const attachments = useSelector(
-    (s: RootState) => s.messages.attachmentsByMessageId[messageId] || []
+  const attachments = useSelector((s: RootState) =>
+    selectAttachmentsForMessage(s, messageId)
   );
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerSrc, setViewerSrc] = useState<string | null>(null);
