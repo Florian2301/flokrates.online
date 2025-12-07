@@ -9,6 +9,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -96,5 +99,14 @@ public class CommentController {
     public ResponseEntity<Void> deleteByChat(@PathVariable Integer chatId) {
         commentService.deleteByChat(chatId);
         return ResponseEntity.noContent().build();
+    }
+
+    private boolean isAdminRequest() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return false;
+        if (auth instanceof AnonymousAuthenticationToken) return false;
+
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
     }
 }

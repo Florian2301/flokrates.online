@@ -29,3 +29,5 @@ databaseChangeLog:
       file: db/changelog/db.changelog-2025-12-05-chats-drop-author-id.yaml
   - include:
       file: db/changelog/db.changelog-2025-12-05-drop-deleted-message-att.yaml
+  - include:
+      file: db/changelog/db.changelog-2025-12-07-add-admin-flag-to-comments.yaml

@@ -14,7 +14,7 @@
   position: relative;
   width: fit-content;
   background-color: white;
-  background-image: url('../../img/message_background.jpg'); /* optional */
+  background-image: url('../../img/message_background.jpg');
 }
 
 .comment-container-preview {
@@ -81,24 +81,11 @@
   word-break: break-all;
 }
 
-.comment-text-blue {
-  color: royalblue;
-}
-.comment-text-orange {
-  color: orangered;
-}
-.comment-text-pink {
-  color: deeppink;
-}
-
 .comment-align-left .comment-container {
   margin-left: 0;
   margin-right: auto;
 }
-.comment-align-center .comment-container {
-  margin-left: auto;
-  margin-right: auto;
-}
+
 .comment-align-right .comment-container {
   margin-left: auto;
   margin-right: 0;
@@ -116,7 +103,6 @@
   background-color: transparent;
 }
 
-/* kleine Sender/Datum Styles */
 .comment-sender-strong {
   font-weight: 600;
   margin-left: 6px;
@@ -131,8 +117,22 @@
   font-size: 0.9rem;
 }
 
-/* Emoji Picker Container */
 .comment-emoji-picker {
   position: absolute;
   z-index: 10;
+}
+
+.comment-sender {
+  color: royalblue;
+}
+
+.comment-admin-badge {
+  display: inline-block;
+  margin-left: 2rem;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: royalblue;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }

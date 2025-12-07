@@ -1,5 +1,6 @@
 package flokrates.online.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +24,9 @@ public class Comment {
     private Integer chatId;
     @Column(name = "sender", length = 25, nullable = false)
     private String sender;
+    @JsonProperty("isAdmin")
+    @Column(name = "is_admin", nullable = false)
+    private boolean isAdmin;
     @Column(name = "comment_text", columnDefinition = "TEXT", nullable = false)
     private String commentText;
     @CreationTimestamp

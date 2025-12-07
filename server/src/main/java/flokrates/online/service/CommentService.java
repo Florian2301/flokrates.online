@@ -7,6 +7,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +23,9 @@ public class CommentService {
     private final CommentRepo commentRepo;
 
     public Comment saveComment(Comment comment) {
+        if (comment.getCommentId() == null) {
+            comment.setAdmin(isCurrentUserAdmin());
+        }
         return commentRepo.save(comment);
     }
 
@@ -76,4 +82,15 @@ public class CommentService {
     public void deleteByChat(Integer chatId) {
         commentRepo.deleteByChatId(chatId);
     }
+
+    private boolean isCurrentUserAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+            return false;
+        }
+
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    }
+
 }

@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2025-12-07-add-admin-flag-to-comments
+      author: flokrates
+      changes:
+        - addColumn:
+            tableName: comments
+            columns:
+              - column:
+                  name: is_admin
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropColumn:
+            tableName: comments
+            columnName: is_admin

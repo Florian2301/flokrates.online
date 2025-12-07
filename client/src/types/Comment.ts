@@ -1,10 +1,11 @@
 export interface Comment {
   commentId: number;
   chatId: number;
-  sender: string; // oder number, falls du später auf AuthorId verlinkst
+  sender: string;
   commentText: string;
   dateCreated: string;
   dateModified: string | null;
+  admin?: boolean;
 }
 
 export type NewCommentPayload = Pick<

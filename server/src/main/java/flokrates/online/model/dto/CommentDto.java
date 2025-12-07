@@ -10,6 +10,7 @@ public class CommentDto {
     private Integer commentId;
     private Integer chatId;
     private String sender;
+    private boolean isAdmin;
     private String commentText;
     private LocalDateTime dateCreated;
     private LocalDateTime dateModified;

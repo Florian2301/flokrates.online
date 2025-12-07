@@ -112,8 +112,12 @@ const CommentItem: React.FC<Props> = ({
     setShowEmojiPicker(false);
   };
 
+  const alignmentClass = comment.admin
+    ? 'comment-align-right'
+    : 'comment-align-left';
+
   return (
-    <div className="comment-item-wrapper comment-align-left">
+    <div className={`comment-item-wrapper ${alignmentClass}`}>
       <div
         className={`comment-container ${edit ? 'comment-edit' : 'comment-save'}`}
       >
@@ -129,8 +133,11 @@ const CommentItem: React.FC<Props> = ({
                 placeholder="Name"
               />
             ) : (
-              <span className="comment-text-blue comment-sender-strong">
+              <span className="comment-sender comment-sender-strong">
                 {comment.sender}
+                {comment.admin && (
+                  <span className="comment-admin-badge">(Admin)</span>
+                )}
               </span>
             )}
           </div>
