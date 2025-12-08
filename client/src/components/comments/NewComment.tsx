@@ -20,7 +20,6 @@ const NewComment: React.FC<Props> = ({ onCancel }) => {
   const [sender, setSender] = useState('');
   const [text, setText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const emojiRef = useRef<HTMLDivElement>(null);
 

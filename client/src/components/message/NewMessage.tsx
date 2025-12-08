@@ -536,7 +536,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
                 </div>
               )}
 
-              {/* Dateien */}
+              {/* Files */}
               {savedFiles.length > 0 && (
                 <div className="attachments-list-row">
                   <div className="attachments-list">
@@ -589,7 +589,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
             </>
           )}
 
-          {/* Eingabezeile für neue Attachments */}
+          {/* New Attachments */}
           <div className="attachments-input-row">
             <div className="attachment-mode">
               <label>
@@ -651,7 +651,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
             )}
           </div>
 
-          {/* Liste der pending Attachments */}
+          {/* Pending Attachments */}
           <div className="attachments-list">
             {pendingAttachments.map((att) => (
               <div key={att.id} className="attachment-chip pending">

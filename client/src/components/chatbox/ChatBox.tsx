@@ -14,18 +14,15 @@ import { selectIsAuthenticated } from '../../store/authSlice';
 
 export const ChatBox: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-
   const selectedChat = useSelector(
     (state: RootState) => state.chats.selectedChat
   );
   const isAuth = useSelector(selectIsAuthenticated);
-
+  const [activeEditId, setActiveEditId] = useState<number | null>(null);
+  const [newMessageId, setNewMessageId] = useState<number | null>(null);
   const messagesForChat = useSelector((s: RootState) =>
     selectedChat ? selectMessagesForChat(s, selectedChat.chatId) : []
   );
-
-  const [activeEditId, setActiveEditId] = useState<number | null>(null);
-  const [newMessageId, setNewMessageId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!selectedChat) return;

@@ -14,10 +14,10 @@ import { useNavigate } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const nav = useNavigate();
   const isAuth = useSelector(selectIsAuthenticated);
   const user = useSelector(selectAuthUser);
   const { loading, error } = useSelector((s: RootState) => s.auth);
-  const nav = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -45,7 +45,7 @@ const LoginPage: React.FC = () => {
               className="btn btn-secondary"
               onClick={() => nav('/chatinfo')}
             >
-              Weiter zur Chatinfo
+              Navigate to Chatinfo
             </button>
             <button
               className="btn btn-primary"
@@ -89,7 +89,7 @@ const LoginPage: React.FC = () => {
 
         <div className="auth-field">
           <label className="auth-label" htmlFor="password">
-            Passwort
+            Password
           </label>
           <input
             id="password"
@@ -106,7 +106,7 @@ const LoginPage: React.FC = () => {
         <div className="auth-actions">
           <button className="btn btn-primary" type="submit" disabled={loading}>
             {loading ? <span className="spinner" /> : null}
-            Einloggen
+            Log in
           </button>
         </div>
       </form>

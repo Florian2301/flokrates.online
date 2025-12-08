@@ -509,7 +509,6 @@ const ChatInfo: React.FC = () => {
 
       <hr className="chatinfo-divider" />
 
-      {/* Action Buttons */}
       {isAuth && (
         <div className="chatinfo-actions">
           <button
@@ -590,7 +589,6 @@ const ChatInfo: React.FC = () => {
         <p className="para-comment">Comments</p>
       )}
 
-      {/* Drafts / Comments*/}
       {viewMode === 'drafts' && isAuth ? (
         <div className="chat-overview">
           <DraftListTable chats={drafts} />
