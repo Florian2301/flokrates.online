@@ -1,5 +1,3 @@
-import './App.css';
-
 import { Route, Routes } from 'react-router-dom';
 
 import AboutPage from './components/about/AboutPage';

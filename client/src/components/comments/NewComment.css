@@ -37,7 +37,10 @@
 }
 .newComment-btn:hover {
   background-color: #f0f0f0;
-  border-color: dodgerblue;
+}
+
+#new-commen-btn-action {
+  line-height: 1;
 }
 
 .new-comment-sender {
@@ -48,12 +51,6 @@
   border-radius: 4px;
   height: 2rem;
   font-size: 1rem;
-}
-
-/* Emoji Picker Container für New & Item */
-.comment-emoji-picker {
-  position: absolute;
-  z-index: 4000;
 }
 
 /* Scrollbar (Firefox) */

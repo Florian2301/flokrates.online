@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
 import { refresh, selectAccessToken, selectHasRole } from '../store/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
 
 import type { AppDispatch } from '../store/store';
 
@@ -45,7 +45,7 @@ export default function RequireAuth({
 }
 
 /*
-Nutzung
+Nutzung, wenn Komponente nur für eingeloggte User sichtbar sein soll
 
 <Route
   path="/admin"

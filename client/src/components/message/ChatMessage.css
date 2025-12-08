@@ -70,18 +70,17 @@
   white-space: pre-wrap;
   font-size: 16px;
   text-align: left;
-  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 #message-textarea {
   width: 100%;
   font-size: 16px;
-  word-break: break-all;
 }
 
 #message-display {
   font-size: 16px;
-  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 /* Farben */
@@ -171,7 +170,7 @@
 }
 
 #message-button-popup {
-  color: #2f4858; /* oder deine Standardtextfarbe */
+  color: #2f4858;
   background: none;
   border: none;
   cursor: pointer;

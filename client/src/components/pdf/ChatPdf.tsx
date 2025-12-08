@@ -1,17 +1,9 @@
-import {
-  Document,
-  Font,
-  Page,
-  StyleSheet,
-  Text,
-  View,
-} from '@react-pdf/renderer';
-import React, { useMemo } from 'react';
+import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
 import type { Chat } from '../../types/Chats';
 import type { Message } from '../../types/Message';
 import { actorStyles } from '../../types/ActorStyles';
-import { statusMap } from '../../types/Chats';
+import { useMemo } from 'react';
 
 type RefLite = { chatId: number; chatNumber: number | null; title: string };
 
@@ -62,7 +54,7 @@ const styles = StyleSheet.create({
   center: { justifyContent: 'center' },
 
   msgHeader: { fontSize: 9, color: '#666', marginBottom: 4 },
-  msgText: { fontSize: 11, lineHeight: 1.35, whiteSpace: 'pre-wrap' as any },
+  msgText: { fontSize: 11, lineHeight: 1.35 },
 
   refBlock: { marginTop: 6, marginBottom: 4 },
   refRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 4 },

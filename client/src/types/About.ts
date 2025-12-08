@@ -1,5 +1,5 @@
 export interface About {
-  imageUrl: string | undefined;
+  imageUrl: string | null;
   id: number;
   sectionKey: string;
   title: string;
@@ -8,3 +8,10 @@ export interface About {
   dateCreated: string;
   dateModified: string | null;
 }
+
+export type AboutSectionKey =
+  | 'project'
+  | 'author'
+  | 'flokrates'
+  | 'lotharius'
+  | 'pablo';

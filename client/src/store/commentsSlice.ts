@@ -2,25 +2,19 @@ import type { AppDispatch, RootState } from './store';
 import type { Comment, NewCommentPayload } from '../types/Comment';
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
+import { apiUrl } from '../config';
 import { authedFetch } from '../api/authedFetch';
 
 type CommentsState = {
   byChatId: Record<number, Comment[]>;
   loadingByChatId: Record<number, boolean>;
   error?: string | null;
-  // optional: paging-Metadaten, falls du das paged-Endpoint nutzt
-  pageInfoByChatId: Record<
-    number,
-    | { page: number; size: number; totalPages: number; totalElements: number }
-    | undefined
-  >;
 };
 
 const initialState: CommentsState = {
   byChatId: {},
   loadingByChatId: {},
   error: null,
-  pageInfoByChatId: {},
 };
 
 // ---------- Helpers ----------
@@ -45,81 +39,12 @@ export const fetchCommentsForChat = createAsyncThunk<
   { rejectValue: string }
 >('comments/fetchForChat', async (chatId, { rejectWithValue }) => {
   try {
-    const res = await fetch(`/api/comments/by-chat/${chatId}`);
+    const res = await fetch(apiUrl(`/api/comments/by-chat/${chatId}`));
     if (!res.ok) return rejectWithValue(await readError(res));
     const data = (await res.json()) as Comment[];
     return { chatId, comments: sortByDateCreatedAsc(data) };
   } catch (err: any) {
     return rejectWithValue(err?.message || 'Error loading comments');
-  }
-});
-
-// Optional: paged Load
-export const fetchCommentsForChatPaged = createAsyncThunk<
-  {
-    chatId: number;
-    page: number;
-    size: number;
-    totalPages: number;
-    totalElements: number;
-    comments: Comment[];
-    mode: 'replace' | 'append';
-  },
-  {
-    chatId: number;
-    page?: number;
-    size?: number;
-    sort?: string;
-    mode?: 'replace' | 'append';
-  },
-  { rejectValue: string }
->('comments/fetchForChatPaged', async (args, { rejectWithValue }) => {
-  const {
-    chatId,
-    page = 0,
-    size = 20,
-    sort = 'dateCreated,asc',
-    mode = 'replace',
-  } = args;
-  try {
-    const url = `/api/comments/by-chat/${chatId}/paged?page=${page}&size=${size}&sort=${encodeURIComponent(
-      sort
-    )}`;
-    const res = await fetch(url);
-    if (!res.ok) return rejectWithValue(await readError(res));
-
-    // Spring Page<T>
-    const pg = await res.json();
-    const comments = sort.includes('desc')
-      ? (pg.content as Comment[])
-      : sortByDateCreatedAsc(pg.content as Comment[]);
-
-    return {
-      chatId,
-      page: pg.number,
-      size: pg.size,
-      totalPages: pg.totalPages,
-      totalElements: pg.totalElements,
-      comments,
-      mode,
-    };
-  } catch (err: any) {
-    return rejectWithValue(err?.message || 'Error loading comments (paged)');
-  }
-});
-
-// Alle Kommentare (systemweit) – optional, wenn du eine Admin-Ansicht hast
-export const fetchAllComments = createAsyncThunk<
-  Comment[],
-  void,
-  { rejectValue: string }
->('comments/fetchAll', async (_, { rejectWithValue }) => {
-  try {
-    const res = await fetch(`/api/comments`);
-    if (!res.ok) return rejectWithValue(await readError(res));
-    return (await res.json()) as Comment[];
-  } catch (err: any) {
-    return rejectWithValue(err?.message || 'Error loading all comments');
   }
 });
 
@@ -283,7 +208,6 @@ const commentsSlice = createSlice({
     clearCommentsForChat(state, action: PayloadAction<number>) {
       delete state.byChatId[action.payload];
       delete state.loadingByChatId[action.payload];
-      delete state.pageInfoByChatId[action.payload];
     },
   },
   extraReducers: (builder) => {
@@ -299,36 +223,12 @@ const commentsSlice = createSlice({
         s.byChatId[chatId] = comments;
       })
       .addCase(fetchCommentsForChat.rejected, (s, a) => {
-        s.error = a.payload || a.error.message || 'Error loading comments';
-        // kein spezifischer chatId verfügbar hier
-      })
-
-      // fetchCommentsForChatPaged
-      .addCase(fetchCommentsForChatPaged.pending, (s, a) => {
-        s.error = null;
-        s.loadingByChatId[a.meta.arg.chatId] = true;
-      })
-      .addCase(fetchCommentsForChatPaged.fulfilled, (s, a) => {
-        const {
-          chatId,
-          comments,
-          mode,
-          page,
-          size,
-          totalElements,
-          totalPages,
-        } = a.payload;
-        s.loadingByChatId[chatId] = false;
-        const current = s.byChatId[chatId] ?? [];
-        s.byChatId[chatId] =
-          mode === 'append'
-            ? sortByDateCreatedAsc([...current, ...comments])
-            : comments;
-        s.pageInfoByChatId[chatId] = { page, size, totalElements, totalPages };
-      })
-      .addCase(fetchCommentsForChatPaged.rejected, (s, a) => {
+        const chatId = a.meta.arg;
+        if (chatId != null) {
+          s.loadingByChatId[chatId] = false;
+        }
         s.error =
-          a.payload || a.error.message || 'Error loading comments (paged)';
+          (a.payload as string) || a.error.message || 'Error loading comments';
       })
 
       // createComment
@@ -368,7 +268,6 @@ const commentsSlice = createSlice({
         const chatId = a.payload;
         delete s.byChatId[chatId];
         delete s.loadingByChatId[chatId];
-        delete s.pageInfoByChatId[chatId];
       });
   },
 });
@@ -393,6 +292,3 @@ export const selectCommentsLoadingForChat = (
 ) => !!state.comments.loadingByChatId[chatId];
 
 export const selectCommentsError = (state: RootState) => state.comments.error;
-
-export const selectCommentsPageInfo = (state: RootState, chatId: number) =>
-  state.comments.pageInfoByChatId[chatId];

@@ -7,13 +7,11 @@ type Props = {
   children: React.ReactNode;
 };
 
-const MainWindow = ({ children }: Props) => {
-  return (
-    <div className="main-window-container">
-      <NavBar></NavBar>
-      <main className="main-window">{children}</main>
-    </div>
-  );
-};
+const MainWindow: React.FC<Props> = ({ children }) => (
+  <div className="main-window-container">
+    <NavBar></NavBar>
+    <main className="main-window">{children}</main>
+  </div>
+);
 
 export default MainWindow;

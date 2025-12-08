@@ -207,6 +207,9 @@
 
 .para-comment {
   color: silver;
+  text-align: center;
+  font-size: large;
+  font-weight: bold;
 }
 
 .fade-in {

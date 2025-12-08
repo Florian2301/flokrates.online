@@ -6,8 +6,8 @@ type Props = {
   id?: number;
   title: string;
   text: string;
-  language: 'DE' | 'EN';
-  imageUrl?: string;
+  language: LanguageCode;
+  imageUrl?: string | null;
   isAdmin?: boolean;
   isEditing?: boolean;
   onSave?: (payload: {
@@ -44,14 +44,6 @@ const AboutText: React.FC<Props> = ({
     setEditing(true);
   };
 
-  const handleCancel = () => {
-    setEditing(false);
-    setEditTitle(title);
-    setEditText(text);
-    setEditLanguage(language ?? 'DE');
-    onCancel?.();
-  };
-
   const handleSave = () => {
     if (!isAdmin) return;
     onSave?.({
@@ -68,9 +60,13 @@ const AboutText: React.FC<Props> = ({
     if (id != null) onDelete?.(id);
   };
 
-  useEffect(() => {
-    setEditing(editing);
-  }, [editing]);
+  const handleCancel = () => {
+    setEditing(false);
+    setEditTitle(title);
+    setEditText(text);
+    setEditLanguage(language ?? 'DE');
+    onCancel?.();
+  };
 
   useEffect(() => {
     setEditTitle(title);

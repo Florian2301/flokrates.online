@@ -3,6 +3,7 @@ import { Chat, Status } from '../types/Chats';
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { LanguageCode } from '../constants/language';
+import { apiUrl } from '../config';
 import { authedFetch } from '../api/authedFetch';
 import { clearMessagesForChat } from './messagesSlice';
 
@@ -41,7 +42,7 @@ export const fetchChats = createAsyncThunk<
   { rejectValue: string }
 >('chats/fetchChats', async (_, { rejectWithValue }) => {
   try {
-    const res = await fetch(`/api/chats`);
+    const res = await fetch(apiUrl(`/api/chats`));
     if (!res.ok) throw new Error('Error loading chats');
     const data: Chat[] = await res.json();
     return data;
@@ -62,6 +63,7 @@ export const createChat = createAsyncThunk<
     try {
       const res = await authedFetch(dispatch, getState, `/api/chats`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newChat),
       });
       if (!res.ok) {
@@ -97,6 +99,7 @@ export const saveSingleChat = createAsyncThunk<
         `/api/chats/${chatId}`,
         {
           method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updates),
         }
       );
@@ -171,17 +174,6 @@ export const deleteChatThunk = createAsyncThunk<
       // delete messages for chat in state
       dispatch(clearMessagesForChat(chatId));
 
-      // delete referenced chats
-      delete state.chats.referencesByChatId[chatId];
-      delete state.chats.referencesLoadingByChatId[chatId];
-      Object.keys(state.chats.referencesByChatId).forEach((k) => {
-        const key = Number(k);
-        state.chats.referencesByChatId[key] =
-          state.chats.referencesByChatId[key]?.filter(
-            (ref) => ref.chatId !== chatId
-          ) ?? [];
-      });
-
       // set new chatnumbers for chats
       let updatedChats = chats.filter((c) => c.chatId !== chatId);
       if (chatToDelete.chatNumber !== null) {
@@ -252,7 +244,7 @@ export const fetchChatReferences = createAsyncThunk<
   { rejectValue: string }
 >('chats/fetchChatReferences', async (chatId, { rejectWithValue }) => {
   try {
-    const res = await fetch(`/api/chats/${chatId}/references`);
+    const res = await fetch(apiUrl(`/api/chats/${chatId}/references`));
     if (!res.ok) throw new Error('Error loading references');
     const data: Chat[] = await res.json();
     return data;
@@ -377,6 +369,16 @@ export const chatsSlice = createSlice({
         const deletedId = action.payload;
         state.chats = state.chats.filter((c) => c.chatId !== deletedId);
         delete state.messageCountsByChatId[deletedId];
+        delete state.referencesByChatId[deletedId];
+        delete state.referencesLoadingByChatId[deletedId];
+        // Referenzen IN anderen Chats bereinigen
+        Object.keys(state.referencesByChatId).forEach((k) => {
+          const key = Number(k);
+          state.referencesByChatId[key] =
+            state.referencesByChatId[key]?.filter(
+              (ref) => ref.chatId !== deletedId
+            ) ?? [];
+        });
       })
       .addCase(deleteChatThunk.rejected, (state, action) => {
         state.error = action.payload || 'Error deleting chat';

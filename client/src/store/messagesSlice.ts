@@ -5,9 +5,10 @@ import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { Actor } from '../types/ActorStyles';
 import { Message } from '../types/Message';
+import { apiUrl } from '../config';
 import { authedFetch } from '../api/authedFetch';
 
-// === Attachment-Response vom Backend ===
+// Attachment-Response Backend
 export type MessageAttachment = {
   attachmentId: number;
   messageId: number;
@@ -22,7 +23,7 @@ export type MessageAttachment = {
 };
 
 type MessagesState = {
-  byChatId: Record<number, Message[]>; // statt chatmessages
+  byChatId: Record<number, Message[]>;
   loading: boolean;
   loadingByChatId: Record<number, boolean>;
   error?: string | null;
@@ -37,18 +38,17 @@ const initialState: MessagesState = {
   attachmentsByMessageId: {},
 };
 
-// kleiner Helper
 const sortByMessageNumber = (list: Message[]) =>
   [...list].sort((a, b) => a.messageNumber - b.messageNumber);
 
-// get messages for selected chat (mit chatId im Result)
+// get messages for selected chat
 export const fetchMessagesForChat = createAsyncThunk<
   { chatId: number; messages: Message[] },
   number,
   { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >('messages/fetchMessagesForChat', async (chatId, { rejectWithValue }) => {
   try {
-    const res = await fetch(`/api/messages/chat/${chatId}`);
+    const res = await fetch(apiUrl(`/api/messages/chat/${chatId}`));
     if (!res.ok) throw new Error('Error loading messages');
     const data: Message[] = await res.json();
     return { chatId, messages: data };
@@ -58,11 +58,11 @@ export const fetchMessagesForChat = createAsyncThunk<
   }
 });
 
-// get all messages (falls du das irgendwo nutzt)
+// get all messages
 export const fetchMessages = createAsyncThunk<Message[]>(
   'messages/fetch',
   async () => {
-    const res = await fetch(`/api/messages`);
+    const res = await fetch(apiUrl(`/api/messages`));
     const data = await res.json();
     return data as Message[];
   }
@@ -130,7 +130,7 @@ export const patchMessage = createAsyncThunk<
   }
 );
 
-// delete message – jetzt pro Chat
+// delete message
 export const deleteMessageThunk = createAsyncThunk<
   { chatId: number; messageId: number },
   number,
@@ -140,7 +140,7 @@ export const deleteMessageThunk = createAsyncThunk<
   async (messageId, { dispatch, getState, rejectWithValue }) => {
     const state = getState();
 
-    // Chat + Liste finden, zu der die Message gehört
+    // find Chat + Messages
     let chatId: number | null = null;
     let messages: Message[] = [];
     for (const [key, list] of Object.entries(state.messages.byChatId)) {
@@ -225,7 +225,7 @@ export const saveAllMessages = createAsyncThunk<
   }
 });
 
-// check if messages has changed and sort if messagenumber has changed (jetzt pro Chat)
+// check if messages has changed and sort if messagenumber has changed
 export const changeMessage = createAsyncThunk<
   void,
   {
@@ -252,7 +252,7 @@ export const changeMessage = createAsyncThunk<
   ) => {
     const state = getState();
 
-    // Chat + Messages finden
+    // find Chat + Messages
     let chatId: number | null = null;
     let messages: Message[] = [];
     for (const [key, list] of Object.entries(state.messages.byChatId)) {
@@ -348,7 +348,7 @@ export const changeMessage = createAsyncThunk<
   }
 );
 
-// === Attachment-Types (nur fürs Frontend/POST) ===
+// Attachment-Types
 export type NewAttachment =
   | {
       kind: 'external_url';
@@ -363,13 +363,10 @@ export type NewAttachment =
       sortOrder?: number;
     };
 
-// kleine Helper für bessere Fehlermeldungen
 async function readError(res: Response) {
   const text = await res.text().catch(() => '');
   return `HTTP ${res.status} ${res.statusText}${text ? ` — ${text}` : ''}`;
 }
-
-// === Einzelnes Attachment anlegen ===
 export const createAttachment = createAsyncThunk<
   void,
   { messageId: number; attachment: NewAttachment },
@@ -429,7 +426,6 @@ export const createAttachment = createAsyncThunk<
   }
 );
 
-// === Mehrere Attachments in einem Rutsch ===
 export const createAttachmentsBulk = createAsyncThunk<
   void,
   { messageId: number; attachments: NewAttachment[] },
@@ -448,7 +444,6 @@ export const createAttachmentsBulk = createAsyncThunk<
   }
 );
 
-// === Message + Attachments in einem Schritt (für neue Message) ===
 export const createMessageWithAttachments = createAsyncThunk<
   Message,
   { message: Omit<Message, 'messageId'>; attachments?: NewAttachment[] },
@@ -475,7 +470,6 @@ export const createMessageWithAttachments = createAsyncThunk<
   }
 );
 
-// === Attachments für bestehende Message ===
 export const addAttachmentsToExistingMessage = createAsyncThunk<
   void,
   { messageId: number; attachments: NewAttachment[] },
@@ -614,7 +608,6 @@ const messagesSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // alle Messages in Gruppen pro Chat verteilen
       .addCase(fetchMessages.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -636,8 +629,6 @@ const messagesSlice = createSlice({
         state.loading = false;
         state.error = action.error.message ?? 'Error loading messages';
       })
-
-      // Messages für einen Chat
       .addCase(fetchMessagesForChat.pending, (state, action) => {
         const chatId = action.meta.arg;
         state.loadingByChatId[chatId] = true;
@@ -653,22 +644,16 @@ const messagesSlice = createSlice({
         state.loadingByChatId[chatId] = false;
         state.error = action.payload || 'Error loading messages';
       })
-
-      // create
       .addCase(createMessage.fulfilled, (state, action) => {
         const m = action.payload;
         if (m.chatId == null) return;
         const list = state.byChatId[m.chatId] ?? [];
         state.byChatId[m.chatId] = sortByMessageNumber([...list, m]);
       })
-
-      // delete: Attachments-Cache aufräumen
       .addCase(deleteMessageThunk.fulfilled, (state, action) => {
         const { messageId } = action.payload;
         delete state.attachmentsByMessageId[messageId];
       })
-
-      // saveAllMessages: State aktualisieren
       .addCase(saveAllMessages.fulfilled, (state, action) => {
         const grouped: Record<number, Message[]> = {};
         action.payload.forEach((m) => {
@@ -681,8 +666,6 @@ const messagesSlice = createSlice({
           state.byChatId[chatId] = sortByMessageNumber(list);
         });
       })
-
-      // patch
       .addCase(patchMessage.fulfilled, (state, action) => {
         const updated = action.payload;
         if (updated.chatId == null) return;
@@ -693,8 +676,6 @@ const messagesSlice = createSlice({
           state.byChatId[updated.chatId] = sortByMessageNumber(list);
         }
       })
-
-      // Attachments
       .addCase(fetchAttachmentsForMessage.fulfilled, (state, action) => {
         const { messageId, attachments } = action.payload;
         state.attachmentsByMessageId[messageId] = attachments;
@@ -722,7 +703,6 @@ export const {
 
 export default messagesSlice.reducer;
 
-// Selektoren
 export const selectMessagesForChat = (
   state: RootState,
   chatId: number | null

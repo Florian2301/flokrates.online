@@ -21,21 +21,24 @@ body {
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed; /* bleibt beim Scrollen fixiert */
-}
-
-/* Typografie */
-p,
-div,
-a,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-li {
   font-size: 1.6rem;
   line-height: 1.5;
+}
+
+h1 {
+  font-size: 1.8rem;
+}
+h2 {
+  font-size: 1.5rem;
+}
+h3 {
+  font-size: 1.3rem;
+}
+
+/* Text */
+p,
+li {
+  font-size: 1rem;
 }
 
 /* Links */
@@ -68,17 +71,18 @@ a:hover {
 
 /* Optional: Responsive Schrift */
 @media (max-width: 768px) {
+  h1 {
+    font-size: 1.6rem;
+  }
+  h2 {
+    font-size: 1.3rem;
+  }
+  h3 {
+    font-size: 1.2rem;
+  }
   p,
-  div,
-  a,
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
   li {
-    font-size: 1.4rem;
+    font-size: 0.95rem;
   }
 }
 

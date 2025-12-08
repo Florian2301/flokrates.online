@@ -4,17 +4,15 @@ import { AppDispatch, RootState } from '../../store/store';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Chat } from '../../types/Chats';
-import { Message } from '../../types/Message';
 import React from 'react';
 import { fetchMessagesForChat } from '../../store/messagesSlice';
 import { setSelectedChat } from '../../store/chatsSclice';
 
 type Props = {
   chats: Chat[];
-  messages: Message[];
 };
 
-export const DraftListTable: React.FC<Props> = ({ chats, messages }) => {
+export const DraftListTable: React.FC<Props> = ({ chats }) => {
   const dispatch = useDispatch<AppDispatch>();
   const countsByChatId = useSelector(
     (s: RootState) => s.chats.messageCountsByChatId

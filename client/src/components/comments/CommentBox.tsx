@@ -2,24 +2,24 @@ import './CommentBox.css';
 
 import type { AppDispatch, RootState } from '../../store/store';
 import React, { useEffect, useState } from 'react';
+import {
+  fetchCommentsForChat,
+  selectCommentsForChat,
+} from '../../store/commentsSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Comment } from '../../types/Comment';
 import CommentItem from './CommentItem';
 import NewComment from './NewComment';
-import { fetchCommentsForChat } from '../../store/commentsSlice';
 
 const CommentBox: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const selectedChat = useSelector((s: RootState) => s.chats.selectedChat);
   const chatId = selectedChat?.chatId ?? null;
-
-  const comments: Comment[] = useSelector((s: RootState) =>
-    chatId ? (s.comments.byChatId[chatId] ?? []) : []
-  );
-
   const [activeEditId, setActiveEditId] = useState<number | null>(null);
   const [showNew, setShowNew] = useState(false);
+  const comments = useSelector((s: RootState) =>
+    chatId ? selectCommentsForChat(s, chatId) : []
+  );
 
   useEffect(() => {
     if (chatId) dispatch(fetchCommentsForChat(chatId));
@@ -49,7 +49,6 @@ const CommentBox: React.FC = () => {
         />
       ))}
 
-      {/* Editor IMMER direkt unter dem letzten Comment */}
       {showNew && (
         <NewComment
           onCancel={() => {
@@ -59,7 +58,6 @@ const CommentBox: React.FC = () => {
         />
       )}
 
-      {/* + Button nur, wenn kein Editor offen ist */}
       {!showNew && (
         <div className="commentbox-header">
           <button

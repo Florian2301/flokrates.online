@@ -47,7 +47,6 @@
 
 .newMessage-btn:hover {
   background-color: #f0f0f0;
-  border-color: dodgerblue;
 }
 
 .newMessage-select {
@@ -194,7 +193,7 @@
 /*Scrollbar Browser*/
 /*Firefox*/
 #newmessage-textarea {
-  scrollbar-width: thin; /* Werte: auto | thin | none */
+  scrollbar-width: thin;
   scrollbar-color: #bbb #f0f0f0;
 }
 
@@ -211,9 +210,16 @@
 #newmessage-textarea::-webkit-scrollbar-thumb {
   background-color: #bbb;
   border-radius: 5px;
-  border: 2px solid #f0f0f0; /* optional Abstand */
+  border: 2px solid #f0f0f0;
 }
 
 #newmessage-textarea::-webkit-scrollbar-thumb:hover {
   background-color: #888;
+}
+
+@media (max-width: 600px) {
+  .new-message-window {
+    top: 60px;
+    padding: 6px;
+  }
 }

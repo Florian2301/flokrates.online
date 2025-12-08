@@ -25,7 +25,7 @@ const CommentItem: React.FC<Props> = ({
   setActiveEditId,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-
+  const emojiRef = useRef<HTMLDivElement>(null);
   const [edit, setEdit] = useState(isEditing);
   const [sender, setSender] = useState(comment.sender);
   const [text, setText] = useState(comment.commentText);
@@ -35,43 +35,13 @@ const CommentItem: React.FC<Props> = ({
   const created = useMemo(() => {
     const d = new Date(comment.dateCreated);
     if (Number.isNaN(d.getTime())) return comment.dateCreated;
-
     return d.toLocaleString('de-DE', {
       dateStyle: 'short',
       timeStyle: 'short',
     });
   }, [comment.dateCreated]);
 
-  useEffect(() => {
-    setEdit(isEditing);
-  }, [isEditing]);
-
-  const adjustHeight = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  };
-  useEffect(() => {
-    if (edit) adjustHeight();
-  }, [edit, text]);
-
-  // globales Save-Event
-  useEffect(() => {
-    function handleSaveEvent(e: CustomEvent<{ id: number }>) {
-      if (e.detail.id === comment.commentId && edit) {
-        handleSave();
-      }
-    }
-    window.addEventListener('save-comment', handleSaveEvent as EventListener);
-    return () => {
-      window.removeEventListener(
-        'save-comment',
-        handleSaveEvent as EventListener
-      );
-    };
-  }, [edit, text, sender]);
-
+  // methods
   const handleSave = async () => {
     await dispatch(
       patchComment({
@@ -95,6 +65,11 @@ const CommentItem: React.FC<Props> = ({
     ).unwrap();
   };
 
+  const handleEmojiSelect = (emoji: any) => {
+    setText((prev) => prev + emoji.native);
+    setShowEmojiPicker(false);
+  };
+
   const keyHandler: React.KeyboardEventHandler<
     HTMLTextAreaElement | HTMLInputElement
   > = (e) => {
@@ -107,10 +82,47 @@ const CommentItem: React.FC<Props> = ({
     }
   };
 
-  const handleEmojiSelect = (emoji: any) => {
-    setText((prev) => prev + emoji.native);
-    setShowEmojiPicker(false);
+  const adjustHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
   };
+
+  // UseEffects
+  useEffect(() => {
+    setEdit(isEditing);
+  }, [isEditing]);
+
+  useEffect(() => {
+    if (edit) adjustHeight();
+  }, [edit, text]);
+
+  useEffect(() => {
+    function handleSaveEvent(e: CustomEvent<{ id: number }>) {
+      if (e.detail.id === comment.commentId && edit) {
+        handleSave();
+      }
+    }
+    window.addEventListener('save-comment', handleSaveEvent as EventListener);
+    return () => {
+      window.removeEventListener(
+        'save-comment',
+        handleSaveEvent as EventListener
+      );
+    };
+  }, [edit, text, sender]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (emojiRef.current && !emojiRef.current.contains(e.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    }
+    if (showEmojiPicker)
+      document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showEmojiPicker]);
 
   const alignmentClass = comment.admin
     ? 'comment-align-right'
@@ -143,28 +155,30 @@ const CommentItem: React.FC<Props> = ({
           </div>
 
           <div className="comment-header-block">
-            {edit && isAuth && (
-              <button
-                className="comment-emoji-btn"
-                type="button"
-                onClick={() => setShowEmojiPicker((p) => !p)}
-                title="Emoji"
-              >
-                😊
-              </button>
-            )}
-            {showEmojiPicker && (
-              <div className="comment-emoji-picker">
-                <Picker
-                  data={data}
-                  onEmojiSelect={handleEmojiSelect}
-                  previewPosition="none"
-                  skinTonePosition="none"
-                  theme="light"
-                  sheetSize={32}
-                />
-              </div>
-            )}
+            <div className="emoji-section">
+              {edit && isAuth && (
+                <button
+                  className="comment-emoji-btn"
+                  type="button"
+                  onClick={() => setShowEmojiPicker((p) => !p)}
+                  title="Emoji"
+                >
+                  😊
+                </button>
+              )}
+              {showEmojiPicker && (
+                <div className="emoji-picker-popup">
+                  <Picker
+                    data={data}
+                    onEmojiSelect={handleEmojiSelect}
+                    previewPosition="none"
+                    skinTonePosition="none"
+                    theme="light"
+                    sheetSize={32}
+                  />
+                </div>
+              )}
+            </div>
 
             {isAuth && (
               <span

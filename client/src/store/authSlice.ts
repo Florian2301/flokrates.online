@@ -1,11 +1,12 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import type { RootState } from './store';
+import { apiUrl } from '../config';
 
 type User = {
   userId: number;
   email: string;
-  roles: string[]; // z.B. ["ROLE_USER","ROLE_ADMIN"]
+  roles: string[];
   userName?: string | null;
 };
 
@@ -55,7 +56,7 @@ export const login = createAsyncThunk<
   { rejectValue: string }
 >('auth/login', async (body, { rejectWithValue }) => {
   try {
-    const res = await fetch(`/api/auth/login`, {
+    const res = await fetch(apiUrl(`/api/auth/login`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include', // wichtig, falls Refresh per Cookie
@@ -71,7 +72,6 @@ export const login = createAsyncThunk<
 
     if (!user && json.accessToken) {
       const payload = decodeJwt(json.accessToken);
-      // -> passe Claims an deine Backend-Payload an (sub, roles, userId, name…)
       user = {
         userId: payload?.userId ?? 0,
         email: payload?.sub ?? '',
@@ -93,7 +93,7 @@ export const login = createAsyncThunk<
 });
 
 export const refresh = createAsyncThunk<
-  { accessToken: string; refreshToken: string }, // Rotation möglich
+  { accessToken: string; refreshToken: string },
   void,
   { state: RootState; rejectValue: string }
 >('auth/refresh', async (_, { getState, rejectWithValue }) => {
@@ -102,7 +102,7 @@ export const refresh = createAsyncThunk<
       getState().auth.refreshToken || localStorage.getItem('refreshToken');
     if (!rt) throw new Error('No refresh token');
 
-    const res = await fetch(`/api/auth/refresh`, {
+    const res = await fetch(apiUrl(`/api/auth/refresh`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken: rt, device: 'web' }),
@@ -125,16 +125,14 @@ export const logout = createAsyncThunk<void, void, { state: RootState }>(
     const rt =
       getState().auth.refreshToken || localStorage.getItem('refreshToken');
     try {
-      await fetch(`/api/auth/logout`, {
+      await fetch(apiUrl(`/api/auth/logout`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: rt
           ? JSON.stringify({ refreshToken: rt, device: 'web' })
           : undefined,
       });
-    } catch {
-      // Ignorieren – wir räumen lokal sowieso auf
-    }
+    } catch {}
   }
 );
 
@@ -182,6 +180,7 @@ const authSlice = createSlice({
     });
     b.addCase(login.fulfilled, (s, a) => {
       s.loading = false;
+      s.error = null;
       s.accessToken = a.payload.accessToken;
       s.refreshToken = a.payload.refreshToken;
       s.user = a.payload.user;
@@ -192,16 +191,23 @@ const authSlice = createSlice({
     b.addCase(login.rejected, (s, a) => {
       s.loading = false;
       s.error = a.payload || 'Login failed';
+      s.accessToken = null;
+      s.refreshToken = null;
+      s.user = null;
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('authUser');
     });
 
     b.addCase(refresh.fulfilled, (s, a) => {
       s.accessToken = a.payload.accessToken;
       s.refreshToken = a.payload.refreshToken;
       localStorage.setItem('accessToken', s.accessToken!);
+      localStorage.setItem('refreshToken', s.refreshToken!);
     });
     b.addCase(refresh.rejected, (s) => {
-      // Refresh kaputt -> ausloggen
       s.accessToken = null;
+      s.refreshToken = null;
       s.user = null;
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
@@ -210,6 +216,7 @@ const authSlice = createSlice({
 
     b.addCase(logout.fulfilled, (s) => {
       s.accessToken = null;
+      s.refreshToken = null;
       s.user = null;
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');

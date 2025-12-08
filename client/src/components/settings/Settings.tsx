@@ -1,10 +1,10 @@
 import './Settings.css';
 
-import type { AppDispatch, RootState } from '../../store/store';
 import { LanguageCode, languageMap } from '../../constants/language';
 import { selectLanguage, setLanguage } from '../../store/languageSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
+import type { AppDispatch } from '../../store/store';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,6 +18,7 @@ const Settings: React.FC = () => {
       <label className="settings-item">
         Language:&nbsp;
         <select
+          id="settings-select"
           value={lang}
           onChange={(e) => {
             dispatch(setLanguage(e.target.value as LanguageCode));

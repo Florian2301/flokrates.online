@@ -5,8 +5,11 @@ import type { RootState } from './store';
 
 type LanguageState = { current: LanguageCode };
 
+const stored = localStorage.getItem('ui_language');
+const fallback: LanguageCode = 'DE';
+
 const initial: LanguageState = {
-  current: (localStorage.getItem('ui_language') as LanguageCode) || 'DE',
+  current: stored === 'DE' || stored === 'EN' ? stored : fallback,
 };
 
 const languageSlice = createSlice({

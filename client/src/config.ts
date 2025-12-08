@@ -1,5 +1,4 @@
-// CRA-Style: REACT_APP_*
-const raw = (process.env.REACT_APP_API_BASE_URL || '').trim();
+const raw = (process.env.API_BASE_URL || '').trim();
 
 // Normalisiere Basis-URL (ohne trailing Slash). Leerer String => relative Pfade (gut für Proxy)
 export const API_BASE = raw && raw !== '/' ? raw.replace(/\/+$/, '') : '';

@@ -48,15 +48,19 @@
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
   font-size: 1rem;
+  line-height: 1rem;
   color: white;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   animation: fadeIn 0.2s ease-in-out;
   z-index: 200;
 }
 
-.popup-body {
-  font-size: 1rem;
-  line-height: 1rem;
+.popup-tags {
+  margin-top: 0.4rem;
+}
+
+.popup-desc {
+  margin-bottom: 0.5rem;
 }
 
 @keyframes fadeIn {
@@ -71,11 +75,9 @@
 }
 
 .chatlist-divider {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
   border: none;
   height: 1px;
-  background-color: #444;
+  background-color: dodgerblue;
 }
 
 .fade-in {

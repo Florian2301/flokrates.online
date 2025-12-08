@@ -5,31 +5,12 @@
   width: 100%;
 }
 
-#about-tabs-tab-project {
-  font-size: small;
-}
-
-#about-tabs-tab-author {
-  font-size: small;
-}
-
-#about-tabs-tab-flokrates {
-  font-size: small;
-}
-
-#about-tabs-tab-lotharius {
-  font-size: small;
-}
-
-#about-tabs-tab-pablo {
-  font-size: small;
-}
-
 /* Einzelne Tab-Titel (nicht aktiv) */
 #about-tabs .nav-link {
   background-color: transparent;
   transition: all 0.2s ease-in-out;
   margin-bottom: 5px;
+  font-size: medium;
 }
 
 /* Hover-Effekt */
@@ -50,12 +31,12 @@
 .about-text-block {
   display: flex;
   flex-direction: column;
-  align-items: center; /* zentriert Inhalte (Überschrift, Text, ggf. Bild) */
-  text-align: center; /* Überschrift zentriert */
+  align-items: center;
+  text-align: center;
   margin: 1rem auto;
   background-color: rgba(0, 0, 0, 0.3);
   width: 90%;
-  min-width: 25rem;
+
   border-radius: 6px;
 }
 
@@ -135,6 +116,10 @@
 .about-input-language option {
   background-color: lightgray;
   font-size: 0.9rem;
+}
+
+.about-edit-new {
+  text-align: center;
 }
 
 #about-edit-btn-new {

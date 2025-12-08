@@ -1,10 +1,10 @@
 import './ChatList.css';
 
-import { FileText, Info } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { AppDispatch } from '../../store/store';
 import { Chat } from '../../types/Chats';
+import { Info } from 'lucide-react';
 import { fetchMessagesForChat } from '../../store/messagesSlice';
 import { setSelectedChat } from '../../store/chatsSclice';
 import { useDispatch } from 'react-redux';
@@ -28,10 +28,7 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (
-        !target.closest('.chat-info-popup') &&
-        !target.closest('.chat-date')
-      ) {
+      if (!target.closest('.chat-info-popup')) {
         setActiveChatId(null);
       }
     };
@@ -91,13 +88,11 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
                   setActiveChatId(null);
                 }}
               >
-                <div className="popup-body">
-                  <p className="popup-body">{chat.tags}</p>
+                <div>
+                  <p className="popup-tags">{chat.tags}</p>
                   <hr className="chatlist-divider" />
 
-                  <p className="popup-body">
-                    {chat.description || 'Keine Beschreibung'}
-                  </p>
+                  <p className="popup-desc">{chat.description}</p>
                 </div>
               </div>
             )}

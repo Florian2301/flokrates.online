@@ -11,7 +11,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { Chat, Language, Status, statusMap } from '../../types/Chats';
+import { Chat, Status, statusMap } from '../../types/Chats';
 import { LanguageCode, languageMap } from '../../constants/language';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -22,6 +22,7 @@ import {
   saveSingleChat,
   selectChatsLoaded,
   selectDraftsByLanguage,
+  selectPublishedChatsByLanguage,
   setSelectedChat,
 } from '../../store/chatsSclice';
 import {
@@ -36,6 +37,7 @@ import {
 } from '../../store/messagesSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { ChatInfoRow } from './ChatInfoRow';
 import ChatPdf from '../pdf/ChatPdf';
 import CommentBox from '../comments/CommentBox';
 import { DraftListTable } from './DraftListTable';
@@ -47,81 +49,85 @@ import { useNavigate } from 'react-router-dom';
 const ChatInfo: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const lang = useSelector(selectLanguage);
+  const isAuth = useSelector(selectIsAuthenticated);
+  const [editMode, setEditMode] = useState(false);
+  type ViewMode = 'drafts' | 'comments';
+  const [viewMode, setViewMode] = useState<ViewMode>('drafts');
+
+  // chats
   const selectedChat = useSelector(
     (state: RootState) => state.chats.selectedChat
   );
+  const chats = useSelector((state: RootState) =>
+    state.chats.chats.filter((c) => c.language === lang)
+  );
+  const drafts = useSelector((state: RootState) =>
+    selectDraftsByLanguage(state, lang)
+  );
+  const chatsLoaded = useSelector(selectChatsLoaded);
+  const allPublishedForLang = useSelector((state: RootState) =>
+    selectPublishedChatsByLanguage(state, lang)
+  );
+  const [chatForm, setChatForm] = useState<Partial<Chat>>({});
+  const chatId = chatForm.chatId ?? selectedChat?.chatId ?? null;
+  const publishedChats = allPublishedForLang.filter(
+    (c) => c.chatId !== chatForm?.chatId
+  );
 
+  // counts
+  const maxChatNumber = chats.reduce((max, c) => {
+    return c.chatNumber !== null && c.chatNumber > max ? c.chatNumber : max;
+  }, 0);
+
+  const commentsCount = useSelector((s: RootState) => {
+    if (!chatId) return 0;
+    return s.comments.byChatId[chatId]?.length ?? 0;
+  });
+
+  // messages
   const messages = useSelector((state: RootState) =>
     selectedChat ? selectMessagesForChat(state, selectedChat.chatId) : []
   );
 
-  const lang = useSelector(selectLanguage);
-  const allChats = useSelector((state: RootState) => state.chats.chats);
-  const chats = allChats.filter((c) => c.language === lang);
-  const chatsLoaded = useSelector(selectChatsLoaded); // 🆕
-
-  const drafts = chats.filter((c) => c.status !== 'PUB');
-  const [chatForm, setChatForm] = useState<Partial<Chat>>({});
-  const publishedChats = chats.filter(
-    (c) => c.status === 'PUB' && c.chatId !== chatForm?.chatId
-  );
-  const isAuth = useSelector(selectIsAuthenticated);
-
-  const maxChatNumber = chats.reduce((max, c) => {
-    return c.chatNumber !== null && c.chatNumber > max ? c.chatNumber : max;
-  }, 0);
-  const [editMode, setEditMode] = useState(false);
-
-  type ViewMode = 'drafts' | 'comments';
-  const [viewMode, setViewMode] = useState<ViewMode>('drafts');
-  const chatIdFromFormOrSelection = selectedChat?.chatId;
-  const commentsCount = useSelector((s: RootState) => {
-    const id = chatIdFromFormOrSelection;
-    if (!id) return 0;
-    return s.comments.byChatId[id]?.length ?? 0;
-  });
-
-  const chatId = chatForm.chatId ?? selectedChat?.chatId ?? null;
-
-  const refs = useSelector((state: RootState) =>
-    chatId ? selectRefsByChat(state, chatId) : []
-  );
-
-  const currentRefIds = refs.map((n) => n.refId);
-
-  const chatById = (id: number) => chats.find((c) => c.chatId === id);
-
-  const currentRefs: number[] = Array.isArray(chatForm.referencedChatIds)
-    ? chatForm.referencedChatIds!
-    : [];
-
-  const refsForPdf = useMemo(() => {
-    const ids =
-      currentRefIds.length > 0
-        ? currentRefIds
-        : (selectedChat?.referencedChatIds ?? []);
-
-    if (!ids?.length) return [];
-    return ids
-      .map((id) => chats.find((c) => c.chatId === id))
-      .filter((c): c is Chat => Boolean(c))
-      .map((c) => ({
-        chatId: c.chatId,
-        chatNumber: c.chatNumber,
-        title: c.title,
-      }));
-  }, [currentRefIds, selectedChat, chats]);
-
+  // date
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleDateString('de-DE');
   };
 
+  // create
+  const handleCreate = async () => {
+    if (!isAuth) return;
+    const newChatData: Omit<Chat, 'chatId'> = {
+      title: 'draft',
+      description: '',
+      tags: '',
+      language: lang,
+      chatNumber: null,
+      status: 'DRA' as Status,
+      referencedChatIds: [],
+      datePublished: null,
+      dateCreated: new Date().toISOString(),
+      dateModified: null,
+    };
+
+    const result = await dispatch(createChat(newChatData));
+
+    if (createChat.fulfilled.match(result)) {
+      setEditMode(true);
+      dispatch(setSelectedChat(result.payload));
+      setChatForm(result.payload);
+    }
+  };
+
+  // change
   const handleChange = (field: keyof Chat, value: any) => {
     if (!isAuth) return;
     setChatForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  // save
   const handleSave = async () => {
     if (!isAuth) return;
     if (!chatForm.chatId) return;
@@ -153,6 +159,7 @@ const ChatInfo: React.FC = () => {
     }
   };
 
+  // publish
   const handlePublish = async () => {
     if (!isAuth) return;
     if (!chatForm.chatId) return;
@@ -189,6 +196,7 @@ const ChatInfo: React.FC = () => {
     }
   };
 
+  // delete
   const handleDelete = async () => {
     if (!isAuth) return;
     if (!chatForm?.chatId) return;
@@ -200,64 +208,35 @@ const ChatInfo: React.FC = () => {
     }
   };
 
-  const handleCreate = async () => {
-    if (!isAuth) return;
-    const newChatData: Omit<Chat, 'chatId'> = {
-      title: 'draft',
-      description: '',
-      tags: '',
-      language: lang,
-      chatNumber: null,
-      status: 'DRA' as Status,
-      referencedChatIds: [],
-      datePublished: null,
-      dateCreated: new Date().toISOString(),
-      dateModified: null,
-    };
-
-    const result = await dispatch(createChat(newChatData));
-
-    if (createChat.fulfilled.match(result)) {
-      setEditMode(true);
-      dispatch(setSelectedChat(result.payload));
-      setChatForm(result.payload);
-    }
-  };
-
+  // clear
   const handleClear = () => {
     setChatForm({});
     dispatch(setSelectedChat(null));
     setEditMode(false);
   };
 
-  useEffect(() => {
-    if (selectedChat) {
-      setChatForm(selectedChat);
-      dispatch(fetchMessagesForChat(selectedChat.chatId));
-    } else {
-      setChatForm({});
-    }
-  }, [selectedChat, dispatch]);
-
-  useEffect(() => {
-    if (!chatsLoaded) {
-      dispatch(fetchChatsWithCounts());
-    }
-  }, [chatsLoaded, dispatch]);
-
-  useEffect(() => {
-    if (chatId) {
-      dispatch(fetchRefsByChat(chatId));
-    }
-  }, [dispatch, chatId]);
-
-  useEffect(() => {
-    if (selectedChat && selectedChat.language !== lang) {
-      dispatch(setSelectedChat(null));
-    }
-  }, [lang, selectedChat, dispatch]);
-
   // References
+  const refs = useSelector((state: RootState) =>
+    chatId ? selectRefsByChat(state, chatId) : []
+  );
+  const currentRefIds = refs.map((n) => n.refId);
+  const refsForPdf = useMemo(() => {
+    const ids =
+      currentRefIds.length > 0
+        ? currentRefIds
+        : (selectedChat?.referencedChatIds ?? []);
+
+    if (!ids?.length) return [];
+    return ids
+      .map((id) => chats.find((c) => c.chatId === id))
+      .filter((c): c is Chat => Boolean(c))
+      .map((c) => ({
+        chatId: c.chatId,
+        chatNumber: c.chatNumber,
+        title: c.title,
+      }));
+  }, [currentRefIds, selectedChat, chats]);
+
   const handleAddReference = (refId: number) => {
     if (!isAuth) return;
     if (!chatId || !refId) return;
@@ -281,15 +260,44 @@ const ChatInfo: React.FC = () => {
     navigate('/chatbox');
   };
 
+  // useEffects
+  useEffect(() => {
+    if (selectedChat) {
+      setChatForm(selectedChat);
+      if (messages.length === 0) {
+        dispatch(fetchMessagesForChat(selectedChat.chatId));
+      }
+    } else {
+      setChatForm({});
+    }
+  }, [selectedChat, messages.length, dispatch]);
+
+  useEffect(() => {
+    if (!chatsLoaded) {
+      dispatch(fetchChatsWithCounts());
+    }
+  }, [chatsLoaded, dispatch]);
+
+  useEffect(() => {
+    if (chatId) {
+      dispatch(fetchRefsByChat(chatId));
+    }
+  }, [dispatch, chatId]);
+
+  useEffect(() => {
+    if (selectedChat && selectedChat.language !== lang) {
+      dispatch(setSelectedChat(null));
+    }
+  }, [lang, selectedChat, dispatch]);
+
   return (
     <div>
-      <div className="chatinfo">
-        <p className="chatpara">Chatnumber:</p>
+      <ChatInfoRow label="Chatnumber:">
         {editMode && isAuth ? (
           <input
             className="chatinfo-input"
             type="text"
-            value={chatForm.chatNumber ?? undefined}
+            value={chatForm.chatNumber ?? ''}
             onChange={(e) =>
               handleChange('chatNumber', parseInt(e.target.value) || 0)
             }
@@ -297,9 +305,9 @@ const ChatInfo: React.FC = () => {
         ) : (
           <p className="chatpara">{chatForm.chatNumber ?? ''}</p>
         )}
-      </div>
-      <div className="chatinfo">
-        <p className="chatpara">Title:</p>
+      </ChatInfoRow>
+
+      <ChatInfoRow label="Title:">
         {editMode && isAuth ? (
           <input
             className="chatinfo-input"
@@ -310,9 +318,9 @@ const ChatInfo: React.FC = () => {
         ) : (
           <p className="chatpara">{chatForm.title ?? ''}</p>
         )}
-      </div>
-      <div className="chatinfo">
-        <p className="chatpara">Description:</p>
+      </ChatInfoRow>
+
+      <ChatInfoRow label="Description:">
         {editMode && isAuth ? (
           <input
             className="chatinfo-input"
@@ -323,9 +331,9 @@ const ChatInfo: React.FC = () => {
         ) : (
           <p className="chatpara">{chatForm.description ?? ''}</p>
         )}
-      </div>
-      <div className="chatinfo">
-        <p className="chatpara">Tags:</p>
+      </ChatInfoRow>
+
+      <ChatInfoRow label="Tags:">
         {editMode && isAuth ? (
           <input
             className="chatinfo-input"
@@ -336,10 +344,9 @@ const ChatInfo: React.FC = () => {
         ) : (
           <p className="chatpara">{chatForm.tags ?? ''}</p>
         )}
-      </div>
-      <div className="chatinfo">
-        <p className="chatpara">Relations:</p>
+      </ChatInfoRow>
 
+      <ChatInfoRow label="Relations:">
         {editMode && isAuth ? (
           <div className="chatinfo-ref-editor">
             <select
@@ -398,14 +405,13 @@ const ChatInfo: React.FC = () => {
             )}
           </div>
         )}
-      </div>
+      </ChatInfoRow>
 
-      <div className="chatinfo">
-        <p className="chatpara">Messages:</p>
+      <ChatInfoRow label="Messages:">
         <p className="chatpara">{messages.length}</p>
-      </div>
-      <div className="chatinfo">
-        <p className="chatpara">Status:</p>
+      </ChatInfoRow>
+
+      <ChatInfoRow label="Status:">
         {editMode && isAuth ? (
           <select
             className="chatinfo-input"
@@ -424,9 +430,9 @@ const ChatInfo: React.FC = () => {
         ) : (
           <p className="chatpara">{chatForm.status ?? ''}</p>
         )}
-      </div>
-      <div className="chatinfo">
-        <p className="chatpara">Language:</p>
+      </ChatInfoRow>
+
+      <ChatInfoRow label="Language:">
         {editMode && isAuth ? (
           <select
             className="chatinfo-input"
@@ -446,33 +452,33 @@ const ChatInfo: React.FC = () => {
               : ''}
           </p>
         )}
-      </div>
-      {editMode && isAuth ? (
-        <div className="chatinfo">
-          <p className="chatpara">Created:</p>
+      </ChatInfoRow>
+
+      {editMode && isAuth && (
+        <ChatInfoRow label="Created:">
           <p className="chatpara">
             {chatForm.dateCreated ? formatDate(chatForm.dateCreated) : ''}
           </p>
-        </div>
-      ) : null}
-      {editMode && isAuth ? (
-        <div className="chatinfo">
-          <p className="chatpara">Modified:</p>
+        </ChatInfoRow>
+      )}
+
+      {editMode && isAuth && (
+        <ChatInfoRow label="Modified:">
           <p className="chatpara">
             {chatForm.dateModified ? formatDate(chatForm.dateModified) : ''}
           </p>
-        </div>
-      ) : null}
-      {chatForm.datePublished ? (
-        <div className="chatinfo">
-          <p className="chatpara">Published:</p>
+        </ChatInfoRow>
+      )}
+
+      {chatForm.datePublished && (
+        <ChatInfoRow label="Published:">
           <p className="chatpara">
             {chatForm.datePublished ? formatDate(chatForm.datePublished) : ''}
           </p>
-        </div>
-      ) : null}
-      <div className="chatinfo">
-        <p className="chatpara">Download:</p>
+        </ChatInfoRow>
+      )}
+
+      <ChatInfoRow label="Download:">
         {selectedChat ? (
           <PDFDownloadLink
             key={`${selectedChat?.chatId}-${refsForPdf.length}-${messages.length}`}
@@ -483,7 +489,11 @@ const ChatInfo: React.FC = () => {
                 references={refsForPdf}
               />
             }
-            fileName={`${selectedChat.chatNumber ? '#' + selectedChat.chatNumber + '_' + selectedChat.title : selectedChat.title}.pdf`}
+            fileName={`${
+              selectedChat.chatNumber
+                ? '#' + selectedChat.chatNumber + '_' + selectedChat.title
+                : selectedChat.title
+            }.pdf`}
             className="chatpara linklike"
           >
             <FileText size={18} strokeWidth={1.5} />
@@ -491,16 +501,16 @@ const ChatInfo: React.FC = () => {
         ) : (
           <span className="chatpara">–</span>
         )}
-      </div>
+      </ChatInfoRow>
 
-      <div className="chatinfo">
-        <p className="chatpara">Comments:</p>
+      <ChatInfoRow label="Comments:">
         <p className="chatpara">{commentsCount}</p>
-      </div>
+      </ChatInfoRow>
 
       <hr className="chatinfo-divider" />
 
-      {isAuth ? (
+      {/* Action Buttons */}
+      {isAuth && (
         <div className="chatinfo-actions">
           <button
             className="chatinfo-buttons"
@@ -529,8 +539,9 @@ const ChatInfo: React.FC = () => {
             <SquarePen size={18} strokeWidth={1.5} />
           </button>
         </div>
-      ) : null}
-      {editMode && isAuth ? (
+      )}
+
+      {editMode && isAuth && (
         <div className="chatinfo-actions">
           <button
             className="chatinfo-buttons"
@@ -554,7 +565,7 @@ const ChatInfo: React.FC = () => {
             <Trash2 size={18} strokeWidth={1.5} />
           </button>
         </div>
-      ) : null}
+      )}
 
       {isAuth ? (
         <div className="chatinfo-toggle">
@@ -572,15 +583,17 @@ const ChatInfo: React.FC = () => {
           </button>
         </div>
       ) : null}
+
       {isAuth ? (
         <hr className="chatinfo-divider" />
       ) : (
         <p className="para-comment">Comments</p>
       )}
 
+      {/* Drafts / Comments*/}
       {viewMode === 'drafts' && isAuth ? (
         <div className="chat-overview">
-          <DraftListTable chats={drafts} messages={messages} />
+          <DraftListTable chats={drafts} />
         </div>
       ) : (
         <div className="chat-overview">

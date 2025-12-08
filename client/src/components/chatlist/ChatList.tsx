@@ -1,7 +1,6 @@
 import { AppDispatch, RootState } from '../../store/store';
 import React, { useEffect } from 'react';
 import {
-  fetchChats,
   fetchChatsWithCounts,
   selectChatsLoaded,
   selectPublishedChatsByLanguage,
@@ -15,8 +14,6 @@ export const ChatList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const lang = useSelector(selectLanguage);
-  const allChats = useSelector((state: RootState) => state.chats.chats);
-  const loading = useSelector((state: RootState) => state.chats.loading);
   const error = useSelector((state: RootState) => state.chats.error);
   const chatsLoaded = useSelector(selectChatsLoaded);
   const publishedChats = useSelector((state: RootState) =>
@@ -28,7 +25,6 @@ export const ChatList: React.FC = () => {
       dispatch(fetchChatsWithCounts());
     }
   }, [chatsLoaded, dispatch]);
-  if (loading) console.log('Lade Chats...');
   if (error) console.log('Fehler beim Laden:', error);
 
   return (

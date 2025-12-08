@@ -2,6 +2,7 @@ import type { AppDispatch, RootState } from './store';
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { Network } from '../types/Network';
+import { apiUrl } from '../config';
 import { authedFetch } from '../api/authedFetch';
 
 type NetworksState = {
@@ -28,7 +29,7 @@ export const fetchRefsByChat = createAsyncThunk<
   { rejectValue: string }
 >('networks/fetchRefsByChat', async (chatId, { rejectWithValue }) => {
   try {
-    const res = await fetch(`/api/networks/by-chat/${chatId}`);
+    const res = await fetch(apiUrl(`/api/networks/by-chat/${chatId}`));
     if (!res.ok) throw new Error('Failed to load refs');
     const refs = (await res.json()) as Network[];
     return { chatId, refs };
@@ -43,7 +44,7 @@ export const fetchBackRefsForChat = createAsyncThunk<
   { rejectValue: string }
 >('networks/fetchBackRefsForChat', async (chatId, { rejectWithValue }) => {
   try {
-    const res = await fetch(`/api/networks/by-ref/${chatId}`);
+    const res = await fetch(apiUrl(`/api/networks/by-ref/${chatId}`));
     if (!res.ok) throw new Error('Failed to load back-refs');
     const refs = (await res.json()) as Network[];
     return { chatId, refs };
@@ -67,11 +68,13 @@ export const upsertReference = createAsyncThunk<
         `/api/networks/references`,
         {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ chatId, refId }),
         }
       );
       if (!res.ok) throw new Error('Failed to upsert reference');
       const saved = (await res.json()) as Network;
+      await dispatch(fetchBackRefsForChat(saved.refId));
       return { chatId: saved.chatId, network: saved };
     } catch (err) {
       console.error(err);
@@ -104,7 +107,6 @@ export const deleteReference = createAsyncThunk<
 );
 
 // --- Slice ---
-
 export const networksSlice = createSlice({
   name: 'networks',
   initialState,
@@ -148,17 +150,47 @@ export const networksSlice = createSlice({
       })
       .addCase(upsertReference.fulfilled, (state, action) => {
         const { chatId, network } = action.payload;
-        const arr = state.refsByChatId[chatId] ?? [];
-        const exists = arr.find((n) => n.refId === network.refId);
-        state.refsByChatId[chatId] = exists
-          ? arr.map((n) => (n.refId === network.refId ? network : n))
-          : [...arr, network];
+
+        // 1) Forward-Index (refsByChatId: chatId -> refId-Liste)
+        const forwardList = state.refsByChatId[chatId] ?? [];
+        const fIdx = forwardList.findIndex((n) => n.refId === network.refId);
+        if (fIdx >= 0) {
+          forwardList[fIdx] = network;
+        } else {
+          forwardList.push(network);
+        }
+        state.refsByChatId[chatId] = forwardList;
+
+        // 2) Backward-Index (backRefsByChatId: refId -> Liste der Chats, die referenzieren)
+        const targetId = network.refId; // "refId" ist das Chat-Ziel
+        const backList = state.backRefsByChatId[targetId] ?? [];
+        const bIdx = backList.findIndex((n) => n.chatId === network.chatId);
+        if (bIdx >= 0) {
+          backList[bIdx] = network;
+        } else {
+          backList.push(network);
+        }
+        state.backRefsByChatId[targetId] = backList;
       })
       .addCase(deleteReference.fulfilled, (state, action) => {
         const { chatId, refId } = action.payload;
+
+        // forward entfernen
         state.refsByChatId[chatId] = (state.refsByChatId[chatId] ?? []).filter(
           (n) => n.refId !== refId
         );
+
+        // backward entfernen
+        state.backRefsByChatId[refId] = (
+          state.backRefsByChatId[refId] ?? []
+        ).filter((n) => n.chatId !== chatId);
+      })
+
+      .addCase(upsertReference.rejected, (state, action) => {
+        state.error = action.payload ?? 'Error creating reference';
+      })
+      .addCase(deleteReference.rejected, (state, action) => {
+        state.error = action.payload ?? 'Error deleting reference';
       });
   },
 });

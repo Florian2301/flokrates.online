@@ -1,19 +1,25 @@
-import './Navigation.css';
+import './NavBar.css';
 
 import { Nav, NavDropdown } from 'react-bootstrap';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { logout, selectIsAuthenticated } from '../../store/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
+import type { AppDispatch } from '../../store/store';
 import { Menu } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
-import { selectIsAuthenticated } from '../../store/authSlice';
-import { useSelector } from 'react-redux';
 
 const NavBar = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const isAuth = useSelector(selectIsAuthenticated);
-  const handleSelect = (eventKey: string | null) =>
-    alert(`selected ${eventKey}`);
+  const nav = useNavigate();
+
+  const handleLogout = async () => {
+    await dispatch(logout());
+    nav('/login');
+  };
 
   return (
-    <Nav variant="pills" defaultActiveKey="/chatlist" onSelect={handleSelect}>
+    <Nav variant="pills">
       <Nav.Item>
         <Nav.Link as={NavLink} to="/chatlist">
           Chatlist
@@ -48,13 +54,22 @@ const NavBar = () => {
         >
           Language
         </NavDropdown.Item>
-        <NavDropdown.Item
-          className="nav-dropdown-item"
-          as={NavLink}
-          to="/login"
-        >
-          {!isAuth ? 'Login' : 'Logout'}
-        </NavDropdown.Item>
+        {!isAuth ? (
+          <NavDropdown.Item
+            className="nav-dropdown-item"
+            as={NavLink}
+            to="/login"
+          >
+            Login
+          </NavDropdown.Item>
+        ) : (
+          <NavDropdown.Item
+            className="nav-dropdown-item"
+            onClick={handleLogout}
+          >
+            Logout
+          </NavDropdown.Item>
+        )}
       </NavDropdown>
     </Nav>
   );

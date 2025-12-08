@@ -21,6 +21,11 @@ import data from '@emoji-mart/data';
 import { selectIsAuthenticated } from '../../store/authSlice';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
+import {
+  isImageContentType,
+  isPdfContentType,
+  toAbsoluteUrl,
+} from './Attachments';
 
 type ChatMessageProps = {
   message: Message;
@@ -40,16 +45,22 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   onClosePreview = () => {},
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { messageId, messageText, actor, messageNumber, respId } = message;
+  const isAuth = useSelector(selectIsAuthenticated);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
+  const [viewerType, setViewerType] = useState<'image' | 'pdf' | null>(null);
+
+  const { messageId, messageText, actor, messageNumber, respId } = message;
   const { colorClass, alignClass, actorName } =
     actorStyles[actor as keyof typeof actorStyles];
-  const isAuth = useSelector(selectIsAuthenticated);
+
   const [edit, setEdit] = useState(isEditing);
   const [editedText, setEditedText] = useState(messageText);
   const [fullEdit, setFullEdit] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
   const messagesInChat = useSelector((state: RootState) =>
     selectMessagesForChat(state, message.chatId)
   );
@@ -57,26 +68,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     ? messagesInChat.find((m) => m.messageId === respId)
     : null;
   const [showResponsePopup, setShowResponsePopup] = useState(false);
-  const isImage = (ct?: string | null) => !!ct && ct.startsWith('image/');
-  const isPdf = (ct?: string | null) =>
-    !!ct && ct.toLowerCase().startsWith('application/pdf');
+
   const attachments = useSelector((s: RootState) =>
     selectAttachmentsForMessage(s, messageId)
   );
-  const [viewerOpen, setViewerOpen] = useState(false);
-  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
-  const [viewerType, setViewerType] = useState<'image' | 'pdf' | null>(null);
-
-  const toAbsoluteUrl = (u?: string | null) => {
-    if (!u) return null;
-    if (u.startsWith('/')) return u; // interne API-Route
-    if (/^https?:\/\//i.test(u)) return u; // schon absolute URL
-    return `https://${u}`; // nackte Domains
-  };
-
-  useEffect(() => {
-    dispatch(fetchAttachmentsForMessage(messageId));
-  }, [dispatch, messageId]);
 
   const openAttachment = (att: MessageAttachment) => {
     // externe Links → im neuen Tab
@@ -89,13 +84,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     // Files
     const direct = toAbsoluteUrl(att.href || att.previewHref || null);
     if (direct) {
-      if (isImage(att.contentType)) {
+      if (isImageContentType(att.contentType)) {
         setViewerSrc(direct);
         setViewerType('image');
         setViewerOpen(true);
         return;
       }
-      if (isPdf(att.contentType)) {
+      if (isPdfContentType(att.contentType)) {
         window.open(direct, '_blank', 'noopener,noreferrer');
         return;
       }
@@ -104,6 +99,48 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       return;
     }
     console.warn('No href/preview available for attachment', att);
+  };
+
+  // save
+  const handleSaveEdit = () => {
+    if (!isAuth) return;
+    dispatch(
+      patchMessage({
+        messageId,
+        updates: {
+          messageText: editedText,
+        },
+      })
+    );
+    setEdit(false);
+    setActiveEditId(null);
+  };
+
+  // jump to response
+  const handleJumpToMessage = () => {
+    if (!messageId) return;
+
+    const target = document.getElementById(`message-${messageId}`);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.classList.add('message-highlight');
+      setTimeout(() => target.classList.remove('message-highlight'), 2000);
+    }
+    setShowResponsePopup(false);
+  };
+
+  // emoji
+  const handleEmojiSelect = (emoji: any) => {
+    setEditedText((prev) => prev + emoji.native);
+    setShowEmojiPicker(false);
+    setFullEdit(false);
+  };
+
+  const handleClosePreviewClick: React.MouseEventHandler<HTMLSpanElement> = (
+    e
+  ) => {
+    e.stopPropagation();
+    onClosePreview();
   };
 
   const adjustHeight = () => {
@@ -122,25 +159,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     }
   };
 
-  const handleEmojiSelect = (emoji: any) => {
-    setEditedText((prev) => prev + emoji.native);
-    setShowEmojiPicker(false);
-    setFullEdit(false);
-  };
-
-  const handleSaveEdit = () => {
-    if (!isAuth) return;
-    dispatch(
-      patchMessage({
-        messageId,
-        updates: {
-          messageText: editedText,
-        },
-      })
-    );
-    setEdit(false);
-    setActiveEditId(null);
-  };
+  // UseEffects
+  useEffect(() => {
+    dispatch(fetchAttachmentsForMessage(messageId));
+  }, [dispatch, messageId]);
 
   useEffect(() => {
     if (edit) adjustHeight();
@@ -161,25 +183,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       );
     };
   }, [edit, editedText]);
-
-  const handleJumpToMessage = () => {
-    if (!messageId) return;
-
-    const target = document.getElementById(`message-${messageId}`);
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      target.classList.add('message-highlight');
-      setTimeout(() => target.classList.remove('message-highlight'), 2000);
-    }
-    setShowResponsePopup(false);
-  };
-
-  const handleClosePreviewClick: React.MouseEventHandler<HTMLSpanElement> = (
-    e
-  ) => {
-    e.stopPropagation();
-    onClosePreview();
-  };
 
   return (
     <div
@@ -232,16 +235,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                     id="emoji-btn"
                     type="button"
                     onClick={() => setShowEmojiPicker((prev) => !prev)}
+                    title="Emoji"
                   >
                     😊
                   </button>
                   {showEmojiPicker && (
-                    <div
-                      className="emoji-picker-popup"
-                      id="empoji-picker-pop-chatmessage"
-                    >
+                    <div className="emoji-picker-popup">
                       <Picker
-                        date={data}
+                        data={data}
                         onEmojiSelect={handleEmojiSelect}
                         previewPosition="none"
                         skinTonePosition="none"
@@ -359,7 +360,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   att.href ||
                   `#${att.attachmentId}`;
                 const thumb =
-                  isImage(att.contentType) && (att.previewHref || att.href)
+                  isImageContentType(att.contentType) &&
+                  (att.previewHref || att.href)
                     ? (att.previewHref || att.href)!
                     : null;
                 const isLink = att.kind === 'external_url';
@@ -399,7 +401,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           {viewerSrc && viewerType === 'image' && (
             <img className="att-modal-content" src={viewerSrc} alt="" />
           )}
-          {viewerSrc && (
+          {viewerSrc && viewerType === 'pdf' && (
             <iframe className="att-modal-content" src={viewerSrc} title="PDF" />
           )}
         </ReactModal>

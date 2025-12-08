@@ -26,8 +26,6 @@ const LoginPage: React.FC = () => {
     const r = await dispatch(login({ email, password }));
     if (login.fulfilled.match(r)) {
       nav('/login');
-    } else {
-      alert('Login fehlgeschlagen');
     }
   }
 

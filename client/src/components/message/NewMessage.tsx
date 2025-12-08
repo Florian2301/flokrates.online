@@ -29,6 +29,7 @@ import { Actor } from '../../types/ActorStyles';
 import { Message } from '../../types/Message';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
+import { isImageContentType, toAbsoluteUrl } from '../message/Attachments';
 
 type NewMessageProps = {
   newMessage?: Message;
@@ -53,15 +54,14 @@ const NewMessage: React.FC<NewMessageProps> = ({
   onCancel,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const selectedChat = useSelector(
     (state: RootState) => state.chats.selectedChat
   );
+
   const messages = useSelector((state: RootState) =>
     selectedChat ? selectMessagesForChat(state, selectedChat.chatId) : []
   );
-  const savedAttachments: MessageAttachment[] =
-    useSelector((s: RootState) => selectAttachmentsForMessage(s, messageId)) ||
-    [];
   const tempMessage: Message = {
     messageId: messageId,
     messageText: '',
@@ -74,6 +74,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
     ? tempMessage
     : (messages.find((m) => m.messageId === messageId) ?? tempMessage);
   const maxMessageNumber = messages.length;
+
   const initialText = isNew ? '' : message.messageText;
   const initialActor = isNew ? 'FLO' : message.actor;
   const initialNumber = isNew ? messages.length + 1 : message.messageNumber;
@@ -85,8 +86,11 @@ const NewMessage: React.FC<NewMessageProps> = ({
   const [respMessageId, setRespMessageId] = useState<number | null>(
     initialRespId
   );
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [dragging, setDragging] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 100 });
   const dragRef = useRef<{
@@ -95,7 +99,10 @@ const NewMessage: React.FC<NewMessageProps> = ({
     initX: number;
     initY: number;
   } | null>(null);
-  const emojiPickerRef = useRef<HTMLDivElement>(null);
+
+  const savedAttachments: MessageAttachment[] =
+    useSelector((s: RootState) => selectAttachmentsForMessage(s, messageId)) ||
+    [];
   const [showAttachmentsBar, setShowAttachmentsBar] = useState(false);
   const [attachmentMode, setAttachmentMode] = useState<'link' | 'file'>('link');
   const [pendingAttachments, setPendingAttachments] = useState<
@@ -103,86 +110,6 @@ const NewMessage: React.FC<NewMessageProps> = ({
   >([]);
   const [linkInput, setLinkInput] = useState('');
   const [linkTitle, setLinkTitle] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const isImage = (ct?: string | null) => !!ct && ct.startsWith('image/');
-  const isPdf = (ct?: string | null) => ct === 'application/pdf';
-
-  const toAbsoluteUrl = (u?: string | null) => {
-    if (!u) return null;
-    // Backend-Routen wie /api/attachments/...
-    if (u.startsWith('/')) return u;
-    // schon absolute URL
-    if (/^https?:\/\//i.test(u)) return u;
-    // ansonsten: https davorhängen
-    return `https://${u}`;
-  };
-
-  const openBackendAttachment = (att: MessageAttachment) => {
-    if (att.kind === 'external_url' && att.href) {
-      const url = toAbsoluteUrl(att.href);
-      if (url) {
-        window.open(url, '_blank', 'noopener,noreferrer');
-      }
-      return;
-    }
-    const direct = toAbsoluteUrl(att.href || att.previewHref);
-    if (direct) {
-      window.open(direct, '_blank', 'noopener,noreferrer');
-      return;
-    }
-
-    console.warn('Kein href/previewHref für Attachment vorhanden:', att);
-  };
-
-  const startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
-    setDragging(true);
-    dragRef.current = {
-      startX: e.clientX,
-      startY: e.clientY,
-      initX: position.x,
-      initY: position.y,
-    };
-
-    window.addEventListener('mousemove', onDrag as any);
-    window.addEventListener('mouseup', stopDrag as any);
-  };
-
-  const onDrag = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!dragging || !dragRef.current) return;
-    const dx = e.clientX - dragRef.current.startX;
-    const dy = e.clientY - dragRef.current.startY;
-    setPosition({
-      x: dragRef.current.initX + dx,
-      y: dragRef.current.initY + dy,
-    });
-  };
-
-  const stopDrag = () => {
-    setDragging(false);
-    dragRef.current = null;
-    window.removeEventListener('mousemove', onDrag as any);
-    window.removeEventListener('mouseup', stopDrag as any);
-  };
-
-  const keyEventMessage = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.code === 'Escape') {
-      onCancel();
-    }
-  };
-
-  const adjustHeight = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height =
-        textareaRef.current.scrollHeight + 'px';
-    }
-  };
-
-  const handleEmojiSelect = (emoji: any) => {
-    setEditedText((prev: any) => prev + emoji.native);
-    setShowEmojiPicker(false);
-  };
 
   const handleSave = async () => {
     const attachmentsToSend: NewAttachment[] =
@@ -233,6 +160,22 @@ const NewMessage: React.FC<NewMessageProps> = ({
     onCancel();
   };
 
+  const openBackendAttachment = (att: MessageAttachment) => {
+    if (att.kind === 'external_url' && att.href) {
+      const url = toAbsoluteUrl(att.href);
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+      return;
+    }
+    const direct = toAbsoluteUrl(att.href || att.previewHref);
+    if (direct) {
+      window.open(direct, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    console.warn('Kein href/previewHref für Attachment vorhanden:', att);
+  };
+
   const addLinkAttachment = () => {
     if (!linkInput.trim()) return;
     let url = linkInput.trim();
@@ -267,10 +210,10 @@ const NewMessage: React.FC<NewMessageProps> = ({
         title: file.name,
       },
     ]);
-    // reset input, damit das gleiche File erneut gewählt werden kann
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  // attachments
   function mapPendingToNewAttachments(
     pending: PendingAttachment[]
   ): NewAttachment[] {
@@ -284,7 +227,6 @@ const NewMessage: React.FC<NewMessageProps> = ({
         };
       }
 
-      // Datei-Anhang → File-Objekt direkt an den Slice
       return {
         kind: 'file',
         file: p.file,
@@ -309,6 +251,57 @@ const NewMessage: React.FC<NewMessageProps> = ({
     );
   };
 
+  // drag & drop
+  const startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
+    setDragging(true);
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initX: position.x,
+      initY: position.y,
+    };
+
+    window.addEventListener('mousemove', onDrag as any);
+    window.addEventListener('mouseup', stopDrag as any);
+  };
+
+  const onDrag = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!dragging || !dragRef.current) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    setPosition({
+      x: dragRef.current.initX + dx,
+      y: dragRef.current.initY + dy,
+    });
+  };
+
+  const stopDrag = () => {
+    setDragging(false);
+    dragRef.current = null;
+    window.removeEventListener('mousemove', onDrag as any);
+    window.removeEventListener('mouseup', stopDrag as any);
+  };
+
+  const keyEventMessage = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.code === 'Escape') {
+      onCancel();
+    }
+  };
+
+  const adjustHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + 'px';
+    }
+  };
+
+  const handleEmojiSelect = (emoji: any) => {
+    setEditedText((prev: any) => prev + emoji.native);
+    setShowEmojiPicker(false);
+  };
+
+  // UseEffects
   useEffect(() => {
     adjustHeight();
   }, [editedText]);
@@ -413,7 +406,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
         </label>
         <div className="emoji-section">
           <button
-            id="newMessage-btn"
+            className="newMessage-btn"
             type="button"
             onClick={() => setShowEmojiPicker((prev) => !prev)}
           >
@@ -422,7 +415,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
           {showEmojiPicker && (
             <div className="emoji-picker-popup" ref={emojiPickerRef}>
               <Picker
-                date={data}
+                data={data}
                 onEmojiSelect={(emoji: any) => handleEmojiSelect(emoji)}
                 previewPosition="none"
                 skinTonePosition="none"
@@ -506,10 +499,8 @@ const NewMessage: React.FC<NewMessageProps> = ({
       </div>
       {showAttachmentsBar && (
         <div className="attachments-bar">
-          {/* Gespeicherte Attachments */}
           {!isNew && (savedLinks.length > 0 || savedFiles.length > 0) && (
             <>
-              {/* Links */}
               {savedLinks.length > 0 && (
                 <div className="attachments-list-row">
                   <div className="attachments-list">
@@ -556,7 +547,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
                         att.href ||
                         `#${att.attachmentId}`;
                       const thumb =
-                        isImage(att.contentType) &&
+                        isImageContentType(att.contentType) &&
                         (att.previewHref || att.href)
                           ? (att.previewHref || att.href)!
                           : null;

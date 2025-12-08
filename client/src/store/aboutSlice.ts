@@ -1,7 +1,8 @@
 import { AppDispatch, RootState } from './store';
-import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { About } from '../types/About';
+import { apiUrl } from '../config';
 import { authedFetch } from '../api/authedFetch';
 
 type AboutsState = {
@@ -16,16 +17,14 @@ const initialState: AboutsState = {
   error: null,
 };
 
-// --- Thunks ---
-
-// Alle Abouts laden
+// Load all
 export const fetchAbouts = createAsyncThunk<
   About[],
   void,
   { rejectValue: string }
 >('abouts/fetchAll', async (_, { rejectWithValue }) => {
   try {
-    const res = await fetch(`/api/abouts`);
+    const res = await fetch(apiUrl(`/api/abouts`));
     if (!res.ok) throw new Error('Failed to fetch abouts');
     return (await res.json()) as About[];
   } catch {
@@ -33,22 +32,7 @@ export const fetchAbouts = createAsyncThunk<
   }
 });
 
-// Einzelnes About laden
-export const fetchAboutById = createAsyncThunk<
-  About,
-  number,
-  { rejectValue: string }
->('abouts/fetchById', async (id, { rejectWithValue }) => {
-  try {
-    const res = await fetch(`/api/abouts/${id}`);
-    if (!res.ok) throw new Error('Not found');
-    return (await res.json()) as About;
-  } catch {
-    return rejectWithValue('Error loading about entry');
-  }
-});
-
-// Neues About erstellen
+// Create new
 export const createAbout = createAsyncThunk<
   About,
   Omit<About, 'id'>,
@@ -67,7 +51,7 @@ export const createAbout = createAsyncThunk<
   }
 });
 
-// About bearbeiten (PATCH)
+// Edit Abouts
 export const patchAbout = createAsyncThunk<
   About,
   { id: number; updates: Partial<About> },
@@ -89,7 +73,7 @@ export const patchAbout = createAsyncThunk<
   }
 );
 
-// About löschen
+// Delete About
 export const deleteAbout = createAsyncThunk<
   number,
   number,
@@ -108,7 +92,6 @@ export const deleteAbout = createAsyncThunk<
 });
 
 // --- Slice ---
-
 export const aboutSlice = createSlice({
   name: 'about',
   initialState,
@@ -143,23 +126,17 @@ export const aboutSlice = createSlice({
       .addCase(deleteAbout.fulfilled, (state, action) => {
         state.items = state.items.filter((a) => a.id !== action.payload);
       })
-      .addCase(fetchAboutById.fulfilled, (state, action) => {
-        const existingIdx = state.items.findIndex(
-          (a) => a.id === action.payload.id
-        );
-        if (existingIdx === -1) {
-          state.items.push(action.payload);
-        } else {
-          state.items[existingIdx] = action.payload;
-        }
+      .addCase(createAbout.rejected, (state, action) => {
+        state.error =
+          (action.payload as string) ?? 'Error creating about entry';
       });
   },
 });
 
 export const { clearAbouts } = aboutSlice.actions;
 
-// --- Selectors ---
 export const selectAllAbouts = (state: RootState) => state.about.items;
 export const selectAboutById = (state: RootState, id: number) =>
   state.about.items.find((a) => a.id === id);
+
 export default aboutSlice.reducer;

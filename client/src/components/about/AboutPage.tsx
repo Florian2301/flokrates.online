@@ -1,6 +1,5 @@
 import './About.css';
 
-import { AppDispatch, RootState } from '../../store/store';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   createAbout,
@@ -13,6 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import type { About } from '../../types/About';
 import AboutText from './AboutText';
+import { AppDispatch } from '../../store/store';
 import { LanguageCode } from '../../constants/language';
 import { SquarePen } from 'lucide-react';
 import Tab from 'react-bootstrap/Tab';
@@ -24,7 +24,7 @@ export const AboutPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const lang = useSelector(selectLanguage);
   const items = useSelector(selectAllAbouts) ?? [];
-  const itemsLang = React.useMemo(
+  const itemsLang = useMemo(
     () => items.filter((a) => a.language === lang),
     [items, lang]
   );
@@ -36,19 +36,9 @@ export const AboutPage: React.FC = () => {
     language: LanguageCode;
   } | null>(null);
 
-  useEffect(() => {
-    dispatch(fetchAbouts());
-  }, [dispatch]);
-
-  const itemsForActive = useMemo(
-    () => items.filter((a) => a.sectionKey === activeKey),
-    [items, activeKey]
-  );
-
-  // --- CRUD Handler ---
   const handleStartNew = () => {
     if (!isAuth) return;
-    setAboutText({ title: '', text: '', language: lang }); // zeigt unten einen AboutText im Editmodus
+    setAboutText({ title: '', text: '', language: lang });
   };
 
   const handleSave = async (payload: {
@@ -61,21 +51,18 @@ export const AboutPage: React.FC = () => {
     if (!payload.title.trim() && !payload.text.trim()) return;
 
     if (payload.id == null) {
-      // Neuer Eintrag
       await dispatch(
         createAbout({
-          // New payload (entspricht deinem DTO ohne id)
           title: payload.title,
           text: payload.text,
           sectionKey: activeKey,
           language: payload.language,
           dateCreated: new Date().toISOString(),
           dateModified: null,
-        } as Omit<About, 'id'>) // falls dein Typ das so erwartet
+        } as Omit<About, 'id'>)
       );
       setAboutText(null);
     } else {
-      // Update bestehend
       await dispatch(
         patchAbout({
           id: payload.id,
@@ -101,8 +88,8 @@ export const AboutPage: React.FC = () => {
   }, [lang]);
 
   useEffect(() => {
-    dispatch(fetchAbouts(/* ggf. { language: lang } */));
-  }, [dispatch, lang]);
+    dispatch(fetchAbouts());
+  }, [dispatch]);
 
   const renderTab = (key: string, title: string) => (
     <Tab eventKey={key} title={title}>
@@ -122,7 +109,6 @@ export const AboutPage: React.FC = () => {
           />
         ))}
 
-      {/* Draft nur im aktiven Tab anzeigen */}
       {activeKey === key && aboutText && isAuth && (
         <AboutText
           title={aboutText.title}
@@ -130,14 +116,13 @@ export const AboutPage: React.FC = () => {
           language={aboutText.language}
           isAdmin={isAuth}
           isEditing={true}
-          onSave={handleSave} // führt create aus
-          onCancel={handleCancelDraft} // Draft verwerfen
+          onSave={handleSave}
+          onCancel={handleCancelDraft}
         />
       )}
 
-      {/* Neuer Eintrag-Button nur im aktiven Tab */}
       {activeKey === key && isAuth && (
-        <div>
+        <div className="about-edit-new">
           <button
             className="about-edit-btn"
             id="about-edit-btn-new"

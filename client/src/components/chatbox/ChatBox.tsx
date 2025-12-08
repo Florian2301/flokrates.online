@@ -29,13 +29,19 @@ export const ChatBox: React.FC = () => {
 
   useEffect(() => {
     if (!selectedChat) return;
+
     if (messagesForChat.length === 0) {
       dispatch(fetchMessagesForChat(selectedChat.chatId));
     }
-  }, [selectedChat?.chatId, messagesForChat.length, dispatch]);
+  }, [selectedChat, messagesForChat.length, dispatch]);
+
+  useEffect(() => {
+    setActiveEditId(null);
+    setNewMessageId(null);
+  }, [selectedChat?.chatId]);
 
   const handleNewMessageClick = async () => {
-    if (!selectedChat && isAuth) return;
+    if (!selectedChat || !isAuth) return;
 
     if (activeEditId) {
       const event = new CustomEvent('save-message', {

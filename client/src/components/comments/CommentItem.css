@@ -96,7 +96,6 @@
   cursor: pointer;
   border-radius: 4px;
   margin-right: 10px;
-  border: 1px solid transparent;
 }
 .comment-emoji-btn:hover {
   border-color: dodgerblue;
@@ -115,11 +114,6 @@
   color: #2f4858;
   opacity: 0.8;
   font-size: 0.9rem;
-}
-
-.comment-emoji-picker {
-  position: absolute;
-  z-index: 10;
 }
 
 .comment-sender {
