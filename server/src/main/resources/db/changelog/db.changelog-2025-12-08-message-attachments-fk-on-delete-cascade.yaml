@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2025-12-08-msgatt-fk-message-on-delete-cascade
+      author: floki
+      preConditions:
+        onFail: MARK_RAN
+        onError: MARK_RAN
+        not:
+          - foreignKeyConstraintExists:
+              baseTableName: message_attachments
+              foreignKeyName: fk_msgatt_message
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: message_attachments
+            baseColumnNames: message_id
+            referencedTableName: messages
+            referencedColumnNames: message_id
+            constraintName: fk_msgatt_message
+            onDelete: CASCADE
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: message_attachments
+            constraintName: fk_msgatt_message

@@ -31,3 +31,13 @@ databaseChangeLog:
       file: db/changelog/db.changelog-2025-12-05-drop-deleted-message-att.yaml
   - include:
       file: db/changelog/db.changelog-2025-12-07-add-admin-flag-to-comments.yaml
+  - include:
+      file: db/changelog/db.changelog-2025-12-08-comments-fk-on-delete-cascade.yaml
+  - include:
+      file: db/changelog/db.changelog-2025-12-08-messages-fk-on-delete-cascade.yaml
+  - include:
+      file: db/changelog/db.changelog-2025-12-08-message-attachments-fk-on-delete-cascade.yaml
+  - include:
+      file: db/changelog/db.changelog-2025-12-08-networks-fk-on-delete-cascade.yaml
+  - include:
+      file: db/changelog/db.changelog-2025-12-08-messages-drop-old-resp-fk.yaml

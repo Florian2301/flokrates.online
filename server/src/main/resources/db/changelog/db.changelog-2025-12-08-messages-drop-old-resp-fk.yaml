@@ -1,0 +1,39 @@
+databaseChangeLog:
+  # 1) Alten FK messages_ibfk_2 (falls vorhanden) droppen
+  - changeSet:
+      id: 2025-12-08-messages-drop-old-resp-fk
+      author: floki
+      preConditions:
+        onFail: MARK_RAN
+        onError: MARK_RAN
+        foreignKeyConstraintExists:
+          baseTableName: messages
+          foreignKeyName: messages_ibfk_2
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: messages
+            constraintName: messages_ibfk_2
+
+  # 2) Neuen FK mit ON DELETE CASCADE anlegen
+  - changeSet:
+      id: 2025-12-08-messages-resp-fk-on-delete-cascade
+      author: floki
+      preConditions:
+        onFail: MARK_RAN
+        onError: MARK_RAN
+        not:
+          - foreignKeyConstraintExists:
+              baseTableName: messages
+              foreignKeyName: fk_messages_resp
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: messages
+            baseColumnNames: resp_id
+            referencedTableName: messages
+            referencedColumnNames: message_id
+            constraintName: fk_messages_resp
+            onDelete: CASCADE
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: messages
+            constraintName: fk_messages_resp

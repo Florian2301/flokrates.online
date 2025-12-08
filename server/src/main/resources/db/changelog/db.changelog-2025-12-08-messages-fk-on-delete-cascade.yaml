@@ -1,0 +1,39 @@
+databaseChangeLog:
+  # 1) Alten FK fk_messages_chat (falls vorhanden) droppen
+  - changeSet:
+      id: 2025-12-08-messages-drop-old-fk-messages-chat
+      author: floki
+      preConditions:
+        onFail: MARK_RAN
+        onError: MARK_RAN
+        foreignKeyConstraintExists:
+          baseTableName: messages
+          foreignKeyName: fk_messages_chat
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: messages
+            constraintName: fk_messages_chat
+
+  # 2) FK fk_messages_chat mit ON DELETE CASCADE neu anlegen (nur wenn noch nicht vorhanden)
+  - changeSet:
+      id: 2025-12-08-messages-fk-chat-on-delete-cascade
+      author: floki
+      preConditions:
+        onFail: MARK_RAN
+        onError: MARK_RAN
+        not:
+          - foreignKeyConstraintExists:
+              baseTableName: messages
+              foreignKeyName: fk_messages_chat
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: messages
+            baseColumnNames: chat_id
+            referencedTableName: chats
+            referencedColumnNames: chat_id
+            constraintName: fk_messages_chat
+            onDelete: CASCADE
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: messages
+            constraintName: fk_messages_chat
