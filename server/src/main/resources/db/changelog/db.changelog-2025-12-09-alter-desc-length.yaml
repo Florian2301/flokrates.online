@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: alter-desc-length
+      author: Flokrates
+      changes:
+        - modifyDataType:
+            tableName: chats
+            columnName: description
+            newDataType: TEXT

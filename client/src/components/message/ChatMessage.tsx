@@ -205,28 +205,31 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         className={`message-container ${edit ? 'edit' : 'save'}`}
         id={`${previewMode ? 'message-container-preview' : undefined}`}
       >
-        {respId && responseMessage && (
-          <div className="response-info">
-            <span>
-              <button
-                className="response-link"
-                onClick={() => setShowResponsePopup((prev) => !prev)}
-              >
-                {`${
-                  showResponsePopup
-                    ? 'Close preview'
-                    : 'Response to #' + responseMessage.messageNumber
-                }`}
-              </button>
-            </span>
-          </div>
-        )}
-
-        <div className="message-header">
+        <div
+          className={`message-header ${isAuth ? 'auth-header' : 'guest-header'} ${
+            previewMode ? 'preview-header' : ''
+          }`}
+        >
           <div className="message-header-block">
             <span id="message-span"># {messageNumber}</span>
             <span className={colorClass}>{actorName}</span>
           </div>
+          {respId && responseMessage && (
+            <div className="response-info">
+              <span>
+                <button
+                  className="response-link"
+                  onClick={() => setShowResponsePopup((prev) => !prev)}
+                >
+                  {`${
+                    showResponsePopup
+                      ? 'Close preview'
+                      : 'Response to #' + responseMessage.messageNumber
+                  }`}
+                </button>
+              </span>
+            </div>
+          )}
           {!previewMode && isAuth ? (
             <div className="message-header-block">
               {edit && (
@@ -314,15 +317,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             </div>
           ) : (
             <div className="message-header-block">
-              {isAuth && (
-                <span
-                  className="message-button-edit"
-                  id="message-button-popup"
-                  onClick={handleClosePreviewClick}
-                >
-                  <X size={18} strokeWidth={1.5} />
-                </span>
-              )}
+              <span
+                className="message-button-edit"
+                title="close"
+                onClick={handleClosePreviewClick}
+              >
+                <X size={18} strokeWidth={1.5} />
+              </span>
+
               {previewMode && (
                 <span
                   className="message-button-edit"

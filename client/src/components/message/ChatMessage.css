@@ -10,7 +10,6 @@
   border-width: thin;
   border-style: solid;
   border-radius: 1rem;
-  color: #2f4858;
   position: relative;
   width: fit-content;
   background-color: white;
@@ -35,11 +34,11 @@
 .message-button-edit {
   margin-right: 10px;
   margin-left: 10px;
+  cursor: pointer;
 }
 
 .message-button-edit:hover {
   color: black;
-  cursor: pointer;
   text-decoration: underline;
 }
 
@@ -48,11 +47,40 @@
   border-width: thin;
   border-bottom-style: dotted;
   padding: 0rem 0.6rem 0rem 0.6rem;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: 8px;
   height: 2rem;
   font-size: 16px;
+  color: #2f4858;
+}
+
+.message-header .message-header-block:first-child {
+  grid-column: 1;
+}
+
+.message-header .response-info {
+  grid-column: 2;
+}
+
+.message-header .message-header-block:last-child {
+  grid-column: 3;
+  display: flex;
+  justify-content: flex-end;
   align-items: center;
+}
+
+.auth-header .response-info {
+  justify-self: center;
+}
+
+.guest-header .response-info {
+  justify-self: end;
+}
+
+.guest-header:not(.preview-header) .message-header-block:last-child {
+  display: none;
 }
 
 .message-header-block {
@@ -61,6 +89,7 @@
 
 #message-span {
   margin-right: 10px;
+  color: #2f4858;
 }
 
 .message-body {
@@ -111,24 +140,18 @@
   margin-right: 0;
 }
 
-.response-info {
-  font-size: 11px;
-  color: #2f4858;
-  text-align: center;
-}
-
 .response-link {
   background: none;
   border: none;
-  color: #2f4858;
-  text-decoration: underline;
   cursor: pointer;
-  padding: 0;
-  font-size: 11px;
+  color: #2f4858;
+  font-size: 13px;
+  margin-bottom: 4px;
 }
 
 .response-link:hover {
-  color: dodgerblue;
+  color: black;
+  text-decoration: underline;
 }
 
 .response-popup {
@@ -136,9 +159,9 @@
   background: transparent;
   max-height: 200px;
   min-width: 50%;
-  overflow-y: hidden;
+  overflow-y: scroll;
   overflow-x: hidden;
-  bottom: 85%;
+  bottom: 99%;
   left: 30%;
   animation: fadeIn 0.2s ease-in-out;
   pointer-events: auto;
@@ -167,14 +190,6 @@
 #emoji-btn:hover {
   border-color: dodgerblue;
   background-color: transparent;
-}
-
-#message-button-popup {
-  color: #2f4858;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color 0.2s ease;
 }
 
 #message-button-popup:hover {
@@ -207,6 +222,7 @@
   cursor: pointer;
   user-select: none;
   flex: 0 0 auto;
+  color: #2f4858;
 }
 .attachment-pill:hover {
   text-decoration: underline;

@@ -320,19 +320,6 @@ const ChatInfo: React.FC = () => {
         )}
       </ChatInfoRow>
 
-      <ChatInfoRow label="Description:">
-        {editMode && isAuth ? (
-          <input
-            className="chatinfo-input"
-            type="text"
-            value={chatForm.description ?? ''}
-            onChange={(e) => handleChange('description', e.target.value)}
-          />
-        ) : (
-          <p className="chatpara">{chatForm.description ?? ''}</p>
-        )}
-      </ChatInfoRow>
-
       <ChatInfoRow label="Tags:">
         {editMode && isAuth ? (
           <input
@@ -343,6 +330,19 @@ const ChatInfo: React.FC = () => {
           />
         ) : (
           <p className="chatpara">{chatForm.tags ?? ''}</p>
+        )}
+      </ChatInfoRow>
+
+      <ChatInfoRow label="Description:">
+        {editMode && isAuth ? (
+          <input
+            className="chatinfo-input"
+            type="text"
+            value={chatForm.description ?? ''}
+            onChange={(e) => handleChange('description', e.target.value)}
+          />
+        ) : (
+          <p className="chatpara">{chatForm.description ?? ''}</p>
         )}
       </ChatInfoRow>
 
