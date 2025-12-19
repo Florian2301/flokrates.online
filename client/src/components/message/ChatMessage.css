@@ -13,7 +13,7 @@
   position: relative;
   width: fit-content;
   background-color: white;
-  background-image: url('../../img/message_background.jpg');
+  background-image: url('../../../public/img/message_background.jpg');
 }
 
 #message-container-preview {

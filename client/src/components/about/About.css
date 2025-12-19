@@ -36,7 +36,6 @@
   margin: 1rem auto;
   background-color: rgba(0, 0, 0, 0.3);
   width: 90%;
-
   border-radius: 6px;
 }
 
@@ -138,5 +137,55 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/*IMAGE*/
+.about-text-block--with-image {
+  display: block;
+  max-width: 900px;
+  margin: 1.5rem auto 2rem;
+  padding: 1rem 1.25rem;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  text-align: left;
+}
+
+/* Bild rechts, Text fließt */
+.about-text-image {
+  float: right;
+  margin: 0 0 1rem 1.5rem;
+}
+
+.about-text-image img {
+  display: block;
+  max-width: 180px;
+  height: auto;
+  border-radius: 6px;
+  object-fit: cover;
+  margin-top: 0.5rem;
+}
+
+/* Nur für die Bild-Variante extra Verhalten */
+.about-text-content--with-image {
+  width: auto;
+}
+
+.about-text-block--with-image::after {
+  content: '';
+  display: block;
+  clear: both;
+}
+
+/* Responsive für Bild-Variante */
+@media (max-width: 768px) {
+  .about-text-image {
+    float: none;
+    margin: 0 auto 1rem;
+    text-align: center;
+  }
+
+  .about-text-image img {
+    max-width: 180px;
   }
 }

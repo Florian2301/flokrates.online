@@ -16,7 +16,7 @@ body {
 
   color: white;
   background-color: black;
-  background-image: url('./img/red_curtain.jpg');
+  background-image: url('../public/img/red_curtain.jpg');
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;

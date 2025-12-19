@@ -17,6 +17,7 @@ import { LanguageCode } from '../../constants/language';
 import { SquarePen } from 'lucide-react';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
+import portrait from '../../../public/img/portrait.jpg';
 import { selectIsAuthenticated } from '../../store/authSlice';
 import { selectLanguage } from '../../store/languageSlice';
 
@@ -91,50 +92,80 @@ export const AboutPage: React.FC = () => {
     dispatch(fetchAbouts());
   }, [dispatch]);
 
-  const renderTab = (key: string, title: string) => (
-    <Tab eventKey={key} title={title}>
-      {itemsLang
-        .filter((a) => a.sectionKey === key)
-        .map((item) => (
+  const renderTab = (key: string, title: string, withPortrait?: boolean) => {
+    const tabItems = itemsLang.filter((a) => a.sectionKey === key);
+
+    return (
+      <Tab eventKey={key} title={title}>
+        {withPortrait && tabItems.length > 0 ? (
+          <>
+            <AboutText
+              key={tabItems[0].id}
+              id={tabItems[0].id}
+              title={tabItems[0].title}
+              text={tabItems[0].text}
+              language={tabItems[0].language as LanguageCode}
+              imageUrl={portrait}
+              withImage={true}
+              isAdmin={isAuth}
+              onSave={handleSave}
+              onDelete={handleDelete}
+            />
+            {tabItems.slice(1).map((item) => (
+              <AboutText
+                key={item.id}
+                id={item.id}
+                title={item.title}
+                text={item.text}
+                language={item.language as LanguageCode}
+                isAdmin={isAuth}
+                onSave={handleSave}
+                onDelete={handleDelete}
+              />
+            ))}
+          </>
+        ) : (
+          tabItems.map((item) => (
+            <AboutText
+              key={item.id}
+              id={item.id}
+              title={item.title}
+              text={item.text}
+              language={item.language as LanguageCode}
+              isAdmin={isAuth}
+              onSave={handleSave}
+              onDelete={handleDelete}
+            />
+          ))
+        )}
+
+        {activeKey === key && aboutText && isAuth && (
           <AboutText
-            key={item.id}
-            id={item.id}
-            title={item.title}
-            text={item.text}
-            language={item.language as 'DE' | 'EN'}
-            imageUrl={item.imageUrl}
+            title={aboutText.title}
+            text={aboutText.text}
+            language={aboutText.language}
             isAdmin={isAuth}
+            isEditing={true}
             onSave={handleSave}
-            onDelete={handleDelete}
+            onCancel={handleCancelDraft}
           />
-        ))}
+        )}
 
-      {activeKey === key && aboutText && isAuth && (
-        <AboutText
-          title={aboutText.title}
-          text={aboutText.text}
-          language={aboutText.language}
-          isAdmin={isAuth}
-          isEditing={true}
-          onSave={handleSave}
-          onCancel={handleCancelDraft}
-        />
-      )}
-
-      {activeKey === key && isAuth && (
-        <div className="about-edit-new">
-          <button
-            className="about-edit-btn"
-            id="about-edit-btn-new"
-            onClick={handleStartNew}
-            title="Neuen Text hinzufügen"
-          >
-            <SquarePen size={18} strokeWidth={1.5} />
-          </button>
-        </div>
-      )}
-    </Tab>
-  );
+        {activeKey === key && isAuth && (
+          <div className="about-edit-new">
+            <button
+              className="about-edit-btn"
+              id="about-edit-btn-new"
+              onClick={handleStartNew}
+              title="Neuen Text hinzufügen"
+            >
+              <SquarePen size={18} strokeWidth={1.5} />
+            </button>
+          </div>
+        )}
+      </Tab>
+    );
+  };
 
   return (
     <div className="about-wrapper fade-in">
@@ -145,7 +176,7 @@ export const AboutPage: React.FC = () => {
         onSelect={(k) => setActiveKey(k || 'project')}
       >
         {renderTab('project', 'Project')}
-        {renderTab('author', 'Author')}
+        {renderTab('author', 'Author', true)} {/* nur hier mit Portrait */}
         {renderTab('flokrates', 'Flokrates')}
         {renderTab('lotharius', 'Lotharius')}
         {renderTab('pablo', 'Pablo')}

@@ -8,6 +8,7 @@ type Props = {
   text: string;
   language: LanguageCode;
   imageUrl?: string | null;
+  withImage?: boolean;
   isAdmin?: boolean;
   isEditing?: boolean;
   onSave?: (payload: {
@@ -26,6 +27,7 @@ const AboutText: React.FC<Props> = ({
   text,
   language,
   imageUrl,
+  withImage = false,
   isAdmin = false,
   isEditing = false,
   onSave,
@@ -38,6 +40,7 @@ const AboutText: React.FC<Props> = ({
   const [editLanguage, setEditLanguage] = useState<LanguageCode>(
     language ?? 'DE'
   );
+  const hasImage = Boolean(imageUrl && withImage);
 
   const handleEdit = () => {
     if (!isAdmin) return;
@@ -78,15 +81,23 @@ const AboutText: React.FC<Props> = ({
     if (!isAdmin && editing) setEditing(false);
   }, [isAdmin, editing]);
 
+  const containerClass = hasImage
+    ? 'about-text-block about-text-block--with-image'
+    : 'about-text-block';
+
+  const contentClass = hasImage
+    ? 'about-text-content about-text-content--with-image'
+    : 'about-text-content';
+
   return (
-    <section className="about-text-block">
-      {imageUrl && (
+    <section className={containerClass}>
+      {hasImage && (
         <div className="about-text-image">
-          <img src={imageUrl} alt={editTitle} />
+          <img src={imageUrl!} alt={editTitle} />
         </div>
       )}
 
-      <div className="about-text-content">
+      <div className={contentClass}>
         {!editing ? (
           <>
             <h4 id="about-title">{title}</h4>
