@@ -8,8 +8,8 @@ import {
 } from '../../store/messagesSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { ChatMessage } from '../message/ChatMessage';
-import NewMessage from '../message/NewMessage';
+import { ChatMessage } from '../chatmessage/ChatMessage';
+import NewMessage from '../chatmessage/NewMessage';
 import { selectIsAuthenticated } from '../../store/authSlice';
 
 export const ChatBox: React.FC = () => {

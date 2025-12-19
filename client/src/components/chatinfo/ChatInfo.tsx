@@ -39,7 +39,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { ChatInfoRow } from './ChatInfoRow';
 import ChatPdf from '../pdf/ChatPdf';
-import CommentBox from '../comments/CommentBox';
+import CommentBox from '../commentbox/CommentBox';
 import { DraftListTable } from './DraftListTable';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { selectIsAuthenticated } from '../../store/authSlice';

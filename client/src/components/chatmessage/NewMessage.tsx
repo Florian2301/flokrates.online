@@ -29,7 +29,7 @@ import { Actor } from '../../types/ActorStyles';
 import { Message } from '../../types/Message';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
-import { isImageContentType, toAbsoluteUrl } from '../message/Attachments';
+import { isImageContentType, toAbsoluteUrl } from './Attachments';
 
 type NewMessageProps = {
   newMessage?: Message;

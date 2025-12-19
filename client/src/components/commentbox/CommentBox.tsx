@@ -8,8 +8,8 @@ import {
 } from '../../store/commentsSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
-import CommentItem from './CommentItem';
-import NewComment from './NewComment';
+import CommentItem from '../comments/CommentItem';
+import NewComment from '../comments/NewComment';
 
 const CommentBox: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
