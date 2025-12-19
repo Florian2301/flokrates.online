@@ -67,7 +67,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const responseMessage = respId
     ? messagesInChat.find((m) => m.messageId === respId)
     : null;
-  const [showResponsePopup, setShowResponsePopup] = useState(false);
 
   const attachments = useSelector((s: RootState) =>
     selectAttachmentsForMessage(s, messageId)
@@ -116,17 +115,19 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     setActiveEditId(null);
   };
 
+  const scrollToMessage = (targetId?: number | null) => {
+    if (!targetId) return;
+    const el = document.getElementById(`message-${targetId}`);
+    if (!el) return;
+
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('message-highlight');
+    setTimeout(() => el.classList.remove('message-highlight'), 2000);
+  };
+
   // jump to response
   const handleJumpToMessage = () => {
-    if (!messageId) return;
-
-    const target = document.getElementById(`message-${messageId}`);
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      target.classList.add('message-highlight');
-      setTimeout(() => target.classList.remove('message-highlight'), 2000);
-    }
-    setShowResponsePopup(false);
+    scrollToMessage(messageId);
   };
 
   // emoji
@@ -170,41 +171,60 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
   useEffect(() => {
     if (!isAuth) return;
+
     function handleSaveEvent(e: CustomEvent<{ id: number }>) {
       if (e.detail.id === messageId && edit) {
         handleSaveEdit();
       }
     }
+
     window.addEventListener('save-message', handleSaveEvent as EventListener);
+
     return () => {
       window.removeEventListener(
         'save-message',
         handleSaveEvent as EventListener
       );
     };
-  }, [edit, editedText]);
+  }, [isAuth, messageId, edit, handleSaveEdit]);
 
   return (
     <div
       className={`message-wrapper ${alignClass}`}
       id={`message-${messageId}`}
     >
-      {showResponsePopup && responseMessage && (
-        <div className="response-popup" onClick={(e) => e.stopPropagation()}>
-          <ChatMessage
-            message={responseMessage}
-            isEditing={false}
-            activeEditId={null}
-            setActiveEditId={() => {}}
-            previewMode={true}
-            onClosePreview={() => setShowResponsePopup(false)}
-          />
-        </div>
-      )}
       <div
         className={`message-container ${edit ? 'edit' : 'save'}`}
-        id={`${previewMode ? 'message-container-preview' : undefined}`}
+        id={previewMode ? 'message-container-preview' : undefined}
       >
+        {respId && responseMessage && (
+          <div
+            className="message-reply-context"
+            onClick={() => scrollToMessage(responseMessage.messageId)}
+            title={`Zur Nachricht #${responseMessage.messageNumber} springen`}
+          >
+            <div className="message-reply-meta">
+              <span className="reply-label">Response to:</span>
+              <span className="reply-ref">
+                #{responseMessage.messageNumber}
+              </span>
+              <span
+                className={`reply-actor ${
+                  actorStyles[responseMessage.actor as keyof typeof actorStyles]
+                    .colorClass
+                }`}
+              >
+                {
+                  actorStyles[responseMessage.actor as keyof typeof actorStyles]
+                    .actorName
+                }
+              </span>
+            </div>
+            <div className="message-reply-snippet">
+              {responseMessage.messageText}
+            </div>
+          </div>
+        )}
         <div
           className={`message-header ${isAuth ? 'auth-header' : 'guest-header'} ${
             previewMode ? 'preview-header' : ''
@@ -214,22 +234,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             <span id="message-span"># {messageNumber}</span>
             <span className={colorClass}>{actorName}</span>
           </div>
-          {respId && responseMessage && (
-            <div className="response-info">
-              <span>
-                <button
-                  className="response-link"
-                  onClick={() => setShowResponsePopup((prev) => !prev)}
-                >
-                  {`${
-                    showResponsePopup
-                      ? 'Close preview'
-                      : 'Response to #' + responseMessage.messageNumber
-                  }`}
-                </button>
-              </span>
-            </div>
-          )}
+
           {!previewMode && isAuth ? (
             <div className="message-header-block">
               {edit && (
@@ -338,6 +343,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             </div>
           )}
         </div>
+
         <div className="message-body">
           {edit ? (
             <textarea
@@ -361,12 +367,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   att.fileName ||
                   att.href ||
                   `#${att.attachmentId}`;
-                const thumb =
-                  isImageContentType(att.contentType) &&
-                  (att.previewHref || att.href)
-                    ? (att.previewHref || att.href)!
-                    : null;
-                const isLink = att.kind === 'external_url';
 
                 return (
                   <div

@@ -60,7 +60,7 @@
   grid-column: 1;
 }
 
-.message-header .response-info {
+.message-header {
   grid-column: 2;
 }
 
@@ -71,11 +71,11 @@
   align-items: center;
 }
 
-.auth-header .response-info {
+.auth-header {
   justify-self: center;
 }
 
-.guest-header .response-info {
+.guest-header {
   justify-self: end;
 }
 
@@ -140,33 +140,6 @@
   margin-right: 0;
 }
 
-.response-link {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #2f4858;
-  font-size: 13px;
-  margin-bottom: 4px;
-}
-
-.response-link:hover {
-  color: black;
-  text-decoration: underline;
-}
-
-.response-popup {
-  position: absolute;
-  background: transparent;
-  max-height: 200px;
-  min-width: 50%;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  bottom: 99%;
-  left: 30%;
-  animation: fadeIn 0.2s ease-in-out;
-  pointer-events: auto;
-}
-
 @keyframes highlight {
   0% {
     background-color: dodgerblue;
@@ -228,21 +201,6 @@
   text-decoration: underline;
   color: black;
 }
-.pill-left {
-  display: flex;
-  align-items: center;
-}
-.pill-icon {
-  font-size: 14px;
-  line-height: 1;
-}
-.pill-thumb {
-  width: 22px;
-  height: 22px;
-  object-fit: cover;
-  border-radius: 4px;
-  border: 1px solid #d8d8d8;
-}
 .pill-text {
   font-size: 12px;
   white-space: nowrap;
@@ -289,4 +247,72 @@
 .att-modal img.att-modal-content {
   height: auto;
   max-height: 80vh;
+}
+
+/*response*/
+/* --- Inline Reply-Block in der Message --- */
+
+.message-reply-context {
+  margin: 4px 8px 6px 8px;
+  padding: 6px 8px;
+  border-left: 3px solid #2f4858;
+  border-right: 3px solid #2f4858;
+  border-top: 1px solid #2f4858;
+  border-bottom: 1px solid #2f4858;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  min-height: 60px;
+}
+
+.message-reply-context:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.message-reply-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 2px;
+  align-items: baseline;
+}
+
+.reply-label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+  color: #666;
+}
+
+.reply-ref {
+  color: #2f4858;
+}
+
+.reply-actor {
+  font-size: 12px;
+}
+
+.message-reply-snippet {
+  color: #333;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 60px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: darkgray rgba(0, 0, 0, 0.3);
+}
+
+.message-reply-snippet::-webkit-scrollbar {
+  width: 6px;
+}
+
+.message-reply-snippet::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+}
+
+.message-reply-snippet::-webkit-scrollbar-track {
+  background: transparent;
 }
