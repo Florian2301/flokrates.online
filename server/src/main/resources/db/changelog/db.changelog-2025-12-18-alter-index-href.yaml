@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: msgatt-href-index
+      author: Flokrates
+      preConditions:
+        onFail: MARK_RAN
+        onError: MARK_RAN
+        not:
+          indexExists:
+            tableName: message_attachments
+            indexName: idx_msgatt_href
+      changes:
+        - sql:
+            sql: CREATE INDEX idx_msgatt_href ON message_attachments (href(512));
