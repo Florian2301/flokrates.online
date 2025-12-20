@@ -254,7 +254,7 @@
 /* --- Inline Reply-Block in der Message --- */
 
 .message-reply-context {
-  margin: 4px 8px 6px 8px;
+  margin: 8px 8px 0px 8px;
   padding: 6px 8px;
   border-left: 3px solid #2f4858;
   border-right: 3px solid #2f4858;
