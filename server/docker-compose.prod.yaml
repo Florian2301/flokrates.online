@@ -1,7 +1,7 @@
 services:
   db:
     image: mysql:8.0
-    container_name: flokrates-db-prod-data
+    container_name: flokrates-db-prod
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -24,7 +24,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: flokrates-backend:${BACKEND_IMAGE_TAG}
-    container_name: flokrates-backend
+    container_name: flokrates-backend-prod
     restart: unless-stopped
     depends_on:
       db:
@@ -45,7 +45,7 @@ services:
       args:
         REACT_APP_API_BASE_URL: "http://backend:8080/api"
     image: flokrates-frontend:1.0.0
-    container_name: flokrates-frontend
+    container_name: flokrates-frontend-prod
     restart: unless-stopped
     depends_on:
       - backend
@@ -53,4 +53,4 @@ services:
       - "${FRONTEND_PROD_PORT:-8081}:80"
 
 volumes:
-  flokrates-db-data:
+  flokrates-db-prod-data:

@@ -39,7 +39,7 @@ export const fetchCommentsForChat = createAsyncThunk<
   { rejectValue: string }
 >('comments/fetchForChat', async (chatId, { rejectWithValue }) => {
   try {
-    const res = await fetch(apiUrl(`/api/comments/by-chat/${chatId}`));
+    const res = await fetch(apiUrl(`/comments/by-chat/${chatId}`));
     if (!res.ok) return rejectWithValue(await readError(res));
     const data = (await res.json()) as Comment[];
     return { chatId, comments: sortByDateCreatedAsc(data) };
@@ -57,7 +57,7 @@ export const createComment = createAsyncThunk<
   'comments/create',
   async (newComment, { dispatch, getState, rejectWithValue }) => {
     try {
-      const res = await authedFetch(dispatch, getState, `/api/comments`, {
+      const res = await authedFetch(dispatch, getState, `/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newComment),
@@ -91,7 +91,7 @@ export const patchComment = createAsyncThunk<
       const res = await authedFetch(
         dispatch,
         getState,
-        `/api/comments/${commentId}`,
+        `/comments/${commentId}`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -118,7 +118,7 @@ export const deleteCommentThunk = createAsyncThunk<
       const res = await authedFetch(
         dispatch,
         getState,
-        `/api/comments/${commentId}`,
+        `/comments/${commentId}`,
         {
           method: 'DELETE',
         }
@@ -148,7 +148,7 @@ export const deleteCommentsByChat = createAsyncThunk<
       const res = await authedFetch(
         dispatch,
         getState,
-        `/api/comments/by-chat/${chatId}`,
+        `/comments/by-chat/${chatId}`,
         {
           method: 'DELETE',
         }

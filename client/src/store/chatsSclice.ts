@@ -42,7 +42,7 @@ export const fetchChats = createAsyncThunk<
   { rejectValue: string }
 >('chats/fetchChats', async (_, { rejectWithValue }) => {
   try {
-    const res = await fetch(apiUrl(`/api/chats`));
+    const res = await fetch(apiUrl(`/chats`));
     if (!res.ok) throw new Error('Error loading chats');
     const data: Chat[] = await res.json();
     return data;
@@ -61,7 +61,7 @@ export const createChat = createAsyncThunk<
   'chats/createChat',
   async (newChat, { dispatch, getState, rejectWithValue }) => {
     try {
-      const res = await authedFetch(dispatch, getState, `/api/chats`, {
+      const res = await authedFetch(dispatch, getState, `/chats`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newChat),
@@ -93,16 +93,11 @@ export const saveSingleChat = createAsyncThunk<
   'chats/saveSingle',
   async ({ chatId, updates }, { dispatch, getState, rejectWithValue }) => {
     try {
-      const res = await authedFetch(
-        dispatch,
-        getState,
-        `/api/chats/${chatId}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updates),
-        }
-      );
+      const res = await authedFetch(dispatch, getState, `/chats/${chatId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
 
       if (!res.ok) throw new Error('Error saving chat');
       const updated = await res.json();
@@ -126,7 +121,7 @@ export const saveAllChats = createAsyncThunk<
         const res = await authedFetch(
           dispatch,
           getState,
-          `/api/chats/${chat.chatId}`,
+          `/chats/${chat.chatId}`,
           {
             method: 'PATCH',
             body: JSON.stringify(chat),
@@ -161,14 +156,9 @@ export const deleteChatThunk = createAsyncThunk<
       const chatToDelete = chats.find((c) => c.chatId === chatId);
       if (!chatToDelete) return chatId;
 
-      const res = await authedFetch(
-        dispatch,
-        getState,
-        `/api/chats/${chatId}`,
-        {
-          method: 'DELETE',
-        }
-      );
+      const res = await authedFetch(dispatch, getState, `/chats/${chatId}`, {
+        method: 'DELETE',
+      });
       if (!res.ok) throw new Error('Error deleting chat');
 
       // delete messages for chat in state
@@ -217,16 +207,11 @@ export const patchChat = createAsyncThunk<
   'chats/patchChat',
   async ({ chatId, updates }, { dispatch, getState, rejectWithValue }) => {
     try {
-      const res = await authedFetch(
-        dispatch,
-        getState,
-        `/api/chats/${chatId}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updates),
-        }
-      );
+      const res = await authedFetch(dispatch, getState, `/chats/${chatId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
       if (!res.ok) throw new Error('Error patching chat');
       const updatedChat: Chat = await res.json();
       return updatedChat;
@@ -244,7 +229,7 @@ export const fetchChatReferences = createAsyncThunk<
   { rejectValue: string }
 >('chats/fetchChatReferences', async (chatId, { rejectWithValue }) => {
   try {
-    const res = await fetch(apiUrl(`/api/chats/${chatId}/references`));
+    const res = await fetch(apiUrl(`/chats/${chatId}/references`));
     if (!res.ok) throw new Error('Error loading references');
     const data: Chat[] = await res.json();
     return data;
@@ -263,10 +248,10 @@ export const fetchMessageCounts = createAsyncThunk<
   try {
     const url =
       ids && ids.length
-        ? `/api/chats/counts?ids=${encodeURIComponent(ids.join(','))}`
-        : `/api/chats/counts`;
+        ? `/chats/counts?ids=${encodeURIComponent(ids.join(','))}`
+        : `/chats/counts`;
 
-    const res = await fetch(url);
+    const res = await fetch(apiUrl(url));
     if (!res.ok) throw new Error('Error loading message counts');
 
     // Server liefert Keys als Strings -> in Numbers mappen

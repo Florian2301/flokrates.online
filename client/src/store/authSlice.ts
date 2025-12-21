@@ -56,7 +56,7 @@ export const login = createAsyncThunk<
   { rejectValue: string }
 >('auth/login', async (body, { rejectWithValue }) => {
   try {
-    const res = await fetch(apiUrl(`/api/auth/login`), {
+    const res = await fetch(apiUrl(`/auth/login`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include', // wichtig, falls Refresh per Cookie
@@ -102,7 +102,7 @@ export const refresh = createAsyncThunk<
       getState().auth.refreshToken || localStorage.getItem('refreshToken');
     if (!rt) throw new Error('No refresh token');
 
-    const res = await fetch(apiUrl(`/api/auth/refresh`), {
+    const res = await fetch(apiUrl(`/auth/refresh`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken: rt, device: 'web' }),
@@ -125,7 +125,7 @@ export const logout = createAsyncThunk<void, void, { state: RootState }>(
     const rt =
       getState().auth.refreshToken || localStorage.getItem('refreshToken');
     try {
-      await fetch(apiUrl(`/api/auth/logout`), {
+      await fetch(apiUrl(`/auth/logout`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: rt

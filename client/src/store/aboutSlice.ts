@@ -24,7 +24,7 @@ export const fetchAbouts = createAsyncThunk<
   { rejectValue: string }
 >('abouts/fetchAll', async (_, { rejectWithValue }) => {
   try {
-    const res = await fetch(apiUrl(`/api/abouts`));
+    const res = await fetch(apiUrl(`/abouts`));
     if (!res.ok) throw new Error('Failed to fetch abouts');
     return (await res.json()) as About[];
   } catch {
@@ -39,7 +39,7 @@ export const createAbout = createAsyncThunk<
   { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >('abouts/create', async (payload, { dispatch, getState, rejectWithValue }) => {
   try {
-    const res = await authedFetch(dispatch, getState, `/api/abouts`, {
+    const res = await authedFetch(dispatch, getState, `/abouts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -60,7 +60,7 @@ export const patchAbout = createAsyncThunk<
   'abouts/patch',
   async ({ id, updates }, { dispatch, getState, rejectWithValue }) => {
     try {
-      const res = await authedFetch(dispatch, getState, `/api/abouts/${id}`, {
+      const res = await authedFetch(dispatch, getState, `/abouts/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -80,7 +80,7 @@ export const deleteAbout = createAsyncThunk<
   { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >('abouts/delete', async (id, { dispatch, getState, rejectWithValue }) => {
   try {
-    const res = await authedFetch(dispatch, getState, `/api/abouts/${id}`, {
+    const res = await authedFetch(dispatch, getState, `/abouts/${id}`, {
       method: 'DELETE',
     });
     if (!res.ok && res.status !== 204)

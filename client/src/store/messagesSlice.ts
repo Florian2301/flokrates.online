@@ -48,7 +48,7 @@ export const fetchMessagesForChat = createAsyncThunk<
   { state: RootState; dispatch: AppDispatch; rejectValue: string }
 >('messages/fetchMessagesForChat', async (chatId, { rejectWithValue }) => {
   try {
-    const res = await fetch(apiUrl(`/api/messages/chat/${chatId}`));
+    const res = await fetch(apiUrl(`/messages/chat/${chatId}`));
     if (!res.ok) throw new Error('Error loading messages');
     const data: Message[] = await res.json();
     return { chatId, messages: data };
@@ -62,7 +62,7 @@ export const fetchMessagesForChat = createAsyncThunk<
 export const fetchMessages = createAsyncThunk<Message[]>(
   'messages/fetch',
   async () => {
-    const res = await fetch(apiUrl(`/api/messages`));
+    const res = await fetch(apiUrl(`/messages`));
     const data = await res.json();
     return data as Message[];
   }
@@ -77,7 +77,7 @@ export const createMessage = createAsyncThunk<
   'messages/createMessage',
   async (newMessage, { dispatch, getState, rejectWithValue }) => {
     try {
-      const res = await authedFetch(dispatch, getState, `/api/messages`, {
+      const res = await authedFetch(dispatch, getState, `/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newMessage),
@@ -113,7 +113,7 @@ export const patchMessage = createAsyncThunk<
       const res = await authedFetch(
         dispatch,
         getState,
-        `/api/messages/${messageId}`,
+        `/messages/${messageId}`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -163,7 +163,7 @@ export const deleteMessageThunk = createAsyncThunk<
     const res = await authedFetch(
       dispatch,
       getState,
-      `/api/messages/${messageId}`,
+      `/messages/${messageId}`,
       {
         method: 'DELETE',
       }
@@ -205,7 +205,7 @@ export const saveAllMessages = createAsyncThunk<
   try {
     await Promise.all(
       msgs.map((m) =>
-        authedFetch(dispatch, getState, `/api/messages/${m.messageId}`, {
+        authedFetch(dispatch, getState, `/messages/${m.messageId}`, {
           method: 'PATCH',
           body: JSON.stringify({
             messageText: m.messageText,
@@ -391,7 +391,7 @@ export const createAttachment = createAsyncThunk<
         res = await authedFetch(
           dispatch,
           getState,
-          `/api/messages/${messageId}/attachments`,
+          `/messages/${messageId}/attachments`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -405,7 +405,7 @@ export const createAttachment = createAsyncThunk<
         res = await authedFetch(
           dispatch,
           getState,
-          `/api/messages/${messageId}/attachments/upload`,
+          `/messages/${messageId}/attachments/upload`,
           {
             method: 'POST',
             body: formData,
@@ -500,7 +500,7 @@ export const fetchAttachmentsForMessage = createAsyncThunk<
       const res = await authedFetch(
         dispatch,
         getState,
-        `/api/messages/${messageId}/attachments`
+        `/messages/${messageId}/attachments`
       );
       if (!res.ok) {
         const text = await res.text().catch(() => '');
@@ -531,7 +531,7 @@ export const deleteAttachment = createAsyncThunk<
       const res = await authedFetch(
         dispatch,
         getState,
-        `/api/messages/${messageId}/attachments/${attachmentId}`,
+        `/messages/${messageId}/attachments/${attachmentId}`,
         {
           method: 'DELETE',
         }

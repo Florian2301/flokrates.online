@@ -29,7 +29,7 @@ export const fetchRefsByChat = createAsyncThunk<
   { rejectValue: string }
 >('networks/fetchRefsByChat', async (chatId, { rejectWithValue }) => {
   try {
-    const res = await fetch(apiUrl(`/api/networks/by-chat/${chatId}`));
+    const res = await fetch(apiUrl(`/networks/by-chat/${chatId}`));
     if (!res.ok) throw new Error('Failed to load refs');
     const refs = (await res.json()) as Network[];
     return { chatId, refs };
@@ -44,7 +44,7 @@ export const fetchBackRefsForChat = createAsyncThunk<
   { rejectValue: string }
 >('networks/fetchBackRefsForChat', async (chatId, { rejectWithValue }) => {
   try {
-    const res = await fetch(apiUrl(`/api/networks/by-ref/${chatId}`));
+    const res = await fetch(apiUrl(`/networks/by-ref/${chatId}`));
     if (!res.ok) throw new Error('Failed to load back-refs');
     const refs = (await res.json()) as Network[];
     return { chatId, refs };
@@ -65,7 +65,7 @@ export const upsertReference = createAsyncThunk<
       const res = await authedFetch(
         dispatch,
         getState,
-        `/api/networks/references`,
+        `/networks/references`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -92,7 +92,7 @@ export const deleteReference = createAsyncThunk<
   'networks/deleteReference',
   async ({ chatId, refId }, { dispatch, getState, rejectWithValue }) => {
     try {
-      const url = `/api/networks/references?chatId=${chatId}&refId=${refId}`;
+      const url = `/networks/references?chatId=${chatId}&refId=${refId}`;
       const res = await authedFetch(dispatch, getState, url, {
         method: 'DELETE',
       });

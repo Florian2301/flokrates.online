@@ -1,173 +1,210 @@
 databaseChangeLog:
   - changeSet:
-      id: 1765229099297-1
-      author: Flokrates (generated)
+      id: 0001-init-tables
+      author: Flokrates
       changes:
         - createTable:
+            tableName: about
+            remarks: Stores localized text entries
             columns:
               - column:
-                  autoIncrement: true
-                  constraints:
-                    nullable: false
-                    primaryKey: true
                   name: id
-                  remarks: Primary Key
                   type: INT
-              - column:
+                  autoIncrement: true
+                  remarks: Primary Key
                   constraints:
+                    primaryKey: true
                     nullable: false
+              - column:
                   name: section_key
-                  remarks: Logical section identifier (e.g. project, author, flokrates)
                   type: VARCHAR(50)
-              - column:
+                  remarks: Logical section identifier (e.g. project, author, flokrates)
                   constraints:
                     nullable: false
+              - column:
                   name: title
                   type: VARCHAR(255)
-              - column:
                   constraints:
                     nullable: false
+              - column:
                   name: text
                   type: TEXT
-              - column:
                   constraints:
                     nullable: false
+              - column:
                   name: language
-                  remarks: German (DE) or English (EN)
                   type: VARCHAR(2)
-              - column:
+                  remarks: German (DE) or English (EN)
                   constraints:
                     nullable: false
-                  defaultValueComputed: current_timestamp() on update current_timestamp()
-                  name: date_created
-                  remarks: Date text has been created
-                  type: timestamp
               - column:
-                  defaultValueComputed: 'NULL'
-                  name: date_modified
-                  remarks: Date text has been changed (nullable)
+                  name: date_created
                   type: timestamp
-            remarks: Stores localized text entries
-            tableName: about
-  - changeSet:
-      id: 1765229099297-2
-      author: Flokrates (generated)
-      changes:
+                  remarks: Date text has been created
+                  defaultValueComputed: current_timestamp() on update current_timestamp()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_modified
+                  type: timestamp
+                  remarks: Date text has been changed (nullable)
+                  defaultValueComputed: 'NULL'
+
         - createTable:
+            tableName: chats
             columns:
               - column:
-                  autoIncrement: true
-                  constraints:
-                    nullable: false
-                    primaryKey: true
                   name: chat_id
                   type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
               - column:
-                  defaultValueComputed: 'NULL'
                   name: chat_number
                   type: INT
+                  defaultValueComputed: 'NULL'
               - column:
-                  constraints:
-                    nullable: false
                   name: title
                   type: VARCHAR(255)
+                  constraints:
+                    nullable: false
               - column:
                   name: tags
                   type: VARCHAR(255)
               - column:
                   name: description
-                  type: VARCHAR(255)
-              - column:
-                  constraints:
-                    nullable: false
-                  name: language
-                  type: ENUM('DE', 'EN')
-              - column:
-                  constraints:
-                    nullable: false
-                  name: status
-                  type: ENUM('DRA', 'NOT', 'PUB', 'REW')
-              - column:
-                  defaultValueComputed: 'NULL'
-                  name: date_published
-                  type: datetime
-              - column:
-                  constraints:
-                    nullable: false
-                  name: date_created
-                  type: datetime
-              - column:
-                  defaultValueComputed: 'NULL'
-                  name: date_modified
-                  type: datetime
-            tableName: chats
-  - changeSet:
-      id: 1765229099297-3
-      author: Flokrates (generated)
-      changes:
-        - createTable:
-            columns:
-              - column:
-                  autoIncrement: true
-                  constraints:
-                    nullable: false
-                    primaryKey: true
-                  name: comment_id
-                  type: INT
-              - column:
-                  constraints:
-                    nullable: false
-                  name: chat_id
-                  type: INT
-              - column:
-                  constraints:
-                    nullable: false
-                  name: sender
-                  type: VARCHAR(25)
-              - column:
-                  constraints:
-                    nullable: false
-                  name: comment_text
                   type: TEXT
               - column:
+                  name: language
+                  type: ENUM('DE', 'EN')
                   constraints:
                     nullable: false
+              - column:
+                  name: status
+                  type: ENUM('DRA', 'NOT', 'PUB', 'REW')
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_published
+                  type: datetime
+                  defaultValueComputed: 'NULL'
+              - column:
                   name: date_created
                   type: datetime
+                  constraints:
+                    nullable: false
               - column:
-                  defaultValueComputed: 'NULL'
                   name: date_modified
                   type: datetime
-              - column:
-                  constraints:
-                    nullable: false
-                  defaultValueNumeric: 0
-                  name: is_admin
-                  type: BIT
-            tableName: comments
-  - changeSet:
-      id: 1765229099297-4
-      author: Flokrates (generated)
-      changes:
+                  defaultValueComputed: 'NULL'
+
         - createTable:
+            tableName: comments
             columns:
               - column:
+                  name: comment_id
+                  type: INT
                   autoIncrement: true
                   constraints:
-                    nullable: false
                     primaryKey: true
-                  name: attachment_id
-                  type: INT
+                    nullable: false
               - column:
+                  name: chat_id
+                  type: INT
                   constraints:
                     nullable: false
+              - column:
+                  name: sender
+                  type: VARCHAR(25)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: comment_text
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_created
+                  type: datetime
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_modified
+                  type: datetime
+                  defaultValueComputed: 'NULL'
+              - column:
+                  name: is_admin
+                  type: BIT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+
+        - createTable:
+            tableName: messages
+            columns:
+              - column:
                   name: message_id
                   type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
               - column:
+                  name: message_number
+                  type: INT
                   constraints:
                     nullable: false
+              - column:
+                  name: chat_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: resp_id
+                  type: INT
+                  defaultValueComputed: 'NULL'
+              - column:
+                  name: actor
+                  type: ENUM('FLO', 'LOT', 'PAB')
+                  constraints:
+                    nullable: false
+              - column:
+                  name: message_text
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_created
+                  type: datetime
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_modified
+                  type: datetime
+                  defaultValueComputed: 'NULL'
+
+        - createTable:
+            tableName: message_attachments
+            remarks: Anhänge/Links pro Chat-Nachricht
+            columns:
+              - column:
+                  name: attachment_id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: message_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
                   name: kind
                   type: VARCHAR(20)
+                  constraints:
+                    nullable: false
               - column:
                   name: storage_key
                   type: VARCHAR(512)
@@ -181,25 +218,25 @@ databaseChangeLog:
                   name: file_name
                   type: VARCHAR(255)
               - column:
-                  defaultValueComputed: 'NULL'
                   name: file_size_bytes
                   type: BIGINT
-              - column:
                   defaultValueComputed: 'NULL'
+              - column:
                   name: width_px
                   type: INT
-              - column:
                   defaultValueComputed: 'NULL'
+              - column:
                   name: height_px
                   type: INT
-              - column:
                   defaultValueComputed: 'NULL'
+              - column:
                   name: duration_ms
                   type: INT
-              - column:
                   defaultValueComputed: 'NULL'
+              - column:
                   name: page_count
                   type: INT
+                  defaultValueComputed: 'NULL'
               - column:
                   name: preview_href
                   type: VARCHAR(1024)
@@ -210,564 +247,358 @@ databaseChangeLog:
                   name: description
                   type: TEXT
               - column:
-                  constraints:
-                    nullable: false
-                  defaultValueNumeric: 0
                   name: sort_order
                   type: INT
-              - column:
+                  defaultValueNumeric: 0
                   constraints:
                     nullable: false
+              - column:
+                  name: date_created
+                  type: datetime
                   defaultValueComputed: current_timestamp()
-                  name: date_created
-                  type: datetime
+                  constraints:
+                    nullable: false
               - column:
-                  defaultValueComputed: 'NULL'
                   name: checksum_sha256
-                  remarks: Optionaler SHA-256 Prüfsummen-Hash zum Deduplizieren
                   type: BINARY(32)
-              - column:
+                  remarks: Optionaler SHA-256 Prüfsummen-Hash zum Deduplizieren
                   defaultValueComputed: 'NULL'
+              - column:
                   name: date_modified
+                  type: datetime
                   remarks: Appseitig via @PreUpdate befüllt
-                  type: datetime
-            remarks: Anhänge/Links pro Chat-Nachricht
-            tableName: message_attachments
-  - changeSet:
-      id: 1765229099297-5
-      author: Flokrates (generated)
-      changes:
+                  defaultValueComputed: 'NULL'
+
         - createTable:
+            tableName: networks
             columns:
               - column:
-                  autoIncrement: true
-                  constraints:
-                    nullable: false
-                    primaryKey: true
-                  name: message_id
-                  type: INT
-              - column:
-                  constraints:
-                    nullable: false
-                  name: message_number
-                  type: INT
-              - column:
-                  constraints:
-                    nullable: false
-                  name: chat_id
-                  type: INT
-              - column:
-                  defaultValueComputed: 'NULL'
-                  name: resp_id
-                  type: INT
-              - column:
-                  constraints:
-                    nullable: false
-                  name: actor
-                  type: ENUM('FLO', 'LOT', 'PAB')
-              - column:
-                  constraints:
-                    nullable: false
-                  name: message_text
-                  type: TEXT
-              - column:
-                  constraints:
-                    nullable: false
-                  name: date_created
-                  type: datetime
-              - column:
-                  defaultValueComputed: 'NULL'
-                  name: date_modified
-                  type: datetime
-            tableName: messages
-  - changeSet:
-      id: 1765229099297-6
-      author: Flokrates (generated)
-      changes:
-        - createTable:
-            columns:
-              - column:
-                  autoIncrement: true
-                  constraints:
-                    nullable: false
-                    primaryKey: true
                   name: net_id
                   type: INT
-              - column:
-                  constraints:
-                    nullable: false
-                  name: chat_id
-                  type: INT
-              - column:
-                  constraints:
-                    nullable: false
-                  name: ref_id
-                  type: INT
-              - column:
-                  constraints:
-                    nullable: false
-                  name: date_created
-                  type: datetime
-              - column:
-                  defaultValueComputed: 'NULL'
-                  name: date_modified
-                  type: datetime
-            tableName: networks
-  - changeSet:
-      id: 1765229099297-7
-      author: Flokrates (generated)
-      changes:
-        - createTable:
-            columns:
-              - column:
                   autoIncrement: true
                   constraints:
-                    nullable: false
                     primaryKey: true
+                    nullable: false
+              - column:
+                  name: chat_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ref_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_created
+                  type: datetime
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_modified
+                  type: datetime
+                  defaultValueComputed: 'NULL'
+
+        - createTable:
+            tableName: refresh_tokens
+            columns:
+              - column:
                   name: token_id
                   type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
               - column:
-                  defaultValueComputed: 'NULL'
                   name: user_id
                   type: INT
+                  defaultValueComputed: 'NULL'
               - column:
+                  name: token_hash
+                  type: VARCHAR(255)
                   constraints:
                     nullable: false
                     unique: true
-                  name: token_hash
-                  type: VARCHAR(255)
               - column:
-                  constraints:
-                    nullable: false
                   name: issued_at
                   type: datetime
-              - column:
                   constraints:
                     nullable: false
+              - column:
                   name: expires_at
                   type: datetime
-              - column:
                   constraints:
                     nullable: false
-                  defaultValueNumeric: 0
+              - column:
                   name: revoked
                   type: BIT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
               - column:
                   name: device
                   type: VARCHAR(100)
-            tableName: refresh_tokens
-  - changeSet:
-      id: 1765229099297-8
-      author: Flokrates (generated)
-      changes:
+
         - createTable:
+            tableName: roles
             columns:
               - column:
-                  autoIncrement: true
-                  constraints:
-                    nullable: false
-                    primaryKey: true
                   name: role_id
                   type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
               - column:
+                  name: name
+                  type: VARCHAR(50)
                   constraints:
                     nullable: false
                     unique: true
-                  name: name
-                  type: VARCHAR(50)
-            tableName: roles
-  - changeSet:
-      id: 1765229099297-9
-      author: Flokrates (generated)
-      changes:
+
         - createTable:
+            tableName: user
             columns:
               - column:
-                  constraints:
-                    nullable: false
-                    primaryKey: true
                   name: user_id
                   type: INT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
               - column:
                   name: username
                   type: VARCHAR(255)
               - column:
+                  name: email
+                  type: VARCHAR(255)
                   constraints:
                     nullable: false
                     unique: true
-                  name: email
-                  type: VARCHAR(255)
               - column:
-                  constraints:
-                    nullable: false
                   name: password
                   type: VARCHAR(255)
-              - column:
                   constraints:
                     nullable: false
+              - column:
                   name: date_created
                   type: datetime
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
               - column:
-                  defaultValueComputed: 'NULL'
                   name: date_modified
                   type: datetime
+                  defaultValueComputed: 'NULL'
               - column:
-                  constraints:
-                    nullable: false
-                  defaultValueNumeric: 1
                   name: enabled
                   type: BIT
-            tableName: user
-  - changeSet:
-      id: 1765229099297-10
-      author: Flokrates (generated)
-      changes:
-        - createTable:
-            columns:
-              - column:
+                  defaultValueNumeric: 1
                   constraints:
                     nullable: false
-                    primaryKey: true
+
+        - createTable:
+            tableName: user_roles
+            columns:
+              - column:
                   name: user_id
                   type: INT
-              - column:
                   constraints:
                     nullable: false
-                    primaryKey: true
+              - column:
                   name: role_id
                   type: INT
-            tableName: user_roles
+                  constraints:
+                    nullable: false
+
   - changeSet:
-      id: 1765229099297-11
-      author: Flokrates (generated)
+      id: 0002-init-constraints-indexes
+      author: Flokrates
       changes:
+        - addPrimaryKey:
+            tableName: user_roles
+            columnNames: user_id, role_id
+            constraintName: pk_user_roles
+
         - addUniqueConstraint:
+            tableName: networks
             columnNames: chat_id, ref_id
             constraintName: uq_network_chat_ref
-            tableName: networks
-  - changeSet:
-      id: 1765229099297-12
-      author: Flokrates (generated)
-      changes:
+
         - createIndex:
-            associatedWith: ''
+            tableName: user_roles
+            indexName: fk_ar_role
             columns:
               - column:
                   name: role_id
-            indexName: fk_ar_role
-            tableName: user_roles
-  - changeSet:
-      id: 1765229099297-13
-      author: Flokrates (generated)
-      changes:
+
         - createIndex:
-            associatedWith: ''
-            columns:
-              - column:
-                  name: chat_id
-            indexName: fk_comments_chat
             tableName: comments
-  - changeSet:
-      id: 1765229099297-14
-      author: Flokrates (generated)
-      changes:
-        - createIndex:
-            associatedWith: ''
+            indexName: fk_comments_chat
             columns:
               - column:
                   name: chat_id
+
+        - createIndex:
+            tableName: messages
             indexName: fk_messages_chat
-            tableName: messages
-  - changeSet:
-      id: 1765229099297-15
-      author: Flokrates (generated)
-      changes:
-        - createIndex:
-            associatedWith: ''
             columns:
               - column:
-                  defaultValueComputed: 'NULL'
-                  name: resp_id
+                  name: chat_id
+
+        - createIndex:
+            tableName: messages
             indexName: fk_messages_resp
-            tableName: messages
-  - changeSet:
-      id: 1765229099297-16
-      author: Flokrates (generated)
-      changes:
-        - createIndex:
-            associatedWith: ''
             columns:
               - column:
-                  defaultValueComputed: 'NULL'
-                  name: checksum_sha256
-            indexName: idx_msgatt_checksum
-            tableName: message_attachments
-  - changeSet:
-      id: 1765229099297-17
-      author: Flokrates (generated)
-      changes:
+                  name: resp_id
+
         - createIndex:
-            associatedWith: ''
+            tableName: message_attachments
+            indexName: idx_msgatt_checksum
+            columns:
+              - column:
+                  name: checksum_sha256
+
+        - createIndex:
+            tableName: message_attachments
+            indexName: idx_msgatt_content_type
             columns:
               - column:
                   name: content_type
-            indexName: idx_msgatt_content_type
-            tableName: message_attachments
-  - changeSet:
-      id: 1765229099297-18
-      author: Flokrates (generated)
-      changes:
-        - sql:
-            dbms: mysql
-            sql: CREATE INDEX idx_msgatt_href ON message_attachments (href(512));
-  - changeSet:
-      id: 1765229099297-19
-      author: Flokrates (generated)
-      changes:
+
         - createIndex:
-            associatedWith: ''
+            tableName: message_attachments
+            indexName: idx_msgatt_kind
             columns:
               - column:
                   name: kind
-            indexName: idx_msgatt_kind
-            tableName: message_attachments
-  - changeSet:
-      id: 1765229099297-20
-      author: Flokrates (generated)
-      changes:
+
         - createIndex:
-            associatedWith: ''
+            tableName: message_attachments
+            indexName: idx_msgatt_message
             columns:
               - column:
                   name: message_id
               - column:
-                  defaultValueNumeric: !!float '0'
                   name: sort_order
-            indexName: idx_msgatt_message
-            tableName: message_attachments
-  - changeSet:
-      id: 1765229099297-21
-      author: Flokrates (generated)
-      changes:
+
         - createIndex:
-            associatedWith: ''
+            tableName: message_attachments
+            indexName: idx_msgatt_storage_key
             columns:
               - column:
                   name: storage_key
-            indexName: idx_msgatt_storage_key
-            tableName: message_attachments
-  - changeSet:
-      id: 1765229099297-22
-      author: Flokrates (generated)
-      changes:
+
         - createIndex:
-            associatedWith: ''
+            tableName: networks
+            indexName: idx_network_chat_id
             columns:
               - column:
                   name: chat_id
-            indexName: idx_network_chat_id
-            tableName: networks
-  - changeSet:
-      id: 1765229099297-23
-      author: Flokrates (generated)
-      changes:
+
         - createIndex:
-            associatedWith: ''
+            tableName: networks
+            indexName: idx_network_ref_id
             columns:
               - column:
                   name: ref_id
-            indexName: idx_network_ref_id
-            tableName: networks
-  - changeSet:
-      id: 1765229099297-24
-      author: Flokrates (generated)
-      changes:
+
         - createIndex:
-            associatedWith: ''
+            tableName: refresh_tokens
+            indexName: ix_rt_author_id
             columns:
               - column:
-                  defaultValueComputed: 'NULL'
                   name: user_id
-            indexName: ix_rt_author_id
-            tableName: refresh_tokens
-  - changeSet:
-      id: 1765229099297-25
-      author: Flokrates (generated)
-      changes:
-        - addForeignKeyConstraint:
-            baseColumnNames: user_id
-            baseTableName: user_roles
-            constraintName: fk_ar_author
-            deferrable: false
-            initiallyDeferred: false
-            onDelete: CASCADE
-            onUpdate: RESTRICT
-            referencedColumnNames: user_id
-            referencedTableName: user
-            validate: true
-  - changeSet:
-      id: 1765229099297-26
-      author: Flokrates (generated)
-      changes:
-        - addForeignKeyConstraint:
-            baseColumnNames: role_id
-            baseTableName: user_roles
-            constraintName: fk_ar_role
-            deferrable: false
-            initiallyDeferred: false
-            onDelete: CASCADE
-            onUpdate: RESTRICT
-            referencedColumnNames: role_id
-            referencedTableName: roles
-            validate: true
-  - changeSet:
-      id: 1765229099297-27
-      author: Flokrates (generated)
-      changes:
-        - addForeignKeyConstraint:
-            baseColumnNames: chat_id
-            baseTableName: comments
-            constraintName: fk_comments_chat
-            deferrable: false
-            initiallyDeferred: false
-            onDelete: CASCADE
-            onUpdate: RESTRICT
-            referencedColumnNames: chat_id
-            referencedTableName: chats
-            validate: true
-  - changeSet:
-      id: 1765229099297-28
-      author: Flokrates (generated)
-      changes:
-        - addForeignKeyConstraint:
-            baseColumnNames: chat_id
-            baseTableName: messages
-            constraintName: fk_messages_chat
-            deferrable: false
-            initiallyDeferred: false
-            onDelete: CASCADE
-            onUpdate: RESTRICT
-            referencedColumnNames: chat_id
-            referencedTableName: chats
-            validate: true
-  - changeSet:
-      id: 1765229099297-29
-      author: Flokrates (generated)
-      changes:
-        - addForeignKeyConstraint:
-            baseColumnNames: resp_id
-            baseTableName: messages
-            constraintName: fk_messages_resp
-            deferrable: false
-            initiallyDeferred: false
-            onDelete: CASCADE
-            onUpdate: RESTRICT
-            referencedColumnNames: message_id
-            referencedTableName: messages
-            validate: true
-  - changeSet:
-      id: 1765229099297-30
-      author: Flokrates (generated)
-      changes:
-        - addForeignKeyConstraint:
-            baseColumnNames: message_id
-            baseTableName: message_attachments
-            constraintName: fk_msgatt_message
-            deferrable: false
-            initiallyDeferred: false
-            onDelete: CASCADE
-            onUpdate: RESTRICT
-            referencedColumnNames: message_id
-            referencedTableName: messages
-            validate: true
-  - changeSet:
-      id: 1765229099297-31
-      author: Flokrates (generated)
-      changes:
-        - addForeignKeyConstraint:
-            baseColumnNames: chat_id
-            baseTableName: networks
-            constraintName: fk_networks_chat
-            deferrable: false
-            initiallyDeferred: false
-            onDelete: CASCADE
-            onUpdate: RESTRICT
-            referencedColumnNames: chat_id
-            referencedTableName: chats
-            validate: true
-  - changeSet:
-      id: 1765229099297-32
-      author: Flokrates (generated)
-      changes:
-        - addForeignKeyConstraint:
-            baseColumnNames: ref_id
-            baseTableName: networks
-            constraintName: fk_networks_ref
-            deferrable: false
-            initiallyDeferred: false
-            onDelete: CASCADE
-            onUpdate: RESTRICT
-            referencedColumnNames: chat_id
-            referencedTableName: chats
-            validate: true
-  - changeSet:
-      id: 1765229099297-33
-      author: Flokrates (generated)
-      changes:
-        - addForeignKeyConstraint:
-            baseColumnNames: user_id
-            baseTableName: refresh_tokens
-            constraintName: fk_rt_author
-            deferrable: false
-            initiallyDeferred: false
-            onDelete: CASCADE
-            onUpdate: RESTRICT
-            referencedColumnNames: user_id
-            referencedTableName: user
-            validate: true
-  - changeSet:
-      id: 1765229099297-34
-      author: Flokrates (generated)
-      changes:
-        - addForeignKeyConstraint:
-            baseColumnNames: chat_id
-            baseTableName: messages
-            constraintName: messages_ibfk_1
-            deferrable: false
-            initiallyDeferred: false
-            onDelete: RESTRICT
-            onUpdate: RESTRICT
-            referencedColumnNames: chat_id
-            referencedTableName: chats
-            validate: true
-  - changeSet:
-      id: 1765229099297-35
-      author: Flokrates (generated)
-      changes:
-        - addForeignKeyConstraint:
-            baseColumnNames: chat_id
-            baseTableName: networks
-            constraintName: networks_ibfk_1
-            deferrable: false
-            initiallyDeferred: false
-            onDelete: RESTRICT
-            onUpdate: RESTRICT
-            referencedColumnNames: chat_id
-            referencedTableName: chats
-            validate: true
-  - changeSet:
-      id: 1765229099297-36
-      author: Flokrates (generated)
-      changes:
-        - addForeignKeyConstraint:
-            baseColumnNames: ref_id
-            baseTableName: networks
-            constraintName: networks_ibfk_2
-            deferrable: false
-            initiallyDeferred: false
-            onDelete: RESTRICT
-            onUpdate: RESTRICT
-            referencedColumnNames: chat_id
-            referencedTableName: chats
-            validate: true
 
+        # MySQL/MariaDB: Prefix-Index auf href
+        - sql:
+            dbms: mariadb,mysql
+            preConditions:
+              onFail: MARK_RAN
+              onError: MARK_RAN
+              not:
+                indexExists:
+                  tableName: message_attachments
+                  indexName: idx_msgatt_href
+            sql: CREATE INDEX idx_msgatt_href ON message_attachments (href(512));
+
+        - addForeignKeyConstraint:
+            baseTableName: user_roles
+            baseColumnNames: user_id
+            referencedTableName: user
+            referencedColumnNames: user_id
+            constraintName: fk_ar_author
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+
+        - addForeignKeyConstraint:
+            baseTableName: user_roles
+            baseColumnNames: role_id
+            referencedTableName: roles
+            referencedColumnNames: role_id
+            constraintName: fk_ar_role
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+
+        - addForeignKeyConstraint:
+            baseTableName: comments
+            baseColumnNames: chat_id
+            referencedTableName: chats
+            referencedColumnNames: chat_id
+            constraintName: fk_comments_chat
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+
+        - addForeignKeyConstraint:
+            baseTableName: messages
+            baseColumnNames: chat_id
+            referencedTableName: chats
+            referencedColumnNames: chat_id
+            constraintName: fk_messages_chat
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+
+        - addForeignKeyConstraint:
+            baseTableName: messages
+            baseColumnNames: resp_id
+            referencedTableName: messages
+            referencedColumnNames: message_id
+            constraintName: fk_messages_resp
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+
+        - addForeignKeyConstraint:
+            baseTableName: message_attachments
+            baseColumnNames: message_id
+            referencedTableName: messages
+            referencedColumnNames: message_id
+            constraintName: fk_msgatt_message
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+
+        - addForeignKeyConstraint:
+            baseTableName: networks
+            baseColumnNames: chat_id
+            referencedTableName: chats
+            referencedColumnNames: chat_id
+            constraintName: fk_networks_chat
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+
+        - addForeignKeyConstraint:
+            baseTableName: networks
+            baseColumnNames: ref_id
+            referencedTableName: chats
+            referencedColumnNames: chat_id
+            constraintName: fk_networks_ref
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+
+        - addForeignKeyConstraint:
+            baseTableName: refresh_tokens
+            baseColumnNames: user_id
+            referencedTableName: user
+            referencedColumnNames: user_id
+            constraintName: fk_rt_author
+            onDelete: CASCADE
+            onUpdate: RESTRICT

@@ -3,18 +3,27 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
+const dotenv = require('dotenv');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-const stylesHandler = 'style-loader';
+const envFile = isProduction ? '.env.production' : '.env.development';
+const result = dotenv.config({ path: envFile });
+const parsed = result.parsed || {};
 
-const dotenv = require('dotenv');
 const env = dotenv.config().parsed || {};
 
-const envKeys = Object.keys(env).reduce((prev, next) => {
+/*const envKeys = Object.keys(env).reduce((prev, next) => {
   prev[`process.env.${next}`] = JSON.stringify(env[next]);
   return prev;
+}, {});*/
+
+const envKeys = Object.keys(parsed).reduce((prev, next) => {
+  prev[`process.env.${next}`] = JSON.stringify(parsed[next]);
+  return prev;
 }, {});
+
+const stylesHandler = 'style-loader';
 
 const config = {
   entry: './src/index.tsx',

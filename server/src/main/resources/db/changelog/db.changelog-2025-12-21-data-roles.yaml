@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: seed-roles
+      author: Flokrates
+      changes:
+        - sql:
+            dbms: mysql,mariadb
+            sql: |
+              INSERT IGNORE INTO roles (role_id, name) VALUES
+                (1, 'ROLE_ADMIN'),
+                (2, 'ROLE_USER');
+  - changeSet:
+      id: seed-admin-user
+      author: Flokrates
+      changes:
+        - sql:
+            dbms: mysql,mariadb
+            sql: |
+              INSERT IGNORE INTO `user` (user_id, username, email, password, date_created, enabled)
+              VALUES (1, 'flokrates', 'bigsoul@gmx.de', '$2a$12$FZVQMXodhqom/1L3zcIA0O38y7jo/KvY/lfvXmbX0itxhAX2hyOaC', NOW(), 1);
+
+              INSERT IGNORE INTO user_roles (user_id, role_id)
+              VALUES (1, 1);

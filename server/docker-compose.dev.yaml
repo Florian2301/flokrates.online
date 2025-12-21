@@ -1,7 +1,7 @@
 services:
   db:
     image: mysql:8.0
-    container_name: flokrates-db-dev-data
+    container_name: flokrates-db-dev
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -37,4 +37,4 @@ services:
       - "${BACKEND_DEV_PORT}:8080"
 
 volumes:
-  flokrates-db-data:
+  flokrates-db-dev-data:
