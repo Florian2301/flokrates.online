@@ -102,7 +102,12 @@ public class SecurityConfig {
         // Alle lokalen Hosts zulassen (8080, 8081, 3000, ...)
         cors.setAllowedOriginPatterns(List.of(
                 "http://localhost:*",
-                "http://127.0.0.1:*"
+                "http://127.0.0.1:*",
+                "http://82.165.136.196:8088",
+                "https://www.flokrates.de",
+                "https://flokrates.de",
+                "http://flokrates.de",
+                "http://www.flokrates.de"
         ));
 
         // Alle relevanten Methoden
