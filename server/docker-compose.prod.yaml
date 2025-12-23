@@ -37,6 +37,8 @@ services:
       APP_JWT_SECRET: ${APP_JWT_SECRET}
     ports:
       - "${BACKEND_PORT}:8080"
+    volumes:
+      - ./uploads:/app/uploads
 
   frontend:
     build:
