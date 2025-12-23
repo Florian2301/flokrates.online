@@ -398,6 +398,8 @@ export const createAttachment = createAsyncThunk<
             body: JSON.stringify(body),
           }
         );
+        console.log('Sending attachment JSON', body);
+        console.log('POST result status', res.status);
       } else {
         const formData = new FormData();
         formData.append('file', attachment.file);
@@ -414,8 +416,9 @@ export const createAttachment = createAsyncThunk<
       }
 
       if (!res.ok) {
-        const errText = await readError(res);
-        return rejectWithValue(errText);
+        const errText = await res.text().catch(() => '');
+        console.error('Attachment upload failed:', errText);
+        return rejectWithValue(`Upload failed: ${res.status} — ${errText}`);
       }
 
       await dispatch(fetchAttachmentsForMessage(messageId));
