@@ -75,11 +75,7 @@ const ChatInfo: React.FC = () => {
     (c) => c.chatId !== chatForm?.chatId
   );
 
-  // counts
-  const maxChatNumber = chats.reduce((max, c) => {
-    return c.chatNumber !== null && c.chatNumber > max ? c.chatNumber : max;
-  }, 0);
-
+  // comments count
   const commentsCount = useSelector((s: RootState) => {
     if (!chatId) return 0;
     return s.comments.byChatId[chatId]?.length ?? 0;
@@ -140,43 +136,6 @@ const ChatInfo: React.FC = () => {
         updates: {
           ...chatForm,
           chatNumber: chatForm.chatNumber,
-          referencedChatIds: payloadRefs,
-        },
-      })
-    );
-
-    if (!saveSingleChat.fulfilled.match(result)) return;
-
-    const refetch = await dispatch(fetchChats());
-    if (fetchChats.fulfilled.match(refetch)) {
-      const list = refetch.payload as Chat[];
-      const updated = list.find((c) => c.chatId === chatForm.chatId);
-      if (updated) {
-        setEditMode(false);
-        dispatch(setSelectedChat(updated));
-        setChatForm(updated);
-      }
-    }
-  };
-
-  // publish
-  const handlePublish = async () => {
-    if (!isAuth) return;
-    if (!chatForm.chatId) return;
-    const ok = window.confirm('Publish this chat?');
-    if (!ok) return;
-    const payloadRefs = Array.isArray(chatForm.referencedChatIds)
-      ? chatForm.referencedChatIds
-      : [];
-
-    const result = await dispatch(
-      saveSingleChat({
-        chatId: chatForm.chatId,
-        updates: {
-          ...chatForm,
-          chatNumber:
-            chatForm.chatNumber === 0 ? maxChatNumber + 1 : chatForm.chatNumber,
-          status: 'PUB' as Status,
           referencedChatIds: payloadRefs,
         },
       })
@@ -509,18 +468,14 @@ const ChatInfo: React.FC = () => {
 
       <hr className="chatinfo-divider" />
 
-      {isAuth && (
+      {!editMode && isAuth && (
         <div className="chatinfo-actions">
           <button
             className="chatinfo-buttons"
             onClick={() => setEditMode((prev) => !prev)}
             title="Edit/Cancel"
           >
-            {editMode ? (
-              <X size={18} strokeWidth={1.5} />
-            ) : (
-              <PencilLine size={18} strokeWidth={1.5} />
-            )}
+            <PencilLine size={18} strokeWidth={1.5} />
           </button>
           <button
             className="chatinfo-buttons"
@@ -532,7 +487,7 @@ const ChatInfo: React.FC = () => {
           <button
             className="chatinfo-buttons"
             onClick={handleCreate}
-            disabled={editMode}
+            disabled={selectedChat !== null}
             title="New Chat"
           >
             <SquarePen size={18} strokeWidth={1.5} />
@@ -551,10 +506,10 @@ const ChatInfo: React.FC = () => {
           </button>
           <button
             className="chatinfo-buttons"
-            onClick={handlePublish}
-            title="publish"
+            onClick={() => setEditMode((prev) => !prev)}
+            title="Cancel"
           >
-            <BookOpenCheck size={18} strokeWidth={1.5} />
+            <X size={18} strokeWidth={1.5} />
           </button>
           <button
             className="chatinfo-buttons"
