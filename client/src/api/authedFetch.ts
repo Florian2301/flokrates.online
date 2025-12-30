@@ -10,8 +10,8 @@ export async function authedFetch(
   init: RequestInit = {},
   retry = true
 ): Promise<Response> {
-  const state = getState();
-  const token = selectAccessToken(state);
+  const getToken = () => selectAccessToken(getState());
+  const token = getToken();
 
   const headers = new Headers(init.headers || {});
   const body = init.body;
@@ -27,35 +27,36 @@ export async function authedFetch(
     headers.set('Content-Type', 'application/json');
   }
 
-  const res = await fetch(apiUrl(input), {
+  let res = await fetch(apiUrl(input), {
     credentials: 'include',
     ...init,
     headers,
   });
 
-  if (res.status !== 401 || !retry) return res;
+  if ((res.status === 401 || res.status === 403) && retry) {
+    const result = await dispatch(refresh());
 
-  // === Retry mit frischem Token ===
-  const r = await dispatch(refresh());
-  if (refresh.fulfilled.match(r)) {
-    const newToken = selectAccessToken(getState());
-    const retryHeaders = new Headers(init.headers || {});
-    const retryBody = init.body;
-    const retryIsFormData = retryBody instanceof FormData;
+    // === Retry mit frischem Token ===
+    if (refresh.fulfilled.match(result)) {
+      const newToken = selectAccessToken(getState());
+      const retryHeaders = new Headers(init.headers || {});
+      const retryBody = init.body;
+      const retryIsFormData = retryBody instanceof FormData;
 
-    if (newToken) {
-      retryHeaders.set('Authorization', `Bearer ${newToken}`);
+      if (newToken) {
+        retryHeaders.set('Authorization', `Bearer ${newToken}`);
+      }
+
+      if (!retryIsFormData && retryBody && !retryHeaders.has('Content-Type')) {
+        retryHeaders.set('Content-Type', 'application/json');
+      }
+
+      res = await fetch(apiUrl(input), {
+        credentials: 'include',
+        ...init,
+        headers: retryHeaders,
+      });
     }
-
-    if (!retryIsFormData && retryBody && !retryHeaders.has('Content-Type')) {
-      retryHeaders.set('Content-Type', 'application/json');
-    }
-
-    return fetch(apiUrl(input), {
-      credentials: 'include',
-      ...init,
-      headers: retryHeaders,
-    });
   }
 
   return res;

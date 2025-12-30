@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class JwtService {
 
     public String generateAccessToken(String subjectEmail, Set<String> roles, Integer userId, String authorName) {
         Instant now = Instant.now();
-        Instant exp = now.plusSeconds(accessMinutes * 60);
+        Instant exp = now.plus(Duration.ofMinutes(accessMinutes));
         return Jwts.builder()
                 .setSubject(subjectEmail)
                 .addClaims(Map.of(

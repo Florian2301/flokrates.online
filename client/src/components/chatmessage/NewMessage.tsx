@@ -391,6 +391,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
         onChange={(e) => setEditedText(e.target.value)}
         onInput={adjustHeight}
         onKeyDown={keyEventMessage}
+        wrap="physical"
       />
       <div className="actions" onMouseDown={startDrag} onMouseMove={onDrag}>
         <label className="newMessage-label">
