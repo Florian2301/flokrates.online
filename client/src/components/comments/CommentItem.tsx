@@ -1,7 +1,13 @@
 import './CommentItem.css';
 
 import { PencilLine, Save, Trash2, X } from 'lucide-react';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { deleteCommentThunk, patchComment } from '../../store/commentsSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -9,6 +15,7 @@ import type { AppDispatch } from '../../store/store';
 import { Comment } from '../../types/Comment';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
+import { resizeTextareaPreserveCaret } from '../../utils/textarea';
 import { selectIsAuthenticated } from '../../store/authSlice';
 
 type Props = {
@@ -82,21 +89,24 @@ const CommentItem: React.FC<Props> = ({
     }
   };
 
-  const adjustHeight = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
+  const handleTextChange: React.ChangeEventHandler<HTMLTextAreaElement> = (
+    e
+  ) => {
+    const ta = e.currentTarget;
+    setText(ta.value);
+    resizeTextareaPreserveCaret(ta);
   };
 
   // UseEffects
+  useLayoutEffect(() => {
+    if (edit && textareaRef.current) {
+      resizeTextareaPreserveCaret(textareaRef.current);
+    }
+  }, [edit]);
+
   useEffect(() => {
     setEdit(isEditing);
   }, [isEditing]);
-
-  useEffect(() => {
-    if (edit) adjustHeight();
-  }, [edit, text]);
 
   useEffect(() => {
     function handleSaveEvent(e: CustomEvent<{ id: number }>) {
@@ -242,7 +252,7 @@ const CommentItem: React.FC<Props> = ({
               ref={textareaRef}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              onInput={adjustHeight}
+              onInput={handleTextChange}
               onKeyDown={keyHandler}
               rows={3}
             />

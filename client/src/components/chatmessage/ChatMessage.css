@@ -100,14 +100,17 @@
   font-size: 16px;
   text-align: left;
   overflow-wrap: break-word;
+  hyphens: auto;
 }
 
-#message-textarea {
+.message-textarea {
   width: 100%;
   font-size: 16px;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
-#message-display {
+.message-display {
   font-size: 16px;
   overflow-wrap: break-word;
 }

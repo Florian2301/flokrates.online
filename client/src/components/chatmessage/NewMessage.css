@@ -3,7 +3,6 @@
   top: 100px;
   left: 50%;
   transform: translateX(-50%);
-  background: white;
   border: 1px solid #ccc;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   padding: 10px;
@@ -13,15 +12,25 @@
   border-radius: 8px;
   background-color: #fafafa;
   cursor: grab;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
-.new-message-window .header {
+.new-message-window .new-message-header {
   font-weight: bold;
   background: #f4f4f4;
   padding: 5px;
   margin: -10px -10px 10px -10px;
   border-bottom: 1px solid #ddd;
   border-radius: 8px;
+}
+
+.new-message-header {
+  touch-action: none;
+}
+
+.new-message-header:active {
+  cursor: grabbing;
 }
 
 .new-message-window textarea {
@@ -71,9 +80,10 @@
   font-size: larger;
 }
 
-#newmessage-textarea {
+.new-message-textarea {
   font-size: 16px;
-  word-break: break-all;
+  overflow-wrap: break-word;
+  hyphens: auto;
   overflow-y: scroll;
   min-height: 10rem;
 }

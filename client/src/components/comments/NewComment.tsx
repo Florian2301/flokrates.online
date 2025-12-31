@@ -1,13 +1,14 @@
 import './NewComment.css';
 
 import type { AppDispatch, RootState } from '../../store/store';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Save, X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Picker from '@emoji-mart/react';
 import { createComment } from '../../store/commentsSlice';
 import data from '@emoji-mart/data';
+import { resizeTextareaPreserveCaret } from '../../utils/textarea';
 
 type Props = {
   onCancel: () => void;
@@ -38,13 +39,6 @@ const NewComment: React.FC<Props> = ({ onCancel }) => {
     onCancel();
   };
 
-  const adjustHeight = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  };
-
   const handleEmojiSelect = (emoji: any) => {
     setText((prev) => prev + emoji.native);
     setShowEmojiPicker(false);
@@ -60,9 +54,18 @@ const NewComment: React.FC<Props> = ({ onCancel }) => {
     }
   };
 
-  useEffect(() => {
-    adjustHeight();
-  }, [text]);
+  const handleTextChange: React.ChangeEventHandler<HTMLTextAreaElement> = (
+    e
+  ) => {
+    const ta = e.currentTarget;
+    setText(ta.value);
+    resizeTextareaPreserveCaret(ta);
+  };
+
+  // UseEffect
+  useLayoutEffect(() => {
+    if (textareaRef.current) resizeTextareaPreserveCaret(textareaRef.current);
+  }, []);
 
   useEffect(() => {
     if (textareaRef.current) textareaRef.current.focus();
@@ -94,7 +97,7 @@ const NewComment: React.FC<Props> = ({ onCancel }) => {
         ref={textareaRef}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        onInput={adjustHeight}
+        onInput={handleTextChange}
         onKeyDown={keyHandler}
         placeholder="Write a comment..."
       />

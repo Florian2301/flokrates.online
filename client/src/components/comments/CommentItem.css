@@ -61,7 +61,8 @@
 
 .comment-body {
   padding: 0rem 0.6rem 0.2rem 0.6rem;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
   margin-left: 0.5rem;
   white-space: pre-wrap;
   font-size: 16px;

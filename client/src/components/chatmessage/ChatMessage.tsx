@@ -1,7 +1,7 @@
 import './ChatMessage.css';
 
 import { ChevronsUp, PencilLine, Save, SquarePen, X } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   fetchAttachmentsForMessage,
   patchMessage,
@@ -26,6 +26,7 @@ import {
   isPdfContentType,
   toAbsoluteUrl,
 } from './Attachments';
+import { resizeTextareaPreserveCaret } from '../../utils/textarea';
 
 type ChatMessageProps = {
   message: Message;
@@ -144,11 +145,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     onClosePreview();
   };
 
-  const adjustHeight = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
+  const handleTextareaChange: React.ChangeEventHandler<HTMLTextAreaElement> = (
+    e
+  ) => {
+    const ta = e.currentTarget;
+    setEditedText(ta.value);
+    resizeTextareaPreserveCaret(ta);
   };
 
   const keyEventMessage = (
@@ -165,9 +167,11 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     dispatch(fetchAttachmentsForMessage(messageId));
   }, [dispatch, messageId]);
 
-  useEffect(() => {
-    if (edit) adjustHeight();
-  }, [edit, editedText]);
+  useLayoutEffect(() => {
+    if (edit && textareaRef.current) {
+      resizeTextareaPreserveCaret(textareaRef.current);
+    }
+  }, [edit]);
 
   useEffect(() => {
     if (!isAuth) return;
@@ -347,15 +351,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         <div className="message-body">
           {edit ? (
             <textarea
-              id="message-textarea"
+              className="message-textarea"
               value={editedText}
               ref={textareaRef}
               onKeyDown={keyEventMessage}
-              onChange={(e) => setEditedText(e.target.value)}
-              onInput={adjustHeight}
+              onChange={handleTextareaChange}
             />
           ) : (
-            <div id="message-display">{messageText}</div>
+            <div className="message-display">{messageText}</div>
           )}
         </div>
         <div className="message-bottom">

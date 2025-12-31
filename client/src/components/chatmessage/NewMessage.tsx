@@ -22,7 +22,7 @@ import {
   selectAttachmentsForMessage,
   type MessageAttachment,
 } from '../../store/messagesSlice';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Actor } from '../../types/ActorStyles';
@@ -30,6 +30,7 @@ import { Message } from '../../types/Message';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
 import { isImageContentType, toAbsoluteUrl } from './Attachments';
+import { resizeTextareaPreserveCaret } from '../../utils/textarea';
 
 type NewMessageProps = {
   newMessage?: Message;
@@ -252,7 +253,9 @@ const NewMessage: React.FC<NewMessageProps> = ({
   };
 
   // drag & drop
-  const startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
+  const startDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+
     setDragging(true);
     dragRef.current = {
       startX: e.clientX,
@@ -261,12 +264,11 @@ const NewMessage: React.FC<NewMessageProps> = ({
       initY: position.y,
     };
 
-    window.addEventListener('mousemove', onDrag as any);
-    window.addEventListener('mouseup', stopDrag as any);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
 
-  const onDrag = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!dragging || !dragRef.current) return;
+  const onDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current) return;
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
     setPosition({
@@ -275,11 +277,12 @@ const NewMessage: React.FC<NewMessageProps> = ({
     });
   };
 
-  const stopDrag = () => {
+  const stopDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     setDragging(false);
     dragRef.current = null;
-    window.removeEventListener('mousemove', onDrag as any);
-    window.removeEventListener('mouseup', stopDrag as any);
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {}
   };
 
   const keyEventMessage = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -288,23 +291,23 @@ const NewMessage: React.FC<NewMessageProps> = ({
     }
   };
 
-  const adjustHeight = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height =
-        textareaRef.current.scrollHeight + 'px';
-    }
-  };
-
   const handleEmojiSelect = (emoji: any) => {
     setEditedText((prev: any) => prev + emoji.native);
     setShowEmojiPicker(false);
   };
 
+  const handleTextareaChange: React.ChangeEventHandler<HTMLTextAreaElement> = (
+    e
+  ) => {
+    const ta = e.currentTarget;
+    setEditedText(ta.value);
+    resizeTextareaPreserveCaret(ta);
+  };
+
   // UseEffects
-  useEffect(() => {
-    adjustHeight();
-  }, [editedText]);
+  useLayoutEffect(() => {
+    if (textareaRef.current) resizeTextareaPreserveCaret(textareaRef.current);
+  }, []);
 
   useEffect(() => {
     if (!isNew) {
@@ -337,6 +340,15 @@ const NewMessage: React.FC<NewMessageProps> = ({
       textareaRef.current.focus();
     }
   }, []);
+
+  useEffect(() => {
+    return () => {
+      pendingAttachments.forEach((a) => {
+        if (a.kind === 'file' && a.previewUrl)
+          URL.revokeObjectURL(a.previewUrl);
+      });
+    };
+  }, [pendingAttachments]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -379,19 +391,20 @@ const NewMessage: React.FC<NewMessageProps> = ({
       onMouseUp={stopDrag}
     >
       <div
-        className="header"
-        onMouseDown={startDrag}
-        onMouseMove={onDrag}
-        style={{ padding: '8px', background: '#eee' }}
+        className="new-message-header"
+        //onMouseDown={startDrag}
+        //onMouseMove={onDrag}
+        onPointerDown={startDrag}
+        onPointerMove={dragging ? onDrag : undefined}
+        onPointerUp={stopDrag}
+        onPointerCancel={stopDrag}
       ></div>
       <textarea
-        id="newmessage-textarea"
+        className="new-message-textarea"
         ref={textareaRef}
         value={editedText}
-        onChange={(e) => setEditedText(e.target.value)}
-        onInput={adjustHeight}
+        onChange={handleTextareaChange}
         onKeyDown={keyEventMessage}
-        wrap="physical"
       />
       <div className="actions" onMouseDown={startDrag} onMouseMove={onDrag}>
         <label className="newMessage-label">
