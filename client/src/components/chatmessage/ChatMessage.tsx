@@ -33,8 +33,6 @@ type ChatMessageProps = {
   isEditing: boolean;
   activeEditId: number | null;
   setActiveEditId: React.Dispatch<React.SetStateAction<number | null>>;
-  previewMode?: boolean;
-  onClosePreview?: () => void;
 };
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -42,8 +40,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   isEditing,
   activeEditId,
   setActiveEditId,
-  previewMode = false,
-  onClosePreview = () => {},
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const isAuth = useSelector(selectIsAuthenticated);
@@ -128,7 +124,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
   // jump to response
   const handleJumpToMessage = () => {
-    scrollToMessage(messageId);
+    scrollToMessage(responseMessage?.messageId);
   };
 
   // emoji
@@ -136,13 +132,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     setEditedText((prev) => prev + emoji.native);
     setShowEmojiPicker(false);
     setFullEdit(false);
-  };
-
-  const handleClosePreviewClick: React.MouseEventHandler<HTMLSpanElement> = (
-    e
-  ) => {
-    e.stopPropagation();
-    onClosePreview();
   };
 
   const handleTextareaChange: React.ChangeEventHandler<HTMLTextAreaElement> = (
@@ -197,14 +186,11 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       className={`message-wrapper ${alignClass}`}
       id={`message-${messageId}`}
     >
-      <div
-        className={`message-container ${edit ? 'edit' : 'save'}`}
-        id={previewMode ? 'message-container-preview' : undefined}
-      >
+      <div className={`message-container ${edit ? 'edit' : 'save'}`}>
         {respId && responseMessage && (
           <div
             className="message-reply-context"
-            onClick={() => scrollToMessage(responseMessage.messageId)}
+            /*onClick={() => scrollToMessage(responseMessage.messageId)}*/
             title={`Zur Nachricht #${responseMessage.messageNumber} springen`}
           >
             <div className="message-reply-meta">
@@ -229,17 +215,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             </div>
           </div>
         )}
-        <div
-          className={`message-header ${isAuth ? 'auth-header' : 'guest-header'} ${
-            previewMode ? 'preview-header' : ''
-          }`}
-        >
-          <div className="message-header-block">
+        <div className="message-header">
+          <div>
             <span id="message-span"># {messageNumber}</span>
             <span className={colorClass}>{actorName}</span>
           </div>
 
-          {!previewMode && isAuth ? (
+          {isAuth ? (
             <div className="message-header-block">
               {edit && (
                 <div className="emoji-section">
@@ -326,22 +308,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             </div>
           ) : (
             <div className="message-header-block">
-              <span
-                className="message-button-edit"
-                title="close"
-                onClick={handleClosePreviewClick}
-              >
-                <X size={18} strokeWidth={1.5} />
-              </span>
-
-              {previewMode && (
+              {respId && (
                 <span
                   className="message-button-edit"
-                  id="message-button-popup"
+                  id="message-button-response-chevron"
                   title="Jump to original message"
                   onClick={handleJumpToMessage}
                 >
-                  <ChevronsUp size={18} strokeWidth={1.5} />
+                  <ChevronsUp size={25} strokeWidth={1.5} />
                 </span>
               )}
             </div>
