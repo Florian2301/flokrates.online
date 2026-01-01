@@ -386,14 +386,9 @@ const NewMessage: React.FC<NewMessageProps> = ({
         left: '50%',
         transform: `translateX(calc(-50% + ${position.x}px))`,
       }}
-      onMouseDown={startDrag}
-      onMouseMove={onDrag}
-      onMouseUp={stopDrag}
     >
       <div
         className="new-message-header"
-        //onMouseDown={startDrag}
-        //onMouseMove={onDrag}
         onPointerDown={startDrag}
         onPointerMove={dragging ? onDrag : undefined}
         onPointerUp={stopDrag}
@@ -406,7 +401,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
         onChange={handleTextareaChange}
         onKeyDown={keyEventMessage}
       />
-      <div className="actions" onMouseDown={startDrag} onMouseMove={onDrag}>
+      <div className="actions">
         <label className="newMessage-label">
           <select
             className="newMessage-select"
