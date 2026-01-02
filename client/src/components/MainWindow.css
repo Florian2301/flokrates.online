@@ -9,9 +9,9 @@
   flex-direction: column;
   margin: 0 auto;
   padding: 5px;
-  border: 1px solid black;
+  /*border: 1px solid black;
   border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.3);*/
   width: 100%;
   max-width: 600px;
   min-height: 90vh;
