@@ -74,7 +74,11 @@ function formatDate(iso?: string | null) {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso ?? '';
-  return d.toLocaleString('de-DE', { dateStyle: 'short' });
+  return d.toLocaleString('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
 }
 
 function alignForActor(

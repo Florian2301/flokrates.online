@@ -11,7 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -85,7 +88,7 @@ public class ChatController {
         Chat existingChat = existingChatOpt.get();
         updates.forEach((key, value) -> {
             switch (key) {
-                case "chatNumber" -> existingChat.setChatNumber(value != null ? (Integer) value : null);
+                case "chatNumber" -> existingChat.setChatNumber(value != null ? ((Number) value).intValue() : null);
                 case "title" -> existingChat.setTitle((String) value);
                 case "tags" -> existingChat.setTags((String) value);
                 case "description" -> existingChat.setDescription((String) value);
@@ -93,7 +96,13 @@ public class ChatController {
                 case "status" -> existingChat.setStatus(Status.valueOf((String) value));
                 case "datePublished" -> {
                     if (value != null && !value.toString().isBlank()) {
-                        existingChat.setDatePublished(LocalDateTime.parse(value.toString()));
+                        String s = value.toString();
+                        try {
+                            Instant instant = Instant.parse(s);
+                            existingChat.setDatePublished(LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
+                        } catch (DateTimeParseException ex) {
+                            existingChat.setDatePublished(LocalDateTime.parse(s));
+                        }
                     } else {
                         existingChat.setDatePublished(null);
                     }

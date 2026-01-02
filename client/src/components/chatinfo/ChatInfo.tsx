@@ -89,7 +89,11 @@ const ChatInfo: React.FC = () => {
   // date
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
-    return date.toLocaleDateString('de-DE');
+    return date.toLocaleDateString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
   };
 
   // create
@@ -137,6 +141,10 @@ const ChatInfo: React.FC = () => {
           ...chatForm,
           chatNumber: chatForm.chatNumber,
           referencedChatIds: payloadRefs,
+          datePublished:
+            chatForm.status === 'PUB' && !chatForm.datePublished
+              ? new Date().toISOString()
+              : chatForm.datePublished,
         },
       })
     );
@@ -305,7 +313,7 @@ const ChatInfo: React.FC = () => {
         )}
       </ChatInfoRow>
 
-      <ChatInfoRow label="Relations:">
+      <ChatInfoRow label="Relation:">
         {editMode && isAuth ? (
           <div className="chatinfo-ref-editor">
             <select
@@ -370,26 +378,28 @@ const ChatInfo: React.FC = () => {
         <p className="chatpara">{messages.length}</p>
       </ChatInfoRow>
 
-      <ChatInfoRow label="Status:">
-        {editMode && isAuth ? (
-          <select
-            className="chatinfo-input"
-            value={chatForm.status ?? ''}
-            onChange={(e) => handleChange('status', e.target.value as Status)}
-          >
-            <option value="" disabled>
-              -- Select Status --
-            </option>
-            {Object.entries(statusMap).map(([code, label]) => (
-              <option key={code} value={code}>
-                {label}
+      {isAuth && (
+        <ChatInfoRow label="Status:">
+          {editMode ? (
+            <select
+              className="chatinfo-input"
+              value={chatForm.status ?? ''}
+              onChange={(e) => handleChange('status', e.target.value as Status)}
+            >
+              <option value="" disabled>
+                -- Select Status --
               </option>
-            ))}
-          </select>
-        ) : (
-          <p className="chatpara">{chatForm.status ?? ''}</p>
-        )}
-      </ChatInfoRow>
+              {Object.entries(statusMap).map(([code, label]) => (
+                <option key={code} value={code}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="chatpara">{chatForm.status ?? ''}</p>
+          )}
+        </ChatInfoRow>
+      )}
 
       <ChatInfoRow label="Language:">
         {editMode && isAuth ? (
@@ -413,7 +423,7 @@ const ChatInfo: React.FC = () => {
         )}
       </ChatInfoRow>
 
-      {editMode && isAuth && (
+      {isAuth && (
         <ChatInfoRow label="Created:">
           <p className="chatpara">
             {chatForm.dateCreated ? formatDate(chatForm.dateCreated) : ''}
@@ -421,7 +431,7 @@ const ChatInfo: React.FC = () => {
         </ChatInfoRow>
       )}
 
-      {editMode && isAuth && (
+      {isAuth && (
         <ChatInfoRow label="Modified:">
           <p className="chatpara">
             {chatForm.dateModified ? formatDate(chatForm.dateModified) : ''}
@@ -465,6 +475,12 @@ const ChatInfo: React.FC = () => {
       <ChatInfoRow label="Comments:">
         <p className="chatpara">{commentsCount}</p>
       </ChatInfoRow>
+
+      {isAuth && (
+        <ChatInfoRow label="Chat-Id:">
+          <p className="chatpara">{selectedChat?.chatId}</p>
+        </ChatInfoRow>
+      )}
 
       <hr className="chatinfo-divider" />
 
