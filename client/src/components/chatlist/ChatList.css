@@ -8,7 +8,6 @@
   border-bottom-color: dodgerblue;
   border-bottom-width: thin;
   border-bottom-style: solid;
-  margin-bottom: 5px;
 }
 
 .table-rows-data {
@@ -20,8 +19,6 @@
   /*background-color: rgba(0, 0, 0, 0.3);*/
   cursor: pointer;
   color: white;
-  border: 1px solid dodgerblue;
-  border-radius: 10px;
 }
 
 .thead {
