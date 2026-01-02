@@ -34,7 +34,7 @@
   align-items: center;
   text-align: center;
   margin: 1rem auto;
-  background-color: rgba(0, 0, 0, 0.3);
+  /*background-color: rgba(0, 0, 0, 0.3);*/
   width: 90%;
   border-radius: 6px;
 }
@@ -146,8 +146,8 @@
   max-width: 900px;
   margin: 1.5rem auto 2rem;
   padding: 1rem 1.25rem;
-  background-color: rgba(0, 0, 0, 0.3);
-  border-radius: 6px;
+  /*background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;*/
   text-align: left;
 }
 

@@ -8,6 +8,7 @@
   border-bottom-color: dodgerblue;
   border-bottom-width: thin;
   border-bottom-style: solid;
+  margin-bottom: 5px;
 }
 
 .table-rows-data {
@@ -16,9 +17,11 @@
 }
 
 .table-rows-data:hover {
-  background-color: rgba(0, 0, 0, 0.3);
+  /*background-color: rgba(0, 0, 0, 0.3);*/
   cursor: pointer;
   color: white;
+  border: 1px solid dodgerblue;
+  border-radius: 10px;
 }
 
 .thead {
@@ -43,8 +46,8 @@
 }
 
 .chat-info-popup {
-  background-color: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(200, 200, 200, 0.7);
+  /*background-color: rgba(0, 0, 0, 0.3);*/
+  border: 1px solid dodgerblue;
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
   font-size: 1rem;
