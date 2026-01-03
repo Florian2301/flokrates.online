@@ -313,6 +313,75 @@ const ChatInfo: React.FC = () => {
         )}
       </ChatInfoRow>
 
+      {isAuth && (
+        <ChatInfoRow label="Status:">
+          {editMode ? (
+            <select
+              className="chatinfo-input"
+              value={chatForm.status ?? ''}
+              onChange={(e) => handleChange('status', e.target.value as Status)}
+            >
+              <option value="" disabled>
+                -- Select Status --
+              </option>
+              {Object.entries(statusMap).map(([code, label]) => (
+                <option key={code} value={code}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="chatpara">{chatForm.status ?? ''}</p>
+          )}
+        </ChatInfoRow>
+      )}
+
+      {isAuth && (
+        <ChatInfoRow label="Created:">
+          <p className="chatpara">
+            {chatForm.dateCreated ? formatDate(chatForm.dateCreated) : ''}
+          </p>
+        </ChatInfoRow>
+      )}
+
+      {isAuth && (
+        <ChatInfoRow label="Modified:">
+          <p className="chatpara">
+            {chatForm.dateModified ? formatDate(chatForm.dateModified) : ''}
+          </p>
+        </ChatInfoRow>
+      )}
+
+      {chatForm.datePublished && (
+        <ChatInfoRow label="Published:">
+          <p className="chatpara">
+            {chatForm.datePublished ? formatDate(chatForm.datePublished) : ''}
+          </p>
+        </ChatInfoRow>
+      )}
+
+      <ChatInfoRow label="Language:">
+        {editMode && isAuth ? (
+          <select
+            className="chatinfo-input"
+            value={chatForm.language ?? 'DE'}
+            onChange={(e) => handleChange('language', e.target.value)}
+          >
+            {Object.entries(languageMap).map(([code, name]) => (
+              <option key={code} value={code}>
+                {name}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <p className="chatpara">
+            {chatForm.language
+              ? languageMap[chatForm.language as LanguageCode]
+              : ''}
+          </p>
+        )}
+      </ChatInfoRow>
+
       <ChatInfoRow label="Relation:">
         {editMode && isAuth ? (
           <div className="chatinfo-ref-editor">
@@ -377,75 +446,6 @@ const ChatInfo: React.FC = () => {
       <ChatInfoRow label="Messages:">
         <p className="chatpara">{messages.length}</p>
       </ChatInfoRow>
-
-      {isAuth && (
-        <ChatInfoRow label="Status:">
-          {editMode ? (
-            <select
-              className="chatinfo-input"
-              value={chatForm.status ?? ''}
-              onChange={(e) => handleChange('status', e.target.value as Status)}
-            >
-              <option value="" disabled>
-                -- Select Status --
-              </option>
-              {Object.entries(statusMap).map(([code, label]) => (
-                <option key={code} value={code}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <p className="chatpara">{chatForm.status ?? ''}</p>
-          )}
-        </ChatInfoRow>
-      )}
-
-      <ChatInfoRow label="Language:">
-        {editMode && isAuth ? (
-          <select
-            className="chatinfo-input"
-            value={chatForm.language ?? 'DE'}
-            onChange={(e) => handleChange('language', e.target.value)}
-          >
-            {Object.entries(languageMap).map(([code, name]) => (
-              <option key={code} value={code}>
-                {name}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <p className="chatpara">
-            {chatForm.language
-              ? languageMap[chatForm.language as LanguageCode]
-              : ''}
-          </p>
-        )}
-      </ChatInfoRow>
-
-      {isAuth && (
-        <ChatInfoRow label="Created:">
-          <p className="chatpara">
-            {chatForm.dateCreated ? formatDate(chatForm.dateCreated) : ''}
-          </p>
-        </ChatInfoRow>
-      )}
-
-      {isAuth && (
-        <ChatInfoRow label="Modified:">
-          <p className="chatpara">
-            {chatForm.dateModified ? formatDate(chatForm.dateModified) : ''}
-          </p>
-        </ChatInfoRow>
-      )}
-
-      {chatForm.datePublished && (
-        <ChatInfoRow label="Published:">
-          <p className="chatpara">
-            {chatForm.datePublished ? formatDate(chatForm.datePublished) : ''}
-          </p>
-        </ChatInfoRow>
-      )}
 
       <ChatInfoRow label="Download:">
         {selectedChat ? (
