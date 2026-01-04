@@ -57,9 +57,7 @@ export const ChatBox: React.FC = () => {
     <div className="chatbox-main fade-in">
       <div className="chatbox-header">
         {selectedChat && (
-          <div className="chatbox-title">
-            #{selectedChat.chatNumber} - {selectedChat.title}
-          </div>
+          <div className="chatbox-title">~ {selectedChat.title} ~</div>
         )}
       </div>
       {messagesForChat

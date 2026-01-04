@@ -22,13 +22,13 @@
 
 /* Hover-Effekt */
 .dropdown .dropdown-item:hover {
-  background-color: rgba(0, 0, 0, 0.5);
+  /*background-color: rgba(0, 0, 0, 0.5);*/
   color: white;
 }
 
 /* Aktiver Link (wenn Route aktiv ist) */
 .dropdown .dropdown-item.active {
-  background-color: rgba(0, 0, 0, 0.5);
+  /*background-color: rgba(0, 0, 0, 1);*/
   color: white;
 }
 
@@ -52,7 +52,7 @@
 }
 
 .dropdown-menu-dark {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.8);
   min-width: 5rem;
 }
 
