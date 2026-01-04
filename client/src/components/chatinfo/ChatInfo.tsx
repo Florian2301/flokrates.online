@@ -259,7 +259,7 @@ const ChatInfo: React.FC = () => {
 
   return (
     <div>
-      <ChatInfoRow label="Chatnumber:">
+      <ChatInfoRow label="Number:">
         {editMode && isAuth ? (
           <input
             className="chatinfo-input"
@@ -539,6 +539,9 @@ const ChatInfo: React.FC = () => {
 
       {isAuth ? (
         <div className="chatinfo-toggle">
+          <button className="toggle-btn" onClick={() => navigate('/chatbox')}>
+            Chatbox
+          </button>
           <button
             className={`toggle-btn ${viewMode === 'drafts' ? 'active' : ''}`}
             onClick={() => setViewMode('drafts')}

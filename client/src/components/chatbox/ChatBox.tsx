@@ -55,6 +55,13 @@ export const ChatBox: React.FC = () => {
 
   return (
     <div className="chatbox-main fade-in">
+      <div className="chatbox-header">
+        {selectedChat && (
+          <div className="chatbox-title">
+            #{selectedChat.chatNumber} - {selectedChat.title}
+          </div>
+        )}
+      </div>
       {messagesForChat
         .slice()
         .sort((a, b) => a.messageNumber - b.messageNumber)

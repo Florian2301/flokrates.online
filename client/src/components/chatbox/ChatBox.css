@@ -9,6 +9,11 @@
   margin-bottom: 8px;
 }
 
+.chatbox-title {
+  font-size: 1rem;
+  color: white;
+}
+
 .new-message-button {
   background-color: dodgerblue;
   opacity: 0.5;

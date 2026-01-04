@@ -12,12 +12,12 @@
 }
 
 .nav-link:hover {
-  color: silver;
+  color: white;
 }
 
 /* Items im Menü */
 .dropdown .dropdown-item {
-  color: #ddd;
+  color: silver;
 }
 
 /* Hover-Effekt */
