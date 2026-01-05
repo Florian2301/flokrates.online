@@ -56,6 +56,8 @@
   background-color: black;
   min-width: 5rem;
   border: 1px solid dodgerblue;
+  --bs-dropdown-link-active-bg: rgba(255, 255, 255, 0.1);
+  --bs-dropdown-link-active-color: white;
 }
 
 #menu {
