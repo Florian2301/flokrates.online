@@ -43,7 +43,9 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
           #
         </div>
         <div className="thead">Title</div>
-        <div className="thead"></div>
+        <div className="thead" id="thead-info">
+          Info
+        </div>
         <div className="thead"></div>
       </div>
       <div
