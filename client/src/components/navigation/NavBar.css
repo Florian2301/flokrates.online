@@ -18,17 +18,17 @@
 /* Items im Menü */
 .dropdown .dropdown-item {
   color: silver;
+  background-color: transparent;
 }
 
-/* Hover-Effekt */
 .dropdown .dropdown-item:hover {
-  /*background-color: rgba(0, 0, 0, 0.5);*/
+  background-color: rgba(255, 255, 255, 0.1);
   color: white;
 }
 
 /* Aktiver Link (wenn Route aktiv ist) */
 .dropdown .dropdown-item.active {
-  /*background-color: rgba(0, 0, 0, 1);*/
+  background-color: rgba(255, 255, 255, 0.1);
   color: white;
 }
 
@@ -52,8 +52,10 @@
 }
 
 .dropdown-menu-dark {
-  background-color: rgba(0, 0, 0, 0.8);
+  /*background-color: rgba(0, 0, 0, 0.8);*/
+  background-color: black;
   min-width: 5rem;
+  border: 1px solid silver;
 }
 
 #menu {

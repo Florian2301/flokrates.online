@@ -138,7 +138,7 @@
 
 .table-drafts-rows-head {
   display: grid;
-  grid-template-columns: 8% 72% 10% 10%;
+  grid-template-columns: 8% 62% 15% 15%;
   border-bottom-color: dodgerblue;
   border-bottom-width: thin;
   border-bottom-style: solid;
@@ -146,11 +146,11 @@
 
 .table-drafts-rows-data {
   display: grid;
-  grid-template-columns: 8% 72% 10% 10%;
+  grid-template-columns: 8% 62% 15% 15%;
 }
 
 .table-drafts-rows-data:hover {
-  /*background-color: rgba(0, 0, 0, 0.3);*/
+  background-color: rgba(255, 255, 255, 0.1);
   cursor: pointer;
   color: white;
 }
