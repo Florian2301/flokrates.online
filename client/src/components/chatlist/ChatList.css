@@ -1,6 +1,7 @@
 .chat-overview {
   margin-top: 1rem;
   margin-bottom: 1rem;
+  overflow-x: hidden;
 }
 
 .table-chats {
