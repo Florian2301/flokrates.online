@@ -6,6 +6,9 @@
 
 .table-chats {
   color: lightgray;
+  width: 100%;
+  max-width: 90%;
+  margin: 0 auto;
 }
 
 .table-rows-head {
