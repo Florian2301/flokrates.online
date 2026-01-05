@@ -472,13 +472,15 @@ const ChatInfo: React.FC = () => {
         )}
       </ChatInfoRow>
 
-      <ChatInfoRow label="Comments:">
-        <p className="chatpara">{commentsCount}</p>
-      </ChatInfoRow>
-
       {isAuth && (
         <ChatInfoRow label="Chat-Id:">
           <p className="chatpara">{selectedChat?.chatId}</p>
+        </ChatInfoRow>
+      )}
+
+      {isAuth && (
+        <ChatInfoRow label="Comments:">
+          <p className="chatpara">{commentsCount}</p>
         </ChatInfoRow>
       )}
 
@@ -560,7 +562,7 @@ const ChatInfo: React.FC = () => {
       {isAuth ? (
         <hr className="chatinfo-divider" />
       ) : (
-        <p className="para-comment">Comments</p>
+        <p className="para-comment">Comments ({commentsCount})</p>
       )}
 
       {viewMode === 'drafts' && isAuth ? (
