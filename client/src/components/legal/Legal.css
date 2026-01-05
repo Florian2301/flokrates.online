@@ -1,0 +1,49 @@
+.legal-container {
+  padding: 1rem;
+  max-width: 900px;
+}
+
+.legal-section {
+  margin-bottom: 1.25rem;
+}
+
+.legal-h2 {
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.legal-h3 {
+  font-size: 1.15rem;
+  margin-top: 0.75rem;
+  color: white;
+}
+
+.legal-body {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: silver;
+}
+
+.legal-body a {
+  color: #ffdddd;
+  text-decoration: none;
+}
+
+.legal-body a:hover {
+  text-decoration: underline;
+}
+
+.legal-separator {
+  opacity: 0.25;
+}
+
+.legal-footer {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  color: silver;
+}
+
+#legal-link {
+  color: dodgerblue;
+}
