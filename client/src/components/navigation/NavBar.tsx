@@ -4,6 +4,7 @@ import { Dropdown, Nav, NavDropdown } from 'react-bootstrap';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { logout, selectIsAuthenticated } from '../../store/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
 
 import type { AppDispatch } from '../../store/store';
 import { Menu } from 'lucide-react';
@@ -17,6 +18,22 @@ const NavBar = () => {
     await dispatch(logout());
     nav('/login');
   };
+
+  function useIsMobile(breakpointPx = 576) {
+    const [isMobile, setIsMobile] = useState(
+      () => window.innerWidth < breakpointPx
+    );
+
+    useEffect(() => {
+      const onResize = () => setIsMobile(window.innerWidth < breakpointPx);
+      window.addEventListener('resize', onResize);
+      return () => window.removeEventListener('resize', onResize);
+    }, [breakpointPx]);
+
+    return isMobile;
+  }
+
+  const isMobile = useIsMobile(576);
 
   return (
     <Nav variant="pills">
@@ -39,7 +56,7 @@ const NavBar = () => {
         title={<Menu size={18} strokeWidth={1.5} />}
         menuVariant="dark"
         id="menu"
-        drop="end"
+        drop={isMobile ? 'down' : 'end'}
       >
         <NavDropdown.Item
           className="nav-dropdown-item d-sm-none"
