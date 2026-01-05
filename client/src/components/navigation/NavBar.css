@@ -1,8 +1,7 @@
-.nav-pills .nav-link.active {
+/*.nav-pills .nav-link.active {
   background-color: transparent;
   color: white;
   text-decoration: none;
-  /*color: #0d6efd; standardblau bei react bootstrap*/
 }
 
 .nav-link {
@@ -15,7 +14,6 @@
   color: white;
 }
 
-/* Items im Menü */
 .dropdown .dropdown-item {
   color: silver;
   background-color: transparent;
@@ -26,7 +24,6 @@
   color: white;
 }
 
-/* Aktiver Link (wenn Route aktiv ist) */
 .dropdown .dropdown-item.active {
   background-color: rgba(255, 255, 255, 0.1);
   color: white;
@@ -52,7 +49,6 @@
 }
 
 .dropdown-menu-dark {
-  /*background-color: rgba(0, 0, 0, 0.8);*/
   background-color: black;
   min-width: 5rem;
   border: 1px solid dodgerblue;
@@ -70,12 +66,77 @@
 }
 
 .dropdown-menu {
-  /*margin-left: -1rem;
-  margin-top: -0.2rem;*/
   margin-top: 0.5rem;
   margin-left: -0.5rem;
 }
 
 .nav {
   border-bottom: 1px solid dodgerblue;
+}
+*/
+:root {
+  --nav-fg: silver;
+  --nav-fg-hover: #fff;
+  --accent: dodgerblue;
+  --item-bg: rgba(255, 255, 255, 0.1);
+}
+
+/* Untere Linie */
+.nav {
+  border-bottom: 1px solid var(--accent);
+}
+
+/* Nav-Links */
+.nav-link {
+  color: var(--nav-fg);
+  font-weight: bold;
+  font-size: x-large;
+  text-decoration: none;
+}
+
+.nav-link:is(:hover, :focus) {
+  color: var(--nav-fg-hover);
+}
+
+/* Active-Pill ohne Hintergrund */
+.nav-pills .nav-link.active {
+  background-color: transparent;
+  color: var(--nav-fg-hover);
+}
+
+/* Dropdown Toggle (dein Icon) – ID kommt aus <NavDropdown id="menu" /> */
+#menu.dropdown-toggle {
+  background: transparent;
+  border: none;
+  color: var(--nav-fg);
+}
+
+#menu.dropdown-toggle:is(:hover, :focus, :active) {
+  color: var(--nav-fg-hover);
+  text-decoration: none;
+  box-shadow: none;
+}
+
+/* Dropdown Menü */
+.dropdown-menu-dark {
+  background-color: #000;
+  min-width: 5rem;
+  border: 1px solid var(--accent);
+
+  /* Bootstrap-States für Items */
+  --bs-dropdown-link-color: var(--nav-fg);
+  --bs-dropdown-link-hover-color: var(--nav-fg-hover);
+  --bs-dropdown-link-hover-bg: var(--item-bg);
+  --bs-dropdown-link-active-color: var(--nav-fg-hover);
+  --bs-dropdown-link-active-bg: var(--item-bg);
+}
+
+/* Item-Schriftgröße (statt .nav-dropdown-item an jedem Item) */
+.dropdown-menu-dark .dropdown-item {
+  font-size: medium;
+}
+
+.dropdown-menu {
+  margin-top: 0.5rem;
+  margin-left: -0.5rem;
 }

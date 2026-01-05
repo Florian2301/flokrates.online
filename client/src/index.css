@@ -4,6 +4,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+  background-color: black;
 }
 
 /* Grundlegendes Body-Styling */
@@ -83,6 +84,12 @@ a:hover {
   p,
   li {
     font-size: 0.95rem;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  body {
+    background-attachment: scroll;
   }
 }
 

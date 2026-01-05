@@ -17,7 +17,6 @@
 /* Hover-Effekt */
 #about-tabs .nav-link:hover {
   background-color: transparent;
-  /*border: 1px solid silver;*/
   text-decoration: underline;
   border-radius: 6px;
   color: white;
@@ -26,8 +25,6 @@
 /* Aktiver Tab */
 #about-tabs .nav-link.active {
   color: white;
-  /*border: 1px solid silver;*/
-  /*border-radius: 6px;*/
 }
 
 .about-text-block {
