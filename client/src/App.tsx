@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import ChatBox from './components/chatbox/ChatBox';
 import ChatInfo from './components/chatinfo/ChatInfo';
 import ChatList from './components/chatlist/ChatList';
+import Legal from './components/legal/Legal';
 import LoginPage from './components/auth/LoginPage';
 import MainWindow from './components/MainWindow';
 import Settings from './components/settings/Settings';
@@ -21,6 +22,7 @@ function App() {
             <Route path="/chatinfo" element={<ChatInfo />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/legal" element={<Legal />} />
             <Route path="/login" element={<LoginPage />} />
           </Routes>
         </MainWindow>

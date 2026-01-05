@@ -58,10 +58,18 @@ const NavBar = () => {
         <NavDropdown.Item
           className="nav-dropdown-item"
           as={NavLink}
+          to="/legal"
+        >
+          Legal
+        </NavDropdown.Item>
+        <NavDropdown.Item
+          className="nav-dropdown-item"
+          as={NavLink}
           to="/settings"
         >
           Language
         </NavDropdown.Item>
+        <NavDropdown.Divider />
         {!isAuth ? (
           <NavDropdown.Item
             className="nav-dropdown-item"

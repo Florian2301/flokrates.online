@@ -41,11 +41,26 @@ const LoginPage: React.FC = () => {
                 : 'Bereits eingeloggt'}
           </h3>
           <div className="auth-actions">
+            <button className="btn btn-secondary" onClick={() => nav('/about')}>
+              About
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => nav('/chatlist')}
+            >
+              Chatlist
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => nav('/chatbox')}
+            >
+              Chatbox
+            </button>
             <button
               className="btn btn-secondary"
               onClick={() => nav('/chatinfo')}
             >
-              Navigate to Chatinfo
+              Chatinfo
             </button>
             <button
               className="btn btn-primary"

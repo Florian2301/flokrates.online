@@ -129,6 +129,7 @@
   --bs-dropdown-link-hover-bg: var(--item-bg);
   --bs-dropdown-link-active-color: var(--nav-fg-hover);
   --bs-dropdown-link-active-bg: var(--item-bg);
+  --bs-dropdown-divider-bg: dodgerblue;
 }
 
 /* Item-Schriftgröße (statt .nav-dropdown-item an jedem Item) */
@@ -139,4 +140,9 @@
 .dropdown-menu {
   margin-top: 0.5rem;
   margin-left: -0.5rem;
+}
+
+.nav-dropdown-divider {
+  border: 1px solid dodgerblue;
+  color: dodgerblue;
 }
