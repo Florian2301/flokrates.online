@@ -30,7 +30,7 @@ const NavBar = () => {
           Chatbox
         </Nav.Link>
       </Nav.Item>
-      <Nav.Item>
+      <Nav.Item className="d-none d-sm-block">
         <Nav.Link as={NavLink} to="/chatinfo">
           Chatinfo
         </Nav.Link>
@@ -41,6 +41,13 @@ const NavBar = () => {
         id="menu"
         drop="end"
       >
+        <NavDropdown.Item
+          className="nav-dropdown-item d-sm-none"
+          as={NavLink}
+          to="/chatinfo"
+        >
+          Chatinfo
+        </NavDropdown.Item>
         <NavDropdown.Item
           className="nav-dropdown-item"
           as={NavLink}
