@@ -55,7 +55,7 @@
   /*background-color: rgba(0, 0, 0, 0.8);*/
   background-color: black;
   min-width: 5rem;
-  border: 1px solid silver;
+  border: 1px solid dodgerblue;
 }
 
 #menu {
@@ -68,6 +68,12 @@
 }
 
 .dropdown-menu {
-  margin-left: -1rem;
-  margin-top: -0.2rem;
+  /*margin-left: -1rem;
+  margin-top: -0.2rem;*/
+  margin-top: 0.5rem;
+  margin-left: -0.5rem;
+}
+
+.nav {
+  border-bottom: 1px solid dodgerblue;
 }

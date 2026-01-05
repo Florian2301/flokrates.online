@@ -1,6 +1,6 @@
 import './NavBar.css';
 
-import { Nav, NavDropdown } from 'react-bootstrap';
+import { Dropdown, Nav, NavDropdown } from 'react-bootstrap';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { logout, selectIsAuthenticated } from '../../store/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -39,6 +39,7 @@ const NavBar = () => {
         title={<Menu size={18} strokeWidth={1.5} />}
         menuVariant="dark"
         id="menu"
+        drop="end"
       >
         <NavDropdown.Item
           className="nav-dropdown-item"

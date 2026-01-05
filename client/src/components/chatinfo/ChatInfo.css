@@ -1,4 +1,7 @@
 .chatinfo {
+  margin-top: 1rem;
+}
+.chatinfo-row {
   display: grid;
   grid-template-columns: 25% 75%;
   align-items: center;

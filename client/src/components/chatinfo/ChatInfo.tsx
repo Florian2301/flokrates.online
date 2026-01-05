@@ -258,7 +258,7 @@ const ChatInfo: React.FC = () => {
   }, [lang, selectedChat, dispatch]);
 
   return (
-    <div>
+    <div className="chatinfo">
       <ChatInfoRow label="Number:">
         {editMode && isAuth ? (
           <input

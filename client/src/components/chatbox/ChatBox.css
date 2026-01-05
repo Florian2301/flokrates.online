@@ -12,6 +12,7 @@
 .chatbox-title {
   font-size: 1rem;
   color: white;
+  margin-top: 1rem;
 }
 
 .new-message-button {
