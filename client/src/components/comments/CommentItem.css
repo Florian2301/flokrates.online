@@ -16,11 +16,6 @@
   background-image: url('../../../public/img/message_background.jpg');
 }
 
-.comment-container-preview {
-  border-color: royalblue;
-  border-width: medium;
-}
-
 .comment-edit {
   min-width: 75%;
   max-width: 100%;
@@ -48,7 +43,7 @@
   padding: 0rem 0.6rem;
   display: flex;
   justify-content: space-between;
-  height: 2rem;
+  height: fit-content;
   font-size: 16px;
   align-items: center;
 }

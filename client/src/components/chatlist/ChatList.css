@@ -14,7 +14,7 @@
 .table-rows-head {
   display: grid;
   grid-template-columns: 6% 84% 10% 0%;
-  border-bottom-color: dodgerblue;
+  border-bottom-color: silver;
   border-bottom-width: thin;
   border-bottom-style: solid;
 }
