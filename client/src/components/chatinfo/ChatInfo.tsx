@@ -281,6 +281,7 @@ const ChatInfo: React.FC = () => {
             type="text"
             value={chatForm.title ?? ''}
             onChange={(e) => handleChange('title', e.target.value)}
+            autoFocus
           />
         ) : (
           <p className="chatpara">{chatForm.title ?? ''}</p>
@@ -302,9 +303,9 @@ const ChatInfo: React.FC = () => {
 
       <ChatInfoRow label="Description:">
         {editMode && isAuth ? (
-          <input
+          <textarea
             className="chatinfo-input"
-            type="text"
+            rows={6}
             value={chatForm.description ?? ''}
             onChange={(e) => handleChange('description', e.target.value)}
           />

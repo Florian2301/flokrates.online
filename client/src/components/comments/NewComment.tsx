@@ -22,6 +22,7 @@ const NewComment: React.FC<Props> = ({ onCancel }) => {
   const [text, setText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const senderRef = useRef<HTMLInputElement>(null);
   const emojiRef = useRef<HTMLDivElement>(null);
 
   const canSave =
@@ -54,21 +55,13 @@ const NewComment: React.FC<Props> = ({ onCancel }) => {
     }
   };
 
-  const handleTextChange: React.ChangeEventHandler<HTMLTextAreaElement> = (
-    e
-  ) => {
-    const ta = e.currentTarget;
-    setText(ta.value);
-    resizeTextareaPreserveCaret(ta);
-  };
-
   // UseEffect
   useLayoutEffect(() => {
     if (textareaRef.current) resizeTextareaPreserveCaret(textareaRef.current);
   }, []);
 
   useEffect(() => {
-    if (textareaRef.current) textareaRef.current.focus();
+    senderRef.current?.focus();
   }, []);
 
   useEffect(() => {
@@ -86,6 +79,7 @@ const NewComment: React.FC<Props> = ({ onCancel }) => {
     <div className="new-comment-inline">
       <input
         className="new-comment-sender"
+        ref={senderRef}
         placeholder="Name"
         value={sender}
         onChange={(e) => setSender(e.target.value)}
@@ -97,7 +91,6 @@ const NewComment: React.FC<Props> = ({ onCancel }) => {
         ref={textareaRef}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        onInput={handleTextChange}
         onKeyDown={keyHandler}
         placeholder="Write a comment..."
       />
