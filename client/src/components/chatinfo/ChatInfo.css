@@ -19,6 +19,7 @@
 
 .chatinfo-row > .chatpara {
   align-self: start;
+  word-break: break-all;
 }
 
 .chatinfo-actions {
@@ -231,5 +232,20 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Mobile */
+@media (max-width: 575.98px) {
+  .chatinfo-row {
+    grid-template-columns: 28% 72%;
+  }
+
+  .chatinfo-row > .chatpara,
+  .chatinfo-row > .chatinfo-input,
+  .chatinfo-row .chatpara,
+  .chatinfo-row .chatinfo-input {
+    margin-left: 0.5rem;
+    width: 100%;
   }
 }

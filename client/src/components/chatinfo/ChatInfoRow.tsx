@@ -14,7 +14,7 @@ export const ChatInfoRow: React.FC<ChatInfoRowProps> = ({
   return (
     <div className="chatinfo-row">
       <p className="chatpara">{label}</p>
-      {children}
+      <div className="chatinfo-content">{children}</div>
     </div>
   );
 };
