@@ -12,7 +12,7 @@ const user = 'flokrates.online';
 const domain = 'gmail.com';
 const CONTACT_EMAIL = user + '[at]' + domain;
 const SITE_NAME = 'Flokrates.Online';
-const AUTHOR_NAME = 'P.L.F. John';
+const AUTHOR_NAME = 'Flokrates';
 
 const IMPRINT = {
   name: AUTHOR_NAME,

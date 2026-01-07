@@ -1,17 +1,42 @@
-import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
+import {
+  Document,
+  Font,
+  Page,
+  StyleSheet,
+  Text,
+  View,
+} from '@react-pdf/renderer';
 
 import type { Chat } from '../../types/Chats';
+import type { LanguageCode } from '../../constants/language';
 import type { Message } from '../../types/Message';
 import { actorStyles } from '../../types/ActorStyles';
+import { selectLanguage } from '../../store/languageSlice';
 import { useMemo } from 'react';
 
 type RefLite = { chatId: number; chatNumber: number | null; title: string };
+
+Font.registerEmojiSource({
+  format: 'png',
+  url: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/16.0.1/72x72/',
+});
 
 type Props = {
   chat: Chat;
   messages: Message[];
   references?: RefLite[];
+  lang: LanguageCode;
 };
+
+const LICENSE_SHORT = 'CC BY-NC-ND 4.0';
+const WEBSITE_URL = 'www.flokrates.de';
+
+function legalLine(lang: LanguageCode) {
+  const year = new Date().getFullYear();
+  return lang === 'DE'
+    ? `© ${year} · ${WEBSITE_URL} · Lizenz: ${LICENSE_SHORT}`
+    : `© ${year} · ${WEBSITE_URL} · License: ${LICENSE_SHORT}`;
+}
 
 const styles = StyleSheet.create({
   page: {
@@ -29,8 +54,14 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#999',
   },
-  h1: { fontSize: 18, marginTop: 10 },
+  h1: { fontSize: 18, marginTop: 10, textAlign: 'center' },
   metaRow: { marginBottom: 6, fontSize: 8 },
+  legalRow: {
+    marginBottom: 6,
+    fontSize: 8,
+    color: '#666',
+    justifyContent: 'center',
+  },
   metaLabel: { fontWeight: 700 },
   divider: {
     marginTop: 10,
@@ -38,7 +69,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
   },
+  footer: {
+    position: 'absolute',
+    bottom: 18,
+    left: 32,
+    right: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+    fontSize: 8,
+    color: '#999',
+  },
 
+  footerLeft: { width: '25%' },
+  footerCenter: { width: '50%', textAlign: 'center' },
+  footerRight: { width: '25%', textAlign: 'right' },
   msgList: { display: 'flex', flexDirection: 'column', gap: 8 },
   msgRow: { display: 'flex', flexDirection: 'row', marginBottom: 8 },
   msgBubble: {
@@ -94,7 +138,12 @@ function alignForActor(
   }
 }
 
-export default function ChatPdf({ chat, messages, references = [] }: Props) {
+export default function ChatPdf({
+  chat,
+  messages,
+  references = [],
+  lang,
+}: Props) {
   const sorted = useMemo(
     () => [...messages].sort((a, b) => a.messageNumber - b.messageNumber),
     [messages]
@@ -114,14 +163,18 @@ export default function ChatPdf({ chat, messages, references = [] }: Props) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {chat.datePublished && (
-          <Text style={styles.metaRow}>{formatDate(chat.datePublished)}</Text>
-        )}
         <Text style={styles.h1}>
           {'#' + (chat.chatNumber ? chat.chatNumber : '') + ' - ' + chat.title}
         </Text>
         <View style={styles.divider} />
         <View>
+          {chat.datePublished && (
+            <>
+              <Text style={styles.metaRow}>
+                {formatDate(chat.datePublished)}
+              </Text>
+            </>
+          )}
           <Text style={styles.metaRow}>{chat.tags || ''}</Text>
           <Text>{chat.description || ''}</Text>
           {refLabels.length > 0 && (
@@ -159,7 +212,7 @@ export default function ChatPdf({ chat, messages, references = [] }: Props) {
                   {/*Wrap=false -> Seitenumbruch */}
                   <Text style={styles.msgHeader}>
                     #{m.messageNumber} · {actorName}
-                    {m.respId ? ` · resp -> ${respNum}` : ''}
+                    {m.respId != null ? ` · >> #${respNum ?? '—'}` : ''}
                   </Text>
                   <Text style={styles.msgText}>{m.messageText ?? ''}</Text>
                 </View>
@@ -167,13 +220,17 @@ export default function ChatPdf({ chat, messages, references = [] }: Props) {
             );
           })}
         </View>
-        <Text
-          style={styles.pageNumber}
-          render={({ pageNumber, totalPages }) =>
-            `Seite ${pageNumber} / ${totalPages}`
-          }
-          fixed
-        />
+        <View style={styles.footer} fixed>
+          <Text style={styles.footerLeft}></Text>
+          <Text style={styles.footerCenter}>{legalLine(lang)}</Text>
+
+          <Text
+            style={styles.footerRight}
+            render={({ pageNumber, totalPages }) =>
+              `Seite ${pageNumber} / ${totalPages}`
+            }
+          />
+        </View>
       </Page>
     </Document>
   );

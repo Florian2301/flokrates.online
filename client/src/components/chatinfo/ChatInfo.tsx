@@ -457,6 +457,7 @@ const ChatInfo: React.FC = () => {
                 chat={selectedChat}
                 messages={messages}
                 references={refsForPdf}
+                lang={lang}
               />
             }
             fileName={`${
