@@ -424,7 +424,7 @@ const ChatInfo: React.FC = () => {
           </div>
         ) : (
           <div className="chatinfo-ref-view">
-            {refsForPdf.length === 0 ? (
+            {chatForm.chatId && refsForPdf.length === 0 ? (
               <p className="chatpara" id="ref-view-placeholder">
                 -
               </p>
@@ -445,7 +445,7 @@ const ChatInfo: React.FC = () => {
       </ChatInfoRow>
 
       <ChatInfoRow label="Messages:">
-        <p className="chatpara">{messages.length}</p>
+        <p className="chatpara">{chatForm.chatId ? messages.length : ''}</p>
       </ChatInfoRow>
 
       <ChatInfoRow label="Download:">
@@ -470,7 +470,7 @@ const ChatInfo: React.FC = () => {
             <FileText size={18} strokeWidth={1.5} />
           </PDFDownloadLink>
         ) : (
-          <span className="chatpara">–</span>
+          <span className="chatpara"></span>
         )}
       </ChatInfoRow>
 
@@ -482,7 +482,7 @@ const ChatInfo: React.FC = () => {
 
       {isAuth && (
         <ChatInfoRow label="Comments:">
-          <p className="chatpara">{commentsCount}</p>
+          <p className="chatpara">{chatForm.chatId ? commentsCount : ''}</p>
         </ChatInfoRow>
       )}
 

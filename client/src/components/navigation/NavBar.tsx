@@ -1,6 +1,6 @@
 import './NavBar.css';
 
-import { Dropdown, Nav, NavDropdown } from 'react-bootstrap';
+import { Nav, NavDropdown } from 'react-bootstrap';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { logout, selectIsAuthenticated } from '../../store/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 
 import type { AppDispatch } from '../../store/store';
 import { Menu } from 'lucide-react';
+import { setSelectedChat } from '../../store/chatsSclice';
 
 const NavBar = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -16,6 +17,7 @@ const NavBar = () => {
 
   const handleLogout = async () => {
     await dispatch(logout());
+    dispatch(setSelectedChat(null));
     nav('/login');
   };
 
