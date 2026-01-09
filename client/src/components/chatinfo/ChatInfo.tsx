@@ -288,7 +288,7 @@ const ChatInfo: React.FC = () => {
         )}
       </ChatInfoRow>
 
-      <ChatInfoRow label={lang === 'EN' ? 'Tags:' : 'Stichworte:'}>
+      <ChatInfoRow label={lang === 'EN' ? 'Tags:' : 'Schlagwörter:'}>
         {editMode && isAuth ? (
           <input
             className="chatinfo-input"

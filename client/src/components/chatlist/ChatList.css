@@ -1,7 +1,8 @@
 .chat-overview {
   margin-top: 1rem;
   margin-bottom: 1rem;
-  overflow-x: hidden;
+  overflow: hidden;
+  scrollbar-width: none;
 }
 
 .table-chats {
@@ -13,7 +14,7 @@
 
 .table-rows-head {
   display: grid;
-  grid-template-columns: 6% 84% 10% 0%;
+  grid-template-columns: 8% 82% 10%;
   border-bottom-color: silver;
   border-bottom-width: thin;
   border-bottom-style: solid;
@@ -21,7 +22,7 @@
 
 .table-rows-data {
   display: grid;
-  grid-template-columns: 6% 86% 8%;
+  grid-template-columns: 8% 82% 10%;
 }
 
 .table-rows-data:hover {
@@ -38,7 +39,7 @@
 }
 
 #thead-number {
-  text-align: center;
+  text-align: right;
 }
 
 #thead-info {
@@ -53,7 +54,7 @@
 }
 
 #table-columns-number {
-  text-align: center;
+  text-align: right;
 }
 
 .chat-info-popup {
@@ -66,7 +67,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   animation: fadeIn 0.2s ease-in-out;
   z-index: 200;
-  margin-bottom: 1rem;
+  margin-top: 1rem;
 }
 
 .popup-tags {
@@ -107,4 +108,8 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+::-webkit-scrollbar {
+  display: none;
 }

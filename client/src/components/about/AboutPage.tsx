@@ -175,8 +175,9 @@ export const AboutPage: React.FC = () => {
         activeKey={activeKey}
         onSelect={(k) => setActiveKey(k || 'project')}
       >
-        {renderTab('project', 'Project')}
-        {renderTab('author', 'Author', true)} {/* nur hier mit Portrait */}
+        {renderTab('project', lang === 'EN' ? 'Project' : 'Projekt')}
+        {renderTab('author', lang === 'EN' ? 'Author' : 'Autor', true)}{' '}
+        {/* nur hier mit Portrait */}
         {renderTab('flokrates', 'Flokrates')}
         {renderTab('lotharius', 'Lotharius')}
         {renderTab('pablo', 'Pablo')}

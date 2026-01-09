@@ -36,37 +36,30 @@ export const DraftListTable: React.FC<Props> = ({ chats }) => {
         <div className="thead-drafts">Status</div>
         <div className="thead-drafts">Msg</div>
       </div>
-      <div
-        className={
-          window.innerWidth <= 1000
-            ? 'chatlist-drafts-scroll-mobile'
-            : 'chatlist-drafts-scroll'
-        }
-      >
-        {chats.map((chat) => (
+
+      {chats.map((chat) => (
+        <div
+          key={chat.chatId}
+          className="table-drafts-rows-data fade-in"
+          onClick={() => handleClick(chat)}
+        >
           <div
-            key={chat.chatId}
-            className="table-drafts-rows-data fade-in"
-            onClick={() => handleClick(chat)}
+            className="table-drafts-columns"
+            id="table-drafts-columns-number"
           >
-            <div
-              className="table-drafts-columns"
-              id="table-drafts-columns-number"
-            >
-              {chat.chatNumber}
-            </div>
-            <div className="table-drafts-columns">{chat.title}</div>
-            <div className="table-drafts-columns" id="table-drafts-status">
-              {chat.status}
-            </div>
-            <div className="table-drafts-columns">
-              {loadingCounts && countsByChatId[chat.chatId] == null
-                ? '…'
-                : (countsByChatId[chat.chatId] ?? 0)}
-            </div>
+            {chat.chatNumber}
           </div>
-        ))}
-      </div>
+          <div className="table-drafts-columns">{chat.title}</div>
+          <div className="table-drafts-columns tabel-drafts-display">
+            {chat.status}
+          </div>
+          <div className="table-drafts-columns tabel-drafts-display">
+            {loadingCounts && countsByChatId[chat.chatId] == null
+              ? '…'
+              : (countsByChatId[chat.chatId] ?? 0)}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

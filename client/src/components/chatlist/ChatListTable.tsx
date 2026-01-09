@@ -48,42 +48,23 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
         <div className="thead" id="thead-info">
           Info
         </div>
-        <div className="thead"></div>
       </div>
-      <div
-        className={
-          window.innerWidth <= 1000
-            ? 'chatlist-scroll-mobile'
-            : 'chatlist-scroll'
-        }
-      >
-        {chats.map((chat: Chat) => (
-          <div
-            key={chat.chatId}
-            className="table-rows-data fade-in"
-            onClick={(e) => {
-              activeChatId === chat.chatId
-                ? (e.stopPropagation(), setActiveChatId(null))
-                : handleClick(chat);
-            }}
-          >
-            <div className="table-columns" id="table-columns-number">
-              {chat.chatNumber}
-            </div>
-            <div className="table-columns">{chat.title}</div>
-            <div
-              className="table-columns"
-              title="Quick Info"
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveChatId(
-                  activeChatId === chat.chatId ? null : chat.chatId
-                );
-              }}
-            >
-              <Info size={18} strokeWidth={1.5} />
-            </div>
-            <div></div>
+
+      {chats.map((chat: Chat) => (
+        <div
+          key={chat.chatId}
+          className="table-rows-data fade-in"
+          onClick={(e) => {
+            activeChatId === chat.chatId
+              ? (e.stopPropagation(), setActiveChatId(null))
+              : handleClick(chat);
+          }}
+        >
+          <div className="table-columns" id="table-columns-number">
+            {chat.chatNumber}
+          </div>
+          <div className="table-columns">
+            {chat.title}
             {activeChatId === chat.chatId && (
               <div
                 className="chat-info-popup"
@@ -101,8 +82,20 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
               </div>
             )}
           </div>
-        ))}
-      </div>
+          <div
+            className="table-columns"
+            title="Quick Info"
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveChatId(
+                activeChatId === chat.chatId ? null : chat.chatId
+              );
+            }}
+          >
+            <Info size={18} strokeWidth={1.5} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
