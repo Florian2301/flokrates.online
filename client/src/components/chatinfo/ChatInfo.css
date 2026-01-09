@@ -3,7 +3,7 @@
 }
 .chatinfo-row {
   display: grid;
-  grid-template-columns: 25% 75%;
+  grid-template-columns: 30% 70%;
   align-items: start;
 }
 
@@ -238,7 +238,7 @@
 /* Mobile */
 @media (max-width: 575.98px) {
   .chatinfo-row {
-    grid-template-columns: 28% 72%;
+    grid-template-columns: 30% 70%;
   }
 
   .chatinfo-row > .chatpara,

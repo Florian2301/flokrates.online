@@ -3,6 +3,7 @@ import './NavBar.css';
 import { Nav, NavDropdown } from 'react-bootstrap';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { logout, selectIsAuthenticated } from '../../store/authSlice';
+import { selectLanguage, setLanguage } from '../../store/languageSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 
@@ -14,6 +15,7 @@ const NavBar = () => {
   const dispatch = useDispatch<AppDispatch>();
   const isAuth = useSelector(selectIsAuthenticated);
   const nav = useNavigate();
+  const lang = useSelector(selectLanguage);
 
   const handleLogout = async () => {
     await dispatch(logout());
@@ -41,7 +43,7 @@ const NavBar = () => {
     <Nav variant="pills">
       <Nav.Item>
         <Nav.Link as={NavLink} to="/chatlist">
-          Chatlist
+          {lang === 'DE' ? 'Chatliste' : 'Chatlist'}
         </Nav.Link>
       </Nav.Item>
       <Nav.Item>
@@ -72,21 +74,21 @@ const NavBar = () => {
           as={NavLink}
           to="/about"
         >
-          About
+          {lang === 'DE' ? 'Über mich' : 'About'}
         </NavDropdown.Item>
         <NavDropdown.Item
           className="nav-dropdown-item"
           as={NavLink}
           to="/settings"
         >
-          Settings
+          {lang === 'DE' ? 'Einstellungen' : 'Settings'}
         </NavDropdown.Item>
         <NavDropdown.Item
           className="nav-dropdown-item"
           as={NavLink}
           to="/legal"
         >
-          Legal
+          {lang === 'DE' ? 'Rechtliches' : 'Legal'}
         </NavDropdown.Item>
         <NavDropdown.Divider />
         {!isAuth ? (

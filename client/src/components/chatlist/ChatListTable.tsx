@@ -1,13 +1,14 @@
 import './ChatList.css';
 
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { AppDispatch } from '../../store/store';
 import { Chat } from '../../types/Chats';
 import { Info } from 'lucide-react';
 import { fetchMessagesForChat } from '../../store/messagesSlice';
+import { selectLanguage } from '../../store/languageSlice';
 import { setSelectedChat } from '../../store/chatsSclice';
-import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 type Props = {
@@ -18,6 +19,7 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
+  const lang = useSelector(selectLanguage);
 
   const handleClick = (chat: Chat) => {
     dispatch(setSelectedChat(chat));
@@ -42,7 +44,7 @@ export const ChatListTable: React.FC<Props> = ({ chats }) => {
         <div className="thead" id="thead-number">
           #
         </div>
-        <div className="thead">Title</div>
+        <div className="thead">{lang === 'DE' ? 'Titel' : 'Title'}</div>
         <div className="thead" id="thead-info">
           Info
         </div>

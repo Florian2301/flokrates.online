@@ -259,7 +259,7 @@ const ChatInfo: React.FC = () => {
 
   return (
     <div className="chatinfo">
-      <ChatInfoRow label="Number:">
+      <ChatInfoRow label={lang === 'EN' ? 'Number:' : 'Nummer:'}>
         {editMode && isAuth ? (
           <input
             className="chatinfo-input"
@@ -274,7 +274,7 @@ const ChatInfo: React.FC = () => {
         )}
       </ChatInfoRow>
 
-      <ChatInfoRow label="Title:">
+      <ChatInfoRow label={lang === 'EN' ? 'Title:' : 'Titel:'}>
         {editMode && isAuth ? (
           <input
             className="chatinfo-input"
@@ -288,7 +288,7 @@ const ChatInfo: React.FC = () => {
         )}
       </ChatInfoRow>
 
-      <ChatInfoRow label="Tags:">
+      <ChatInfoRow label={lang === 'EN' ? 'Tags:' : 'Stichworte:'}>
         {editMode && isAuth ? (
           <input
             className="chatinfo-input"
@@ -301,7 +301,7 @@ const ChatInfo: React.FC = () => {
         )}
       </ChatInfoRow>
 
-      <ChatInfoRow label="Description:">
+      <ChatInfoRow label={lang === 'EN' ? 'Description:' : 'Beschreibung:'}>
         {editMode && isAuth ? (
           <textarea
             className="chatinfo-input"
@@ -338,7 +338,7 @@ const ChatInfo: React.FC = () => {
       )}
 
       {isAuth && (
-        <ChatInfoRow label="Created:">
+        <ChatInfoRow label={lang === 'EN' ? 'Created:' : 'Erstellt:'}>
           <p className="chatpara">
             {chatForm.dateCreated ? formatDate(chatForm.dateCreated) : ''}
           </p>
@@ -346,7 +346,7 @@ const ChatInfo: React.FC = () => {
       )}
 
       {isAuth && (
-        <ChatInfoRow label="Modified:">
+        <ChatInfoRow label={lang === 'EN' ? 'Modified:' : 'Geändert:'}>
           <p className="chatpara">
             {chatForm.dateModified ? formatDate(chatForm.dateModified) : ''}
           </p>
@@ -354,14 +354,14 @@ const ChatInfo: React.FC = () => {
       )}
 
       {chatForm.datePublished && (
-        <ChatInfoRow label="Published:">
+        <ChatInfoRow label={lang === 'EN' ? 'Published:' : 'Veröffentlicht:'}>
           <p className="chatpara">
             {chatForm.datePublished ? formatDate(chatForm.datePublished) : ''}
           </p>
         </ChatInfoRow>
       )}
 
-      <ChatInfoRow label="Language:">
+      <ChatInfoRow label={lang === 'EN' ? 'Language:' : 'Sprache:'}>
         {editMode && isAuth ? (
           <select
             className="chatinfo-input"
@@ -383,7 +383,7 @@ const ChatInfo: React.FC = () => {
         )}
       </ChatInfoRow>
 
-      <ChatInfoRow label="Relation:">
+      <ChatInfoRow label={lang === 'EN' ? 'Relation:' : 'Beziehung:'}>
         {editMode && isAuth ? (
           <div className="chatinfo-ref-editor">
             <select
@@ -424,7 +424,7 @@ const ChatInfo: React.FC = () => {
           </div>
         ) : (
           <div className="chatinfo-ref-view">
-            {chatForm.chatId && refsForPdf.length === 0 ? (
+            {selectedChat?.chatId && refsForPdf.length === 0 ? (
               <p className="chatpara" id="ref-view-placeholder">
                 -
               </p>
@@ -444,11 +444,13 @@ const ChatInfo: React.FC = () => {
         )}
       </ChatInfoRow>
 
-      <ChatInfoRow label="Messages:">
-        <p className="chatpara">{chatForm.chatId ? messages.length : ''}</p>
+      <ChatInfoRow label={lang === 'EN' ? 'Messages:' : 'Nachrichten:'}>
+        <p className="chatpara">
+          {selectedChat?.chatId ? messages.length : ''}
+        </p>
       </ChatInfoRow>
 
-      <ChatInfoRow label="Download:">
+      <ChatInfoRow label={lang === 'EN' ? 'Download:' : 'Herunterladen:'}>
         {selectedChat ? (
           <PDFDownloadLink
             key={`${selectedChat?.chatId}-${refsForPdf.length}-${messages.length}`}
@@ -481,8 +483,10 @@ const ChatInfo: React.FC = () => {
       )}
 
       {isAuth && (
-        <ChatInfoRow label="Comments:">
-          <p className="chatpara">{chatForm.chatId ? commentsCount : ''}</p>
+        <ChatInfoRow label={lang === 'EN' ? 'Comments:' : 'Kommentare:'}>
+          <p className="chatpara">
+            {selectedChat?.chatId ? commentsCount : ''}
+          </p>
         </ChatInfoRow>
       )}
 
@@ -550,13 +554,13 @@ const ChatInfo: React.FC = () => {
             className={`toggle-btn ${viewMode === 'drafts' ? 'active' : ''}`}
             onClick={() => setViewMode('drafts')}
           >
-            Drafts
+            {lang === 'EN' ? 'Drafts' : 'Entwürfe'}
           </button>
           <button
             className={`toggle-btn ${viewMode === 'comments' ? 'active' : ''}`}
             onClick={() => setViewMode('comments')}
           >
-            Comments
+            {lang === 'EN' ? 'Comments' : 'Kommentare'}
           </button>
         </div>
       ) : null}
@@ -564,7 +568,9 @@ const ChatInfo: React.FC = () => {
       {isAuth ? (
         <hr className="chatinfo-divider" />
       ) : (
-        <p className="para-comment">Comments ({commentsCount})</p>
+        <p className="para-comment">
+          {lang === 'EN' ? 'Comments' : 'Kommentare'} ({commentsCount})
+        </p>
       )}
 
       {viewMode === 'drafts' && isAuth ? (

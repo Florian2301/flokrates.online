@@ -14,7 +14,7 @@ const Settings: React.FC = () => {
   return (
     <div className="settings-wrapper">
       <label className="settings-item">
-        Language:&nbsp;
+        {lang === 'EN' ? 'Language:' : 'Sprache:'}
         <select
           id="settings-select"
           value={lang}
