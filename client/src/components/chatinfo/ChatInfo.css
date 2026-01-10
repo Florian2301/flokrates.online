@@ -19,7 +19,10 @@
 
 .chatinfo-row > .chatpara {
   align-self: start;
-  word-break: break-all;
+  word-break: normal;
+  /*overflow-wrap: break-word;*/
+  hyphens: auto;
+  white-space: pre-wrap;
 }
 
 .chatinfo-actions {
@@ -92,12 +95,15 @@
 }
 
 .chatinfo-ref-view {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+  display: inline-flex;
   margin-left: 2rem;
   margin-top: 8px;
-  width: 80%;
+}
+
+.chatinfo-ref-view-mobile {
+  display: inline-flex;
+  margin-left: 0.5rem;
+  margin-top: 8px;
 }
 
 #ref-view-placeholder {
@@ -147,6 +153,13 @@
   align-items: flex-start;
   margin-top: 12px;
   margin-left: 1.8rem;
+}
+
+#pdf-download-link-mobile {
+  display: inline-flex;
+  align-items: flex-start;
+  margin-top: 12px;
+  margin-left: 0.5rem;
 }
 
 .table-drafts {

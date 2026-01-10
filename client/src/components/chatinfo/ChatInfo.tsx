@@ -227,6 +227,22 @@ const ChatInfo: React.FC = () => {
     navigate('/chatbox');
   };
 
+  function useIsMobile(breakpointPx = 576) {
+    const [isMobile, setIsMobile] = useState(
+      () => window.innerWidth < breakpointPx
+    );
+
+    useEffect(() => {
+      const onResize = () => setIsMobile(window.innerWidth < breakpointPx);
+      window.addEventListener('resize', onResize);
+      return () => window.removeEventListener('resize', onResize);
+    }, [breakpointPx]);
+
+    return isMobile;
+  }
+
+  const isMobile = useIsMobile(576);
+
   // useEffects
   useEffect(() => {
     if (selectedChat) {
@@ -347,7 +363,15 @@ const ChatInfo: React.FC = () => {
         </ChatInfoRow>
       )}
       {chatForm.datePublished && (
-        <ChatInfoRow label={lang === 'EN' ? 'Published:' : 'Veröffentlicht:'}>
+        <ChatInfoRow
+          label={
+            lang === 'EN'
+              ? 'Published:'
+              : isMobile
+                ? 'Datum:'
+                : 'Veröffentlicht:'
+          }
+        >
           <p className="chatpara">
             {chatForm.datePublished ? formatDate(chatForm.datePublished) : ''}
           </p>
@@ -375,7 +399,7 @@ const ChatInfo: React.FC = () => {
         )}
       </ChatInfoRow>
       {refsForPdf.length !== 0 || editMode ? (
-        <ChatInfoRow label={lang === 'EN' ? 'Relation to:' : 'Bezug zu:'}>
+        <ChatInfoRow label={lang === 'EN' ? 'Network:' : 'Netzwerk:'}>
           {editMode && isAuth ? (
             <div className="chatinfo-ref-editor">
               <select
@@ -415,7 +439,11 @@ const ChatInfo: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="chatinfo-ref-view">
+            <div
+              className={
+                isMobile ? 'chatinfo-ref-view-mobile' : 'chatinfo-ref-view'
+              }
+            >
               {refsForPdf.map((ref) => (
                 <button
                   key={ref.chatId}
@@ -435,7 +463,7 @@ const ChatInfo: React.FC = () => {
           {selectedChat?.chatId ? messages.length : ''}
         </p>
       </ChatInfoRow>
-      <ChatInfoRow label={lang === 'EN' ? 'Download:' : 'Herunterladen:'}>
+      <ChatInfoRow label="Download:">
         {selectedChat ? (
           <PDFDownloadLink
             key={`${selectedChat?.chatId}-${refsForPdf.length}-${messages.length}`}
@@ -453,12 +481,12 @@ const ChatInfo: React.FC = () => {
                 : selectedChat.title
             }.pdf`}
             className="chatpara linklike"
-            id="pdf-download-link"
+            id={isMobile ? 'pdf-download-link-mobile' : 'pdf-download-link'}
           >
             <FileText size={18} strokeWidth={1.5} />
           </PDFDownloadLink>
         ) : (
-          <span className="chatpara"></span>
+          <p className="chatpara"></p>
         )}
       </ChatInfoRow>
       {isAuth && (
