@@ -273,7 +273,6 @@ const ChatInfo: React.FC = () => {
           <p className="chatpara">{chatForm.chatNumber ?? ''}</p>
         )}
       </ChatInfoRow>
-
       <ChatInfoRow label={lang === 'EN' ? 'Title:' : 'Titel:'}>
         {editMode && isAuth ? (
           <input
@@ -287,8 +286,7 @@ const ChatInfo: React.FC = () => {
           <p className="chatpara">{chatForm.title ?? ''}</p>
         )}
       </ChatInfoRow>
-
-      <ChatInfoRow label={lang === 'EN' ? 'Tags:' : 'Schlagwörter:'}>
+      <ChatInfoRow label={lang === 'EN' ? 'Topic:' : 'Thema:'}>
         {editMode && isAuth ? (
           <input
             className="chatinfo-input"
@@ -300,8 +298,7 @@ const ChatInfo: React.FC = () => {
           <p className="chatpara">{chatForm.tags ?? ''}</p>
         )}
       </ChatInfoRow>
-
-      <ChatInfoRow label={lang === 'EN' ? 'Description:' : 'Beschreibung:'}>
+      <ChatInfoRow label={lang === 'EN' ? 'Story:' : 'Handlung:'}>
         {editMode && isAuth ? (
           <textarea
             className="chatinfo-input"
@@ -313,7 +310,6 @@ const ChatInfo: React.FC = () => {
           <p className="chatpara">{chatForm.description ?? ''}</p>
         )}
       </ChatInfoRow>
-
       {isAuth && (
         <ChatInfoRow label="Status:">
           {editMode ? (
@@ -336,7 +332,6 @@ const ChatInfo: React.FC = () => {
           )}
         </ChatInfoRow>
       )}
-
       {isAuth && (
         <ChatInfoRow label={lang === 'EN' ? 'Created:' : 'Erstellt:'}>
           <p className="chatpara">
@@ -344,7 +339,6 @@ const ChatInfo: React.FC = () => {
           </p>
         </ChatInfoRow>
       )}
-
       {isAuth && (
         <ChatInfoRow label={lang === 'EN' ? 'Modified:' : 'Geändert:'}>
           <p className="chatpara">
@@ -352,7 +346,6 @@ const ChatInfo: React.FC = () => {
           </p>
         </ChatInfoRow>
       )}
-
       {chatForm.datePublished && (
         <ChatInfoRow label={lang === 'EN' ? 'Published:' : 'Veröffentlicht:'}>
           <p className="chatpara">
@@ -360,7 +353,6 @@ const ChatInfo: React.FC = () => {
           </p>
         </ChatInfoRow>
       )}
-
       <ChatInfoRow label={lang === 'EN' ? 'Language:' : 'Sprache:'}>
         {editMode && isAuth ? (
           <select
@@ -382,54 +374,49 @@ const ChatInfo: React.FC = () => {
           </p>
         )}
       </ChatInfoRow>
-
-      <ChatInfoRow label={lang === 'EN' ? 'Relation:' : 'Beziehung:'}>
-        {editMode && isAuth ? (
-          <div className="chatinfo-ref-editor">
-            <select
-              className="chatinfo-input"
-              onChange={(e) => handleAddReference(Number(e.target.value))}
-              value=""
-            >
-              <option value="" disabled>
-                + reference
-              </option>
-              {publishedChats.map((c) => (
-                <option key={c.chatId} value={c.chatId}>
-                  {`#${c.chatNumber ?? '—'} · ${c.title}`}
+      {refsForPdf.length !== 0 || editMode ? (
+        <ChatInfoRow label={lang === 'EN' ? 'Relation to:' : 'Bezug zu:'}>
+          {editMode && isAuth ? (
+            <div className="chatinfo-ref-editor">
+              <select
+                className="chatinfo-input"
+                onChange={(e) => handleAddReference(Number(e.target.value))}
+                value=""
+              >
+                <option value="" disabled>
+                  + reference
                 </option>
-              ))}
-            </select>
+                {publishedChats.map((c) => (
+                  <option key={c.chatId} value={c.chatId}>
+                    {`#${c.chatNumber ?? '—'} · ${c.title}`}
+                  </option>
+                ))}
+              </select>
 
-            <div className="ref-chip-list">
-              {refsForPdf.length === 0 ? (
-                <p className="chatpara" id="ref-view-placeholder">
-                  -
-                </p>
-              ) : (
-                refsForPdf.map((ref) => (
-                  <span key={ref.chatId} className="ref-chip">
-                    #{ref.chatNumber ?? '—'}
-                    <button
-                      className="ref-chip-remove"
-                      onClick={() => handleRemoveReference(ref.chatId)}
-                      title="Delete"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))
-              )}
+              <div className="ref-chip-list">
+                {refsForPdf.length === 0 ? (
+                  <p className="chatpara" id="ref-view-placeholder">
+                    -
+                  </p>
+                ) : (
+                  refsForPdf.map((ref) => (
+                    <span key={ref.chatId} className="ref-chip">
+                      #{ref.chatNumber ?? '—'}
+                      <button
+                        className="ref-chip-remove"
+                        onClick={() => handleRemoveReference(ref.chatId)}
+                        title="Delete"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))
+                )}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="chatinfo-ref-view">
-            {selectedChat?.chatId && refsForPdf.length === 0 ? (
-              <p className="chatpara" id="ref-view-placeholder">
-                -
-              </p>
-            ) : (
-              refsForPdf.map((ref) => (
+          ) : (
+            <div className="chatinfo-ref-view">
+              {refsForPdf.map((ref) => (
                 <button
                   key={ref.chatId}
                   className="linklike"
@@ -438,18 +425,16 @@ const ChatInfo: React.FC = () => {
                 >
                   #{ref.chatNumber ?? '—'}
                 </button>
-              ))
-            )}
-          </div>
-        )}
-      </ChatInfoRow>
-
+              ))}
+            </div>
+          )}
+        </ChatInfoRow>
+      ) : null}
       <ChatInfoRow label={lang === 'EN' ? 'Messages:' : 'Nachrichten:'}>
         <p className="chatpara">
           {selectedChat?.chatId ? messages.length : ''}
         </p>
       </ChatInfoRow>
-
       <ChatInfoRow label={lang === 'EN' ? 'Download:' : 'Herunterladen:'}>
         {selectedChat ? (
           <PDFDownloadLink
@@ -468,6 +453,7 @@ const ChatInfo: React.FC = () => {
                 : selectedChat.title
             }.pdf`}
             className="chatpara linklike"
+            id="pdf-download-link"
           >
             <FileText size={18} strokeWidth={1.5} />
           </PDFDownloadLink>
@@ -475,13 +461,11 @@ const ChatInfo: React.FC = () => {
           <span className="chatpara"></span>
         )}
       </ChatInfoRow>
-
       {isAuth && (
         <ChatInfoRow label="Chat-Id:">
           <p className="chatpara">{selectedChat?.chatId}</p>
         </ChatInfoRow>
       )}
-
       {isAuth && (
         <ChatInfoRow label={lang === 'EN' ? 'Comments:' : 'Kommentare:'}>
           <p className="chatpara">
@@ -489,9 +473,7 @@ const ChatInfo: React.FC = () => {
           </p>
         </ChatInfoRow>
       )}
-
       <hr className="chatinfo-divider" />
-
       {!editMode && isAuth && (
         <div className="chatinfo-actions">
           <button
@@ -518,7 +500,6 @@ const ChatInfo: React.FC = () => {
           </button>
         </div>
       )}
-
       {editMode && isAuth && (
         <div className="chatinfo-actions">
           <button
@@ -544,7 +525,6 @@ const ChatInfo: React.FC = () => {
           </button>
         </div>
       )}
-
       {isAuth ? (
         <div className="chatinfo-toggle">
           <button className="toggle-btn" onClick={() => navigate('/chatbox')}>
@@ -564,7 +544,6 @@ const ChatInfo: React.FC = () => {
           </button>
         </div>
       ) : null}
-
       {isAuth ? (
         <hr className="chatinfo-divider" />
       ) : (
@@ -572,7 +551,6 @@ const ChatInfo: React.FC = () => {
           {lang === 'EN' ? 'Comments' : 'Kommentare'} ({commentsCount})
         </p>
       )}
-
       {viewMode === 'drafts' && isAuth ? (
         <div className="chat-overview">
           <DraftListTable chats={drafts} />

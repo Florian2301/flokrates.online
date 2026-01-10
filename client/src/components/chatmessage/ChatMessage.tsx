@@ -194,7 +194,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             title={`Zur Nachricht #${responseMessage.messageNumber} springen`}
           >
             <div className="message-reply-meta">
-              <span className="reply-label">Response to:</span>
               <span className="reply-ref">
                 #{responseMessage.messageNumber}
               </span>

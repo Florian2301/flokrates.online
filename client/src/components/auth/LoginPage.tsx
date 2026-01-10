@@ -82,7 +82,7 @@ const LoginPage: React.FC = () => {
   return (
     <div className="auth-wrapper">
       <form className="auth-card" onSubmit={onSubmit} noValidate>
-        <h3 className="auth-title">Login</h3>
+        {/* <h3 className="auth-title">Login</h3> */}
 
         {error ? <div className="auth-error">{error}</div> : null}
 
