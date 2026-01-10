@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   metaLabel: {
-    width: 90, // “Tab-Stopp” – ggf. 80/100 feinjustieren
+    width: 80, // Tab stop
     fontSize: 8,
     color: '#666',
     fontWeight: 700,
@@ -78,7 +78,6 @@ const styles = StyleSheet.create({
     color: '#666',
     justifyContent: 'center',
   },
-  /*metaLabel: { fontWeight: 700 },*/
   divider: {
     marginTop: 10,
     marginBottom: 10,
@@ -101,14 +100,6 @@ const styles = StyleSheet.create({
   footerRight: { width: '25%', textAlign: 'right' },
   msgList: { display: 'flex', flexDirection: 'column', gap: 8 },
   msgRow: { display: 'flex', flexDirection: 'row', marginBottom: 8 },
-  /*msgBubble: {
-    maxWidth: '70%',
-    padding: 8,
-    borderRadius: 8,
-    backgroundColor: '#f7f7f7',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },*/
   msgBubble: {
     maxWidth: '70%',
     padding: 8,
@@ -121,26 +112,11 @@ const styles = StyleSheet.create({
   msgBubblePAB: { backgroundColor: '#fff1ec', borderColor: '#ff4500' },
   msgBubbleFLO: { backgroundColor: '#edf2ff', borderColor: '#4169e1' },
   msgBubbleLOT: { backgroundColor: '#ffe9f3', borderColor: '#ff1493' },
-  /*msgHeader: { fontSize: 9, color: '#666', marginBottom: 4 },*/
   msgHeader: { fontSize: 9, marginBottom: 4 },
   msgHeaderPAB: { color: '#ff4500' }, // orangered
   msgHeaderFLO: { color: '#4169e1' }, // royalblue
   msgHeaderLOT: { color: '#ff1493' }, // deeppink
-  /*msgText: { fontSize: 11, lineHeight: 1.35 },*/
   msgText: { fontSize: 11, lineHeight: 1.35, color: '#111' },
-
-  refBlock: { marginTop: 6, marginBottom: 4 },
-  refRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 4 },
-  refChip: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 10,
-    backgroundColor: '#eef4ff',
-    borderWidth: 1,
-    borderColor: '#cfe1ff',
-    fontSize: 9,
-    marginRight: 6,
-  },
 });
 
 function formatDate(iso?: string | null) {
@@ -176,12 +152,7 @@ function MetaLine({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default function ChatPdf({
-  chat,
-  messages,
-  references = [],
-  lang,
-}: Props) {
+export default function ChatPdf({ chat, messages, lang }: Props) {
   const sorted = useMemo(
     () => [...messages].sort((a, b) => a.messageNumber - b.messageNumber),
     [messages]
@@ -193,11 +164,6 @@ export default function ChatPdf({
     return m;
   }, [messages]);
 
-  const refLabels =
-    references.length > 0
-      ? references.map((r) => `#${r.chatNumber ?? '—'} · ${r.title}`)
-      : (chat.referencedChatIds ?? []).map((id) => `#${id}`);
-
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -206,64 +172,27 @@ export default function ChatPdf({
         </Text>
         <View style={styles.divider} />
         <View>
+          <MetaLine
+            label={lang === 'EN' ? 'Topic:' : 'Thema:'}
+            value={chat.tags || ''}
+          />
+
+          <MetaLine
+            label={lang === 'EN' ? 'Story:' : 'Handlung:'}
+            value={chat.description || ''}
+          />
+
           {chat.datePublished && (
             <MetaLine
               label={lang === 'EN' ? 'Published:' : 'Veröffentlicht:'}
               value={formatDate(chat.datePublished)}
             />
           )}
-
-          <MetaLine
-            label={lang === 'EN' ? 'Tags:' : 'Schlagwörter:'}
-            value={chat.tags || ''}
-          />
-
-          <MetaLine
-            label={lang === 'EN' ? 'Description:' : 'Beschreibung:'}
-            value={chat.description || ''}
-          />
-
-          {refLabels.length > 0 && (
-            <View style={styles.refBlock}>
-              <View style={styles.refRow}>
-                {refLabels.map((lbl, i) => (
-                  <Text key={`${lbl}-${i}`} style={styles.refChip}>
-                    {lbl}
-                  </Text>
-                ))}
-              </View>
-            </View>
-          )}
         </View>
 
         <View style={styles.divider} />
 
         <View style={styles.msgList}>
-          {/*sorted.map((m) => {
-            const alignment = alignForActor(m.actor);
-            const actorName =
-              (m.actor &&
-                actorStyles[m.actor as keyof typeof actorStyles]?.actorName) ||
-              m.actor ||
-              '—';
-            const respNum =
-              m.respId != null ? msgNumById.get(m.respId) : undefined;
-            return (
-              <View
-                key={m.messageId}
-                style={[styles.msgRow, styles[alignment]]}
-              >
-                <View wrap={false} style={styles.msgBubble}>
-                  {' '}
-                  <Text style={styles.msgHeader}>
-                    #{m.messageNumber} · {actorName}
-                    {m.respId != null ? ` · >> #${respNum ?? '—'}` : ''}
-                  </Text>
-                  <Text style={styles.msgText}>{m.messageText ?? ''}</Text>
-                </View>
-              </View>
-            );
-          })*/}
           {sorted.map((m) => {
             const alignment = alignForActor(m.actor);
 
