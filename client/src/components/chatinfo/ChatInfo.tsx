@@ -377,8 +377,8 @@ const ChatInfo: React.FC = () => {
           </p>
         </ChatInfoRow>
       )}
-      <ChatInfoRow label={lang === 'EN' ? 'Language:' : 'Sprache:'}>
-        {editMode && isAuth ? (
+      {editMode && isAuth && (
+        <ChatInfoRow label={lang === 'EN' ? 'Language:' : 'Sprache:'}>
           <select
             className="chatinfo-input"
             value={chatForm.language ?? 'DE'}
@@ -390,14 +390,17 @@ const ChatInfo: React.FC = () => {
               </option>
             ))}
           </select>
-        ) : (
+        </ChatInfoRow>
+      )}
+      {!editMode && isAuth && (
+        <ChatInfoRow label={lang === 'EN' ? 'Language:' : 'Sprache:'}>
           <p className="chatpara">
             {chatForm.language
               ? languageMap[chatForm.language as LanguageCode]
               : ''}
           </p>
-        )}
-      </ChatInfoRow>
+        </ChatInfoRow>
+      )}
       {refsForPdf.length !== 0 || editMode ? (
         <ChatInfoRow label={lang === 'EN' ? 'Network:' : 'Netzwerk:'}>
           {editMode && isAuth ? (
