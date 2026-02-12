@@ -362,21 +362,15 @@ const ChatInfo: React.FC = () => {
           </p>
         </ChatInfoRow>
       )}
-      {chatForm.datePublished && (
-        <ChatInfoRow
-          label={
-            lang === 'EN'
-              ? 'Published:'
-              : isMobile
-                ? 'Datum:'
-                : 'Veröffentlicht:'
-          }
-        >
-          <p className="chatpara">
-            {chatForm.datePublished ? formatDate(chatForm.datePublished) : ''}
-          </p>
-        </ChatInfoRow>
-      )}
+      <ChatInfoRow
+        label={
+          lang === 'EN' ? 'Published:' : isMobile ? 'Datum:' : 'Veröffentlicht:'
+        }
+      >
+        <p className="chatpara">
+          {chatForm.datePublished ? formatDate(chatForm.datePublished) : ''}
+        </p>
+      </ChatInfoRow>
       {editMode && isAuth && (
         <ChatInfoRow label={lang === 'EN' ? 'Language:' : 'Sprache:'}>
           <select

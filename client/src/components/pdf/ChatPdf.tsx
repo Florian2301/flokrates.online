@@ -135,9 +135,9 @@ function alignForActor(
 ): 'left' | 'right' | 'center' {
   switch (actor) {
     case 'PAB':
-      return 'right';
-    case 'LOT':
       return 'left';
+    case 'LOT':
+      return 'right';
     default:
       return 'center';
   }
