@@ -45,7 +45,7 @@ services:
       context: ../client
       dockerfile: Dockerfile
       args:
-        REACT_APP_API_BASE_URL: "http://flokrates.de/api"
+        REACT_APP_API_BASE_URL: "http://flokrates.online/api"
     image: flokrates-frontend:1.0.0
     container_name: flokrates-frontend-prod
     restart: unless-stopped
