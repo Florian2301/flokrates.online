@@ -31,6 +31,7 @@ import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
 import { isImageContentType, toAbsoluteUrl } from './Attachments';
 import { resizeTextareaPreserveCaret } from '../../utils/textarea';
+import { Dropdown } from 'react-bootstrap';
 
 type NewMessageProps = {
   newMessage?: Message;
@@ -404,7 +405,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
       <div className="actions">
         <label className="newMessage-label">
           <select
-            className="newMessage-select"
+            className="newMessage-select-actor"
             value={selectedActor}
             onChange={(e) => setSelectedActor(e.target.value as Actor)}
           >
@@ -448,7 +449,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
         <button className="newMessage-btn" onClick={onCancel} title="Cancel">
           <X size={18} strokeWidth={1.5} />
         </button>
-        <label className="newMessage-label" title="Respond to message">
+        {/*<label className="newMessage-label" title="Respond to message">
           <CornerRightUp size={18} strokeWidth={1.5} />
           <select
             className="newMessage-select"
@@ -469,8 +470,37 @@ const NewMessage: React.FC<NewMessageProps> = ({
                 </option>
               ))}
           </select>
+        </label>*/}
+        <label className="newMessage-label" title="Respond to message">
+          <CornerRightUp size={18} strokeWidth={1.5} />
+          <Dropdown className="newMessage-dropdown-wrapper">
+            <Dropdown.Toggle
+              className="newMessage-select"
+              title="Respond to message"
+            >
+              {respMessageId ?? '-'}
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu className="newMessage-dropdown">
+              <Dropdown.Item onClick={() => setRespMessageId(null)}>
+                -
+              </Dropdown.Item>
+
+              {[...messages]
+                .filter((msg) => msg.messageNumber < selectedMessageNumber)
+                .sort((a, b) => a.messageNumber - b.messageNumber)
+                .map((msg) => (
+                  <Dropdown.Item
+                    key={msg.messageId}
+                    onClick={() => setRespMessageId(msg.messageId)}
+                  >
+                    {msg.messageNumber}
+                  </Dropdown.Item>
+                ))}
+            </Dropdown.Menu>
+          </Dropdown>
         </label>
-        <label className="newMessage-label" title="move up or down">
+        {/*<label className="newMessage-label" title="move up or down">
           <section id="number">
             <ArrowUpDown size={18} strokeWidth={1.5} />
           </section>
@@ -497,6 +527,42 @@ const NewMessage: React.FC<NewMessageProps> = ({
                 </option>
               ))}
           </select>
+        </label>*/}
+        <label className="newMessage-label" title="move up or down">
+          <section id="number">
+            <ArrowUpDown size={18} strokeWidth={1.5} />
+          </section>
+          <Dropdown className="newMessage-dropdown-wrapper">
+            <Dropdown.Toggle
+              className="newMessage-select"
+              title="Respond to message"
+            >
+              {selectedMessageNumber ?? '-'}
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu className="newMessage-dropdown">
+              {Array.from({ length: maxMessageNumber }, (_, i) => i + 1)
+                .filter((num) => {
+                  if (!respMessageId) return true;
+
+                  const respMsg = messages.find(
+                    (m) => m.messageId === respMessageId
+                  );
+
+                  if (!respMsg) return true;
+
+                  return num > respMsg.messageNumber;
+                })
+                .map((num) => (
+                  <Dropdown.Item
+                    key={num}
+                    onClick={() => setSelectedMessageNumber(num)}
+                  >
+                    {num}
+                  </Dropdown.Item>
+                ))}
+            </Dropdown.Menu>
+          </Dropdown>
         </label>
         <button
           className="newMessage-btn"
