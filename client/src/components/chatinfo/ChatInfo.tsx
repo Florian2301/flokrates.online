@@ -504,6 +504,7 @@ const ChatInfo: React.FC = () => {
           <button
             className="chatinfo-buttons"
             onClick={() => setEditMode((prev) => !prev)}
+            disabled={selectedChat === null}
             title="Edit/Cancel"
           >
             <PencilLine size={18} strokeWidth={1.5} />
