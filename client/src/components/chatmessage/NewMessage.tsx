@@ -305,6 +305,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
     setEditedText(newText);
 
     requestAnimationFrame(() => {
+      ta.focus();
       const pos = start + emoji.native.length;
       ta.setSelectionRange(pos, pos);
     });
@@ -315,14 +316,22 @@ const NewMessage: React.FC<NewMessageProps> = ({
     e
   ) => {
     const ta = e.currentTarget;
+
     setEditedText(ta.value);
-    resizeTextareaPreserveCaret(ta);
   };
 
   // UseEffects
-  useLayoutEffect(() => {
-    if (textareaRef.current) resizeTextareaPreserveCaret(textareaRef.current);
-  }, []);
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+
+    const prevScrollTop = ta.scrollTop;
+
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+
+    ta.scrollTop = prevScrollTop;
+  }, [editedText]);
 
   useEffect(() => {
     if (!isNew) {
@@ -351,9 +360,12 @@ const NewMessage: React.FC<NewMessageProps> = ({
   ]);
 
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
+    const ta = textareaRef.current;
+    if (!ta) return;
+
+    requestAnimationFrame(() => {
+      ta.focus();
+    });
   }, []);
 
   useEffect(() => {
@@ -398,8 +410,7 @@ const NewMessage: React.FC<NewMessageProps> = ({
       className="new-message-window"
       style={{
         top: `${position.y}px`,
-        left: '50%',
-        transform: `translateX(calc(-50% + ${position.x}px))`,
+        left: `${position.x + window.innerWidth / 2}px`,
       }}
     >
       <div

@@ -1,7 +1,7 @@
 import './ChatMessage.css';
 
 import { ChevronsUp, PencilLine, Save, SquarePen, X } from 'lucide-react';
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   fetchAttachmentsForMessage,
   patchMessage,
@@ -152,8 +152,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     e
   ) => {
     const ta = e.currentTarget;
+    const scrollY = window.scrollY;
     setEditedText(ta.value);
     resizeTextareaPreserveCaret(ta);
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
   };
 
   const keyEventMessage = (
@@ -170,10 +174,18 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     dispatch(fetchAttachmentsForMessage(messageId));
   }, [dispatch, messageId]);
 
-  useLayoutEffect(() => {
-    if (edit && textareaRef.current) {
-      resizeTextareaPreserveCaret(textareaRef.current);
-    }
+  // prevent jumping cursor to start
+  useEffect(() => {
+    if (!edit || !textareaRef.current) return;
+
+    const ta = textareaRef.current;
+
+    resizeTextareaPreserveCaret(ta);
+
+    requestAnimationFrame(() => {
+      const pos = ta.value.length;
+      ta.setSelectionRange(pos, pos);
+    });
   }, [edit]);
 
   useEffect(() => {
