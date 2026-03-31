@@ -3,7 +3,6 @@ import './NavBar.css';
 import { Nav, NavDropdown } from 'react-bootstrap';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { logout, selectIsAuthenticated } from '../../store/authSlice';
-import { selectLanguage, setLanguage } from '../../store/languageSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 
@@ -11,11 +10,13 @@ import type { AppDispatch } from '../../store/store';
 import { Menu } from 'lucide-react';
 import { setSelectedChat } from '../../store/chatsSclice';
 
+//import { selectLanguage, setLanguage } from '../../store/languageSlice';
+
 const NavBar = () => {
   const dispatch = useDispatch<AppDispatch>();
   const isAuth = useSelector(selectIsAuthenticated);
   const nav = useNavigate();
-  const lang = useSelector(selectLanguage);
+  //const lang = useSelector(selectLanguage); Maybe using it later for language switcher in the menu
 
   const handleLogout = async () => {
     await dispatch(logout());
@@ -43,7 +44,7 @@ const NavBar = () => {
     <Nav variant="pills">
       <Nav.Item>
         <Nav.Link as={NavLink} to="/chatlist">
-          {lang === 'DE' ? 'Chatliste' : 'Chatlist'}
+          Chatlist
         </Nav.Link>
       </Nav.Item>
       <Nav.Item>
@@ -74,21 +75,21 @@ const NavBar = () => {
           as={NavLink}
           to="/about"
         >
-          {lang === 'DE' ? 'Über mich' : 'About'}
+          Project
         </NavDropdown.Item>
         <NavDropdown.Item
           className="nav-dropdown-item"
           as={NavLink}
           to="/settings"
         >
-          {lang === 'DE' ? 'Einstellungen' : 'Settings'}
+          Settings
         </NavDropdown.Item>
         <NavDropdown.Item
           className="nav-dropdown-item"
           as={NavLink}
           to="/legal"
         >
-          {lang === 'DE' ? 'Rechtliches' : 'Legal'}
+          Legal
         </NavDropdown.Item>
         <NavDropdown.Divider />
         {!isAuth ? (

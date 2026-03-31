@@ -50,6 +50,10 @@
 
 #about-text {
   font-size: 16px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .about-input,
@@ -63,6 +67,8 @@
   padding: 8px;
   font-size: 16px;
   line-height: 1.6;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .about-textarea {
