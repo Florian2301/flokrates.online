@@ -129,7 +129,21 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
   // emoji
   const handleEmojiSelect = (emoji: any) => {
-    setEditedText((prev) => prev + emoji.native);
+    const ta = textareaRef.current;
+    if (!ta) return;
+
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const value = ta.value;
+
+    const newText = value.slice(0, start) + emoji.native + value.slice(end);
+
+    setEditedText(newText);
+
+    requestAnimationFrame(() => {
+      const pos = start + emoji.native.length;
+      ta.setSelectionRange(pos, pos);
+    });
     setShowEmojiPicker(false);
     setFullEdit(false);
   };

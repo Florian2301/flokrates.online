@@ -122,6 +122,9 @@
   hyphens: auto;
   overflow-y: scroll;
   min-height: 10rem;
+  resize: vertical;
+  touch-action: manipulation;
+  position: relative;
 }
 
 /* Attachments*/
