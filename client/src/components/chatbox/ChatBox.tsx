@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { ChatMessage } from '../chatmessage/ChatMessage';
 import NewMessage from '../chatmessage/NewMessage';
+import ScrollToTop from '../scrollto/ScrollToTop';
 import { selectIsAuthenticated } from '../../store/authSlice';
 
 export const ChatBox: React.FC = () => {
@@ -96,6 +97,7 @@ export const ChatBox: React.FC = () => {
           }}
         />
       )}
+      <ScrollToTop />
     </div>
   );
 };
