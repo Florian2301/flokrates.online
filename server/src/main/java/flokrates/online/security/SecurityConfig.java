@@ -104,10 +104,10 @@ public class SecurityConfig {
                 "http://localhost:*",
                 "http://127.0.0.1:*",
                 "http://82.165.136.196:8088",
-                "https://www.flokrates.de",
-                "https://flokrates.de",
-                "http://flokrates.de",
-                "http://www.flokrates.de"
+                "https://www.flokrates.online",
+                "https://flokrates.online",
+                "http://flokrates.online",
+                "http://www.flokrates.online"
         ));
 
         // Alle relevanten Methoden

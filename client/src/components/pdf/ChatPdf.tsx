@@ -28,7 +28,7 @@ type Props = {
 };
 
 const LICENSE_SHORT = 'CC BY-NC-ND 4.0';
-const WEBSITE_URL = 'flokrates.de';
+const WEBSITE_URL = 'flokrates.online';
 
 function legalLine(lang: LanguageCode) {
   const year = new Date().getFullYear();
