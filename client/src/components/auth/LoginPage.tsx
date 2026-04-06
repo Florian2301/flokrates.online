@@ -10,7 +10,6 @@ import {
 } from '../../store/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectLanguage } from '../../store/languageSlice';
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
@@ -18,7 +17,6 @@ const LoginPage: React.FC = () => {
   const nav = useNavigate();
   const isAuth = useSelector(selectIsAuthenticated);
   const user = useSelector(selectAuthUser);
-  const lang = useSelector(selectLanguage);
   const { loading, error } = useSelector((s: RootState) => s.auth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,20 +35,20 @@ const LoginPage: React.FC = () => {
         <div className="auth-card">
           <h3 className="auth-title">
             {user?.userName
-              ? `Hallo, ${user.userName}`
+              ? `Moin, ${user.userName}`
               : user?.email
-                ? `Hallo, ${user.email}`
+                ? `Moin, ${user.email}`
                 : 'Bereits eingeloggt'}
           </h3>
           <div className="auth-actions">
             <button className="btn btn-secondary" onClick={() => nav('/about')}>
-              {lang === 'EN' ? 'About' : 'Über mich'}
+              Project
             </button>
             <button
               className="btn btn-secondary"
               onClick={() => nav('/chatlist')}
             >
-              {lang === 'EN' ? 'Chatlist' : 'Chatliste'}
+              Chatlist
             </button>
             <button
               className="btn btn-secondary"
@@ -82,8 +80,6 @@ const LoginPage: React.FC = () => {
   return (
     <div className="auth-wrapper">
       <form className="auth-card" onSubmit={onSubmit} noValidate>
-        {/* <h3 className="auth-title">Login</h3> */}
-
         {error ? <div className="auth-error">{error}</div> : null}
 
         <div className="auth-field">
@@ -106,7 +102,7 @@ const LoginPage: React.FC = () => {
 
         <div className="auth-field">
           <label className="auth-label" htmlFor="password">
-            {lang === 'EN' ? 'Password' : 'Passwort'}
+            Password
           </label>
           <input
             id="password"
@@ -123,7 +119,7 @@ const LoginPage: React.FC = () => {
         <div className="auth-actions">
           <button className="btn btn-primary" type="submit" disabled={loading}>
             {loading ? <span className="spinner" /> : null}
-            {lang === 'EN' ? 'Log in' : 'Einloggen'}
+            Login
           </button>
         </div>
       </form>
