@@ -126,3 +126,19 @@
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
+
+.emoji-section {
+  position: relative;
+}
+
+.emoji-picker-popup {
+  position: absolute;
+  left: 20px;
+  top: 100%;
+  z-index: 1000;
+}
+
+.emoji-picker-popup.up {
+  top: auto !important;
+  bottom: calc(100% + 4px);
+}

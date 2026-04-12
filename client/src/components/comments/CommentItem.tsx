@@ -37,6 +37,8 @@ const CommentItem: React.FC<Props> = ({
   const [sender, setSender] = useState(comment.sender);
   const [text, setText] = useState(comment.commentText);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [openUpwards, setOpenUpwards] = useState(false);
+  const emojiButtonRef = useRef<HTMLButtonElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isAuth = useSelector(selectIsAuthenticated);
   const created = useMemo(() => {
@@ -75,6 +77,22 @@ const CommentItem: React.FC<Props> = ({
   const handleEmojiSelect = (emoji: any) => {
     setText((prev) => prev + emoji.native);
     setShowEmojiPicker(false);
+  };
+
+  const toggleEmojiPicker = () => {
+    const button = emojiButtonRef.current;
+    if (!button) return;
+
+    const rect = button.getBoundingClientRect();
+
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+
+    const pickerHeight = 350;
+
+    setOpenUpwards(spaceBelow < pickerHeight && spaceAbove > spaceBelow);
+
+    setShowEmojiPicker((prev) => !prev);
   };
 
   const keyHandler: React.KeyboardEventHandler<
@@ -168,6 +186,7 @@ const CommentItem: React.FC<Props> = ({
             <div className="emoji-section">
               {edit && isAuth && (
                 <button
+                  ref={emojiButtonRef}
                   className="comment-emoji-btn"
                   type="button"
                   onClick={() => setShowEmojiPicker((p) => !p)}
@@ -177,7 +196,10 @@ const CommentItem: React.FC<Props> = ({
                 </button>
               )}
               {showEmojiPicker && (
-                <div className="emoji-picker-popup">
+                <div
+                  ref={emojiRef}
+                  className={`emoji-picker-popup ${openUpwards ? 'up' : ''}`}
+                >
                   <Picker
                     data={data}
                     onEmojiSelect={handleEmojiSelect}

@@ -108,7 +108,7 @@ a:hover {
 
 .emoji-picker-popup > * {
   width: 200px !important;
-  height: 240px !important;
+  height: 260px !important;
   transform: scale(0.7) !important;
   transform-origin: top left !important;
   font-size: 12px !important;

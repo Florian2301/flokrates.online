@@ -24,6 +24,8 @@ const NewComment: React.FC<Props> = ({ onCancel }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const senderRef = useRef<HTMLInputElement>(null);
   const emojiRef = useRef<HTMLDivElement>(null);
+  const [openUpwards, setOpenUpwards] = useState(false);
+  const emojiButtonRef = useRef<HTMLButtonElement>(null);
 
   const canSave =
     !!chatId && sender.trim().length > 0 && text.trim().length > 0;
@@ -43,6 +45,22 @@ const NewComment: React.FC<Props> = ({ onCancel }) => {
   const handleEmojiSelect = (emoji: any) => {
     setText((prev) => prev + emoji.native);
     setShowEmojiPicker(false);
+  };
+
+  const toggleEmojiPicker = () => {
+    const button = emojiButtonRef.current;
+    if (!button) return;
+
+    const rect = button.getBoundingClientRect();
+
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+
+    const pickerHeight = 350;
+
+    setOpenUpwards(spaceBelow < pickerHeight && spaceAbove > spaceBelow);
+
+    setShowEmojiPicker((prev) => !prev);
   };
 
   const keyHandler: React.KeyboardEventHandler<
@@ -97,15 +115,19 @@ const NewComment: React.FC<Props> = ({ onCancel }) => {
       <div className="new-comment-actions">
         <div className="emoji-section">
           <button
+            ref={emojiButtonRef}
             className="newComment-btn"
             type="button"
-            onClick={() => setShowEmojiPicker((p) => !p)}
+            onClick={toggleEmojiPicker}
             title="Emoji"
           >
             😊
           </button>
           {showEmojiPicker && (
-            <div ref={emojiRef} className="emoji-picker-popup">
+            <div
+              ref={emojiRef}
+              className={`emoji-picker-popup ${openUpwards ? 'up' : ''}`}
+            >
               <Picker
                 data={data}
                 onEmojiSelect={handleEmojiSelect}
