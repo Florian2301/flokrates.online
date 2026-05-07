@@ -35,11 +35,11 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       APP_JWT_SECRET: ${APP_JWT_SECRET}
+      JAVA_TOOL_OPTIONS: "-XX:+UseContainerSupport -Xms512m -Xmx2048m"
     ports:
       - "${BACKEND_PORT}:8080"
     volumes:
       - ./uploads:/app/uploads
-    command: [ "java", "-Xms256m", "-Xmx512m", "-jar", "app.jar" ]
 
   frontend:
     build:
