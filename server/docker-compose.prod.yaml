@@ -39,6 +39,7 @@ services:
       - "${BACKEND_PORT}:8080"
     volumes:
       - ./uploads:/app/uploads
+    command: [ "java", "-Xms256m", "-Xmx512m", "-jar", "app.jar" ]
 
   frontend:
     build:
