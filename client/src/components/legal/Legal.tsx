@@ -86,7 +86,7 @@ const CONTENT: Record<LanguageCode, Content> = {
             <br />
             Email: {IMPRINT.email}
             <br />
-            c/o:{IMPRINT.co}
+            {IMPRINT.co}
             <br />
             Straße: {IMPRINT.street}
             <br />
@@ -224,7 +224,7 @@ const CONTENT: Record<LanguageCode, Content> = {
             <br />
             Email: {IMPRINT.email}
             <br />
-            c/o:{IMPRINT.co}
+            {IMPRINT.co}
             <br />
             Street: {IMPRINT.street}
             <br />
