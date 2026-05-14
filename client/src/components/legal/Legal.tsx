@@ -84,8 +84,6 @@ const CONTENT: Record<LanguageCode, Content> = {
           <p>
             Name: {IMPRINT.name}
             <br />
-            Email: {IMPRINT.email}
-            <br />
             {IMPRINT.co}
             <br />
             Straße: {IMPRINT.street}
@@ -93,6 +91,8 @@ const CONTENT: Record<LanguageCode, Content> = {
             Stadt: {IMPRINT.zipCity}
             <br />
             Land: {IMPRINT.country}
+            <br />
+            Email: {IMPRINT.email}
           </p>
         </>
       ),
@@ -222,8 +222,6 @@ const CONTENT: Record<LanguageCode, Content> = {
           <p>
             Name: {IMPRINT.name}
             <br />
-            Email: {IMPRINT.email}
-            <br />
             {IMPRINT.co}
             <br />
             Street: {IMPRINT.street}
@@ -231,6 +229,8 @@ const CONTENT: Record<LanguageCode, Content> = {
             City: {IMPRINT.zipCity}
             <br />
             Country: {IMPRINT.country}
+            <br />
+            Email: {IMPRINT.email}
           </p>
         </>
       ),
