@@ -12,13 +12,18 @@ const user = 'flokrates.online';
 const domain = 'gmail.com';
 const CONTACT_EMAIL = user + '[at]' + domain;
 const SITE_NAME = 'Flokrates.Online';
-const AUTHOR_NAME = 'Flokrates';
+const AUTHOR_NAME = 'Florian John';
+const CO = 'c/o Impressumservice Dein-Impressum';
+const STREET = 'Stettiner Str. 41';
+const ZIP_CITY = '35410 Hungen';
+const COUNTRY = 'Germany';
 
 const IMPRINT = {
   name: AUTHOR_NAME,
-  street: '',
-  zipCity: '',
-  country: '',
+  co: CO,
+  street: STREET,
+  zipCity: ZIP_CITY,
+  country: COUNTRY,
   email: CONTACT_EMAIL,
 };
 
@@ -80,12 +85,14 @@ const CONTENT: Record<LanguageCode, Content> = {
             Name: {IMPRINT.name}
             <br />
             Email: {IMPRINT.email}
-            {/*<br />
-            {IMPRINT.street}
             <br />
-            {IMPRINT.zipCity}
+            c/o:{IMPRINT.co}
             <br />
-            {IMPRINT.country}*/}
+            Straße: {IMPRINT.street}
+            <br />
+            Stadt: {IMPRINT.zipCity}
+            <br />
+            Land: {IMPRINT.country}
           </p>
         </>
       ),
@@ -216,6 +223,14 @@ const CONTENT: Record<LanguageCode, Content> = {
             Name: {IMPRINT.name}
             <br />
             Email: {IMPRINT.email}
+            <br />
+            c/o:{IMPRINT.co}
+            <br />
+            Street: {IMPRINT.street}
+            <br />
+            City: {IMPRINT.zipCity}
+            <br />
+            Country: {IMPRINT.country}
           </p>
         </>
       ),
